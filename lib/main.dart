@@ -40,6 +40,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: "Monmatics",
       locale: DevicePreview.locale(context),
       builder: DevicePreview.appBuilder,
       // title: 'Flutter Demo',
