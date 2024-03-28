@@ -14,7 +14,8 @@ class AuthenticateController {
   print(password);
   var body = {
     'email': email ,
-    'password': password
+    'password': password,
+
   };
   var header= {
     'Accept': '*/*'

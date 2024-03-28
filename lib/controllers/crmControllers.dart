@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
 import '../utils/urls.dart';
 
 
@@ -21,7 +20,6 @@ class TasksCont {
       }
       else
       {
-
         return 'Some error occured';
       }
     }
@@ -46,7 +44,6 @@ class Notes{
     try{
       var response = await http.get(Uri.parse('https://dev.monmatics.com/monmatics/api/get_notes') , headers: header);
       var data=  jsonDecode(response.body);
-
       if(response.statusCode ==200)
       {
         return data['data'];

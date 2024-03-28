@@ -2,10 +2,11 @@ import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/adapters.dart';
-
+import 'package:provider/provider.dart';
 import 'splashScreen.dart';
 import 'utils/colors.dart';
 import 'utils/themes.dart';
+import 'utils/urlprovider.dart';
 
 void main()async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +21,10 @@ void main()async {
   //     enabled: !kReleaseMode,
   //     builder: (context) =>const MyApp()
   // ),
-    const MyApp(),
+    ChangeNotifierProvider(
+      create: (_) => UrlProvider(), // Provide the UrlProvider
+      child: MyApp(),
+    ),
   );
 }
 
@@ -40,7 +44,6 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "Monmatics",
       locale: DevicePreview.locale(context),
       builder: DevicePreview.appBuilder,
       // title: 'Flutter Demo',
@@ -68,7 +71,7 @@ class _MyAppState extends State<MyApp> {
 
   /// 3) Call this to change theme from any context using "of" accessor
   /// e.g.:
-  /// MyApp.of(context).changeTheme(ThemeMode.dark);
+  // / MyApp.of(context).changeTheme(ThemeMode.dark);
   void changeTheme(ThemeMode themeMode) {
     setState(() {
       _themeMode = themeMode;

@@ -146,29 +146,29 @@ class _HomeState extends State<Home> {
                 padding: const EdgeInsets.only(top: 10.0),
                 child: index == 0
                     ? FutureBuilder(
-                        future: GetNotesFromBox(),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            if (notes!.isNotEmpty) {
-                              return ListView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: notes!.length,
-                                itemBuilder: (BuildContext, index) {
-                                  return NotesTile(obj:notes!.get(index));
-                                },
-                              );
-                            } else
-                              return Center(child: Text('No Data Found'));
-                          } else {
-                            return Center(
-                              child: CircularProgressIndicator(
-                                color: primaryColor,
-                              ),
-                            );
-                          }
-                        })
-                    // loading ==true ?
+                  future: GetNotesFromBox(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Text('Error: ${snapshot.error}'),
+                      );
+                    } else {
+                      if (notes != null && notes!.isNotEmpty) {
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: notes!.length,
+                          itemBuilder: (BuildContext, index) {
+                            return NotesTile(obj: notes!.get(index));
+                          },
+                        );
+                      } else {
+                        return const Center(child: Text('No Data Found'));
+                      }
+                    }
+                  },
+                )
+                // loading ==true ?
                     //     CircularProgressIndicator( color: primaryColor,)
                     // :
                     // ListView.builder(
