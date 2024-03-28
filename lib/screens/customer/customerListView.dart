@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../utils/colors.dart';
 import '../../utils/messages.dart';
 import 'customerExtendedView.dart';
+import 'customerForm.dart';
 
 List customerList = [];
 
@@ -101,7 +102,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                           },
                         );
                       } else {
-                        return Center(child: Text('No Data Found'));
+                        return const Center(child: Text('No Data Found'));
                       }
                     } else {
                       return Center(
@@ -124,7 +125,17 @@ class _CustomerScreenState extends State<CustomerScreen> {
               //     return CustomerListTile(obj: customerList[index]);
               // },
               // ),
-              )),
+              ),
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: Theme.of(context).brightness == Brightness.light
+              ? popupmenuButtonCol
+              : null,
+          onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const AddCustomer()));
+          },
+          child: const Icon(Icons.add),
+        ),
+      ),
     );
   }
 }

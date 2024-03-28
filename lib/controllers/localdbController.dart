@@ -56,13 +56,13 @@ class StorageController {
       // showSnackMessage(context, result);
     } else {
       for (int i = 0; i < result.length; i++) {
-        // String temp = result[i]["name"];
-        // int? ind;
-        // for (int i = 0; i < temp.length; i++) {
-        //   if (temp[i] == '(') {
-        //     ind = i;
-        //   }
-        // }
+        String temp = result[i]["name"];
+        int? ind;
+        for (int i = 0; i < temp.length; i++) {
+          if (temp[i] == '(') {
+            ind = i;
+          }
+        }
         tempMap = {
           'Name': result[i]["name"]??'',
           'Category': result[i]["category"] ?? '',

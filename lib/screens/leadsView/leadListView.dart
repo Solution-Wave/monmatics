@@ -102,13 +102,13 @@ class _leadsScreenState extends State<leadsScreen> {
       body: Padding(
         padding: const EdgeInsets.only(top: 10.0, bottom: 10.0, right: 8.0, left: 8.0),
         child:
-        //  loading?
-        // Center(
-        //   child: CircularProgressIndicator(
-        //     color: primaryColor,
-        //   ),
-        // )
-        // :
+         loading?
+        Center(
+          child: CircularProgressIndicator(
+            color: primaryColor,
+          ),
+        )
+        :
         FutureBuilder(
             future: GetDataFromBox(),
             builder: (context, snapshot){
@@ -163,7 +163,7 @@ class LeadListTile extends StatelessWidget {
        )));
       },
       child: Container(
-        margin: EdgeInsets.only(top: 10.0),
+        margin: const EdgeInsets.only(top: 10.0),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12.0),
             border: Border.all(color: primaryColor)
@@ -198,7 +198,7 @@ class LeadListTile extends StatelessWidget {
             Row(
               children: [
                 IconButton(
-                  padding: EdgeInsets.all(2.0),
+                  padding: const EdgeInsets.all(2.0),
                     iconSize: 20.0,
                     onPressed: () async{
                       Uri phoneno = Uri.parse('tel:${obj['phone']}');
@@ -215,9 +215,9 @@ class LeadListTile extends StatelessWidget {
                         }
                       }
                     },
-                    icon: Icon(Icons.phone)),
+                    icon: const Icon(Icons.phone)),
                 IconButton(
-                    padding: EdgeInsets.all(2.0),
+                    padding: const EdgeInsets.all(2.0),
                     iconSize: 20.0,
                     onPressed: ()async{
                       String email = obj['Email'];
@@ -238,7 +238,7 @@ class LeadListTile extends StatelessWidget {
                         }
                       }
                     },
-                    icon: Icon(Icons.mail))
+                    icon: const Icon(Icons.mail))
               ],
             ),
 

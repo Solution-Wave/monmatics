@@ -140,7 +140,7 @@ class _HomeState extends State<Home> {
                   children: const [
                     Text('Notes'),
                     Text('Tasks'),
-                    Text('Events'),
+                    // Text('Events'),
                   ]),
               Padding(
                 padding: const EdgeInsets.only(top: 10.0),
@@ -163,7 +163,7 @@ class _HomeState extends State<Home> {
                           },
                         );
                       } else {
-                        return const Center(child: Text('No Data Found'));
+                        return const Center(child: Text('No Notes Found'));
                       }
                     }
                   },
@@ -177,8 +177,10 @@ class _HomeState extends State<Home> {
                     //         itemBuilder: (context, index) {
                     //           return NotesListTile(NotesList[index]);
                     //         })
-                    : index == 1
-                        ? FutureBuilder(
+                    :
+                // index == 1
+                //         ?
+                FutureBuilder(
                             future: GetTasksFromBox(),
                             builder: (context, snapshot) {
                               if (snapshot.hasData) {
@@ -192,7 +194,7 @@ class _HomeState extends State<Home> {
                                     },
                                   );
                                 } else {
-                                  return const Center(child: Text('No Data Found'));
+                                  return const Center(child: Text('No Task Found'));
                                 }
                               } else {
                                 return Center(
@@ -215,9 +217,9 @@ class _HomeState extends State<Home> {
                         //         itemBuilder: (context, index) {
                         //           return taskListTile(TaskList[index]);
                         //         })
-                        : const Center(
-                            child: Text('Events View'),
-                          ),
+                        // : const Center(
+                        //     child: Text('Events View'),
+                        //   ),
               )
             ],
           ),

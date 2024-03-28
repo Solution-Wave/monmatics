@@ -21,7 +21,6 @@ class navigationdrawer extends StatefulWidget {
 
 class _navigationdrawerState extends State<navigationdrawer> {
     String? name;
-
     String? role;
 
     Future GetSharedData() async {
@@ -35,7 +34,7 @@ class _navigationdrawerState extends State<navigationdrawer> {
     void FunctionCall()async{
       await GetSharedData();
     }
-   final GlobalKey<State> _keyLoader = new GlobalKey<State>();
+   final GlobalKey<State> _keyLoader = GlobalKey<State>();
 
    Future<void> showProgressDialog(BuildContext context, GlobalKey key) async {
      return showDialog<void>(
@@ -44,7 +43,7 @@ class _navigationdrawerState extends State<navigationdrawer> {
        builder: (BuildContext context) {
          return SimpleDialog(
            key: key,
-           children: [
+           children: const [
              Column(
                mainAxisSize: MainAxisSize.min,
                children: [
@@ -88,7 +87,8 @@ class _navigationdrawerState extends State<navigationdrawer> {
                   ),
                   onTap: () {
                     Navigator.pop(context);
-                    Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(builder: (context) => CustomTableCalendar())) ;
+                    Navigator.of(context, rootNavigator: true)
+                        .push(MaterialPageRoute(builder: (context) => const CustomTableCalendar())) ;
 
                   },
                 ),
@@ -98,7 +98,8 @@ class _navigationdrawerState extends State<navigationdrawer> {
                   title: Text('Customers',style: TextStyle(color: drawerTextCol),),
                   onTap: () {
                     Navigator.pop(context);
-                    Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(builder: (context) => CustomerScreen())) ;
+                    Navigator.of(context, rootNavigator: true)
+                        .push(MaterialPageRoute(builder: (context) => const CustomerScreen())) ;
                   },
                 ),
                 // ListTile(
