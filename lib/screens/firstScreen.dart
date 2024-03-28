@@ -20,12 +20,12 @@ class AppState extends State<App> {
     TabItem(
       tabName: "Home",
       icon: Icons.home,
-      page: Home(),
+      page: const Home(),
     ),
     TabItem(
       tabName: "Contacts",
       icon: Icons.phone_enabled_outlined,
-      page: contactScreen(),
+      page: const contactScreen(),
     ),
     TabItem(
       tabName: "More",
@@ -76,15 +76,15 @@ class AppState extends State<App> {
             context: context,
             builder: (context){
               return AlertDialog(
-                title: Text('Are You Sure?'),
+                title: const Text('Are You Sure?'),
                 actions: [
                   TextButton(onPressed: (){
                     Navigator.of(context).pop(true);
-                  }, child: Text('Yes')),
+                  }, child: const Text('Yes')),
                   TextButton(onPressed: (){
                     Navigator.of(context).pop(false);
                     // Navigator.pop(context);
-                    }, child: Text('No'))
+                    }, child: const Text('No'))
                 ],
               );
             });

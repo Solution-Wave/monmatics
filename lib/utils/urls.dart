@@ -1,24 +1,31 @@
+String baseUrl = '';
+String loginUrl = '';
+String registerUrl = '';
+String getTasksUrl = '';
+String getCallsUrl = '';
+String getContacts = '';
+String getLeads = '';
+String getNotes = '';
+String getCustomer = '';
+String saveTasksUrl = '';
+String saveCallsUrl = '';
+String saveContacts = '';
+String saveLeads = '';
+String saveNotes = '';
 
-
-// SharedPreferences prefs = await SharedPreferences.getInstance();
-// print(prefs.getString('token'));
-
-String baseUrl = 'https://dev.monmatics.com/api';
-
-String loginUrl = '$baseUrl/login';
-String registerUrl= '$baseUrl/register';
-
-//Get Urls
-String getTasksUrl = '$baseUrl/get_tasks';
-String getCallsUrl = '$baseUrl/get_calls';
-String getContacts = '$baseUrl/get_contacts';
-String getLeads = '$baseUrl/get_leads';
-String getNotes = '$baseUrl/get_notes';
-String getCustomer = '$baseUrl/get_customer';
-
-//Post Urls
-String saveTasksUrl = '$baseUrl/save_tasks';
-String saveCallsUrl = '$baseUrl/save_calls';
-String saveContacts = '$baseUrl/save_contacts';
-String saveLeads = '$baseUrl/save_leads';
-String saveNotes = '$baseUrl/save_notes';
+void updateUrls(String newBaseUrl) {
+  baseUrl = newBaseUrl;
+  loginUrl = '$baseUrl/login';
+  registerUrl = '$baseUrl/register';
+  getTasksUrl = '$baseUrl/get_tasks';
+  getCallsUrl = '$baseUrl/get_calls';
+  getContacts = '$baseUrl/get_contacts';
+  getLeads = '$baseUrl/get_leads';
+  getNotes = '$baseUrl/get_notes';
+  getCustomer = '$baseUrl/get_customer';
+  saveTasksUrl = '$baseUrl/save_tasks';
+  saveCallsUrl = '$baseUrl/save_calls';
+  saveContacts = '$baseUrl/save_contacts';
+  saveLeads = '$baseUrl/save_leads';
+  saveNotes = '$baseUrl/save_notes';
+}

@@ -37,22 +37,30 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       loading = false;
     });
-    if( result[0] == true)
+    int statusCode = result['status'];
+    String message = result['message'];
+    if( result["result"] == true)
     {
+      updateUrls(selectedUrl ?? '');
       Provider.of<UrlProvider>(context, listen: false)
           .setSelectedUrl(selectedUrl ?? '');
       usernameController.clear();
       passwordController.clear();
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext)=>  App()));
+      showSnackMessage(context, message);
+
     }
     else if (result[0]==false){
       showSnackMessage(context, result[1]);
     }
     else {
-      setState(() {
-        loading = false;
-      });
-      showSnackMessage(context, 'Something went wrong');
+      if (statusCode == -1) {
+        // Network error
+        showSnackMessage(context, message);
+      } else {
+        // Login failed due to other reasons
+        showSnackMessage(context, message);
+      }
     }
     //Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext)=>  App()));
   }
@@ -129,6 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           setState(() {
                             selectedUrl = newValue;
                             baseUrl = newValue ?? '';
+                            updateUrls(baseUrl); // Call the function to update URLs
                           });
                         },
 

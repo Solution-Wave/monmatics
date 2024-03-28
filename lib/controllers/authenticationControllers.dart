@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/urls.dart';
@@ -6,51 +7,57 @@ import '../utils/urls.dart';
 
 class AuthenticateController {
   final Future<SharedPreferences> prefs = SharedPreferences.getInstance();
-  Future login(String email , String password) async{
+  Future<Map<String, dynamic>> login(String email, String password) async {
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    var res=[];
-  print(email);
-  print(password);
-  var body = {
-    'email': email ,
-    'password': password,
+    try {
+      http.Response response = await http.post(
+        Uri.parse(loginUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'password': password}),
+      );
 
-  };
-  var header= {
-    'Accept': '*/*'
-  };
+      // Parse the response JSON
+      Map<String, dynamic> data = jsonDecode(response.body);
 
-    try{
-      var response = await http.post(Uri.parse('$baseUrl/login'),body: body , headers: header);
-      var data = jsonDecode(response.body);
-      res.add(data['result']);
-      res.add(data['message']);
-      if(response.statusCode ==200)
-      {
-        prefs.setString('token', data['token']);
-        prefs.setString('id', data['user']['id'].toString());
-        prefs.setString('name', data['user']['name']);
-        prefs.setString('email',  data['user']['email']);
-        prefs.setString('role', data['user']['role']);
-        return res;
+      if (response.statusCode == 200) {
+        // If login is successful, save user data and token in SharedPreferences
+        prefs.setString('token', data['token'] ?? '');
+        prefs.setString('id', data['user']['id'].toString() ?? '');
+        prefs.setString('name', data['user']['name'] ?? '');
+        prefs.setString('email', data['user']['email'] ?? '');
+        prefs.setString('role', data['user']['role'] ?? '');
+        return {
+          'status': 200,
+          'result': true,
+          'message': 'Login Successful',
+          'user': data['user'] ?? {},
+          'database_info': data['database_info'] ?? {},
+        };
+      } else {
+        return {
+          'status': response.statusCode,
+          'result': false,
+          'message': data['message'] ?? 'Login Failed',
+        };
       }
-      else
-      {
-        res.add(data['result']);
-        res.add(data['message']);
-        return res;
-      }
+    } on SocketException {
+      return {
+        'status': -1,
+        'result': false,
+        'message': 'Network error occurred',
+      };
+    } catch (e) {
+      return {
+        'status': -1,
+        'result': false,
+        'message': 'Something went wrong: $e',
+      };
     }
-    catch(SocketException){
-
-      res.add('Something went wrong');
-      return res;
-    }
-
-
   }
 
+
+  // Register Function
   Future register(String email, String name, String password ) async{
    var res=[];
     var body = {
