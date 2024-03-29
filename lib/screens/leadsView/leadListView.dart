@@ -7,6 +7,7 @@ import '../../utils/colors.dart';
 import '../../utils/messages.dart';
 import '../../utils/themes.dart';
 import 'leadExtendedView.dart';
+import 'leadForm.dart';
 
 List leadsList = [];
 class leadsScreen extends StatefulWidget {
@@ -137,7 +138,17 @@ class _leadsScreenState extends State<leadsScreen> {
             }
             )
       ),
-    ));
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Theme.of(context).brightness == Brightness.light
+            ? popupmenuButtonCol
+            : null,
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const AddLead()));
+        },
+        child: const Icon(Icons.add),
+      ),
+    )
+    );
   }
 }
 

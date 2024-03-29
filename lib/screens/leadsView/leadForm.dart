@@ -3,14 +3,14 @@ import 'package:monmatics/utils/messages.dart';
 import '../../utils/customWidgets.dart';
 import '../../utils/themes.dart';
 
-class AddCustomer extends StatefulWidget {
-  const AddCustomer({super.key});
+class AddLead extends StatefulWidget {
+  const AddLead({super.key});
 
   @override
-  State<AddCustomer> createState() => _AddCustomerState();
+  State<AddLead> createState() => _AddLeadState();
 }
 
-class _AddCustomerState extends State<AddCustomer> {
+class _AddLeadState extends State<AddLead> {
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
@@ -26,7 +26,7 @@ class _AddCustomerState extends State<AddCustomer> {
 
   bool loading = false;
   String? selectedCategory;
-  String? selectedAccount;
+  String? selectedSource;
   String? selectedLimit;
   String? selectedStatus;
   String? selectedType;
@@ -37,7 +37,7 @@ class _AddCustomerState extends State<AddCustomer> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Add Customer', style: headerTextStyle),
+          title: Text('Add Lead', style: headerTextStyle),
           centerTitle: true,
         ),
         body: SingleChildScrollView(
@@ -50,7 +50,7 @@ class _AddCustomerState extends State<AddCustomer> {
                   key: _formKey,
                   child: Column(
                     children: [
-                      const Text("Customer Details",
+                      const Text("Lead Details",
                         style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.bold),),
                       const SizedBox(height: 20.0,),
                       CustomTextFormField(
@@ -92,13 +92,13 @@ class _AddCustomerState extends State<AddCustomer> {
                         nameController: phoneController,
                         prefixIcon: const Icon(Icons.phone),
                         validator: (value) {
-                        if(value.isEmpty){
-                          return "Please Enter Your Phone";
-                        }
-                        else {
-                          return null;
-                        }
-                      },
+                          if(value.isEmpty){
+                            return "Please Enter Your Phone";
+                          }
+                          else {
+                            return null;
+                          }
+                        },
 
                       ),
                       const SizedBox(height: 15.0,),
@@ -134,22 +134,18 @@ class _AddCustomerState extends State<AddCustomer> {
                       ),
                       const SizedBox(height: 15.0,),
                       CustomDropdownButtonFormField(
-                        value: selectedAccount,
-                        hintText: "Select Account",
-                        labelText: "Main Account",
-                        prefixIcon: const Icon(Icons.account_balance),
+                        value: selectedSource,
+                        hintText: "Select Source",
+                        labelText: "Lead Source",
+                        prefixIcon: const Icon(Icons.source),
                         onChanged: (value) {
-                          print('Selected Main Account: $value');
+                          print('Selected Lead Source: $value');
                           setState(() {
-                            selectedAccount = value;
+                            selectedSource = value;
                           });
                         },
                         items: <String>[
-                          "0205005052555",
-                          "5550555588494",
-                          "7348697356376",
-                          "8947534579784",
-                          "4587975848795",
+                          "AL1",
                         ].map((String value) {
                           return DropdownMenuItem<String>(
                             alignment: AlignmentDirectional.center,
@@ -159,87 +155,10 @@ class _AddCustomerState extends State<AddCustomer> {
                         }).toList(),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please Choose a Main Account';
+                            return 'Please Choose Lead Source';
                           }
                           return null;
                         },
-                      ),
-                      const SizedBox(height: 10.0,),
-                      CustomTextFormField(
-                        keyboardType: TextInputType.text,
-                        labelText: "Account Code",
-                        hintText: "Account Code",
-                        nameController: codeController,
-                        validator: (value) {
-                          if(value.isEmpty){
-                            return "Please Enter Your Account Code";
-                          }
-                          else {
-                            return null;
-                          }
-                        },
-                        prefixIcon: const Icon(Icons.numbers),
-                      ),
-                      const SizedBox(height: 15.0,),
-                      CustomDropdownButtonFormField(
-                        value: selectedLimit,
-                        hintText: "Select Credit Limit",
-                        labelText: "Credit Limit",
-                        prefixIcon: const Icon(Icons.account_balance_wallet),
-                        onChanged: (value) {
-                          print('Selected Credit Limit: $value');
-                          setState(() {
-                            selectedLimit = value;
-                          });
-                        },
-                        items: <String>[
-                          "Cash",
-                          "Whole Sale"
-                        ].map((String value) {
-                          return DropdownMenuItem<String>(
-                            alignment: AlignmentDirectional.center,
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please Choose a Credit Limit';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 10.0,),
-                      CustomTextFormField(
-                        keyboardType: TextInputType.text,
-                        labelText: "Credit Amount",
-                        hintText: "Credit Amount",
-                        nameController: amountController,
-                        validator: (value) {
-                          if(value.isEmpty){
-                            return "Please Enter Credit Amount";
-                          }
-                          else {
-                            return null;
-                          }
-                        },
-                        prefixIcon: const Icon(Icons.attach_money),
-                      ),
-                      const SizedBox(height: 10.0,),
-                      CustomTextFormField(
-                        keyboardType: TextInputType.text,
-                        labelText: "Tax Number",
-                        hintText: "Tax Number",
-                        nameController: taxController,
-                        validator: (value) {
-                          if(value.isEmpty){
-                            return "Please Enter Tax Number";
-                          }
-                          else {
-                            return null;
-                          }
-                        },
-                        prefixIcon: const Icon(Icons.confirmation_number),
                       ),
                       const SizedBox(height: 15.0,),
                       CustomDropdownButtonFormField(
@@ -303,22 +222,6 @@ class _AddCustomerState extends State<AddCustomer> {
                       const SizedBox(height: 10.0,),
                       CustomTextFormField(
                         keyboardType: TextInputType.text,
-                        labelText: "Margin %",
-                        hintText: "Margin %",
-                        nameController: marginController,
-                        validator: (value) {
-                          if(value.isEmpty){
-                            return "Please Enter Margin %";
-                          }
-                          else {
-                            return null;
-                          }
-                        },
-                        prefixIcon: const Icon(Icons.percent),
-                      ),
-                      const SizedBox(height: 10.0,),
-                      CustomTextFormField(
-                        keyboardType: TextInputType.text,
                         labelText: "Note",
                         hintText: "Note",
                         minLines: 1,
@@ -354,38 +257,39 @@ class _AddCustomerState extends State<AddCustomer> {
                       ),
                       const SizedBox(height: 20.0,),
                       CustomButton(
-                         loading: loading,
-                       onPressed: () {
-                         if(_formKey.currentState!.validate()){
-                           if(selectedCategory != null && selectedAccount !=null
-                               && selectedLimit !=null && selectedStatus != null
-                              && selectedType != null){
-                             print('Form is valid');
-                             setState(() {
-                               loading = true;
-                             });
-                             showSnackMessage(context, "Customer Added Successfully");
-                             setState(() {
-                               loading = false;
-                             });
-                           } else{
-                             print('Select Dropdown Values');
-                             setState(() {
-                               loading = false;
-                             });
-                             showSnackMessage(context, "Please Choose all Values");
-                           }
-                         }
-                         else {
-                           print('Form is invalid');
-                           setState(() {
-                             loading = false;
-                           });
-                           showSnackMessage(context, "Please Fill All the Fields");
-                         }
-                       },
-                       text: 'Add Customer',
-                     )
+                        loading: loading,
+                        onPressed: () {
+                          if(_formKey.currentState!.validate()){
+                            if(selectedCategory != null && selectedSource !=null
+                                && selectedLimit !=null && selectedStatus != null
+                                && selectedType != null){
+                              print('Form is valid');
+                              setState(() {
+                                loading = true;
+                              });
+                              showSnackMessage(context, "Lead Added Successfully");
+                              setState(() {
+                                loading = false;
+                              }
+                              );
+                            } else{
+                              print('Select Dropdown Values');
+                              setState(() {
+                                loading = false;
+                              });
+                              showSnackMessage(context, "Please Choose all Values");
+                            }
+                          }
+                          else {
+                            print('Form is invalid');
+                            setState(() {
+                              loading = false;
+                            });
+                            showSnackMessage(context, "Please Fill All the Fields");
+                          }
+                        },
+                        text: 'Add Lead',
+                      )
                     ],
                   ),
                 ),

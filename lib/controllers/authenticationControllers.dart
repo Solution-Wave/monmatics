@@ -51,7 +51,7 @@ class AuthenticateController {
       return {
         'status': -1,
         'result': false,
-        'message': 'Something went wrong: $e',
+        'message': 'Something went wrong',
       };
     }
   }

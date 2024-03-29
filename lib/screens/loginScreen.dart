@@ -5,6 +5,7 @@ import '../components/passwordInputField.dart';
 import '../controllers/authenticationControllers.dart';
 import '../utils/colors.dart';
 import '../utils/constants.dart';
+import '../utils/customWidgets.dart';
 import '../utils/messages.dart';
 import '../utils/urlprovider.dart';
 import '../utils/urls.dart';
@@ -20,7 +21,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
 
-  final GlobalKey<FormState> formkey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   AuthenticateController loginController = AuthenticateController();
@@ -103,27 +104,29 @@ class _LoginScreenState extends State<LoginScreen> {
               Padding(
                 padding: const EdgeInsets.all(15.0),
                 child: Form(
-                  key: formkey,
+                  key: _formKey,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      DropdownButtonFormField<String>(
-                        hint: const Text('Please Choose a Link'),
-                        borderRadius: BorderRadius.circular(20.0),
-                        decoration: InputDecoration(
-                          labelText: "Link",
-                          prefixIcon: const Icon(Icons.link),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(width: 1),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          border: OutlineInputBorder(
-                            borderSide: const BorderSide(color: Colors.blue, width: 2),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        ),
+                      CustomDropdownButtonFormField(
                         value: selectedUrl,
+                        hintText: 'Select Your Link',
+                        labelText: 'Link',
+                        prefixIcon: const Icon(Icons.link),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedUrl = value;
+                            baseUrl = value ?? '';
+                            updateUrls(baseUrl); // Call the function to update URLs
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please select a value';
+                          }
+                          return null;
+                        },
                         items: <String>[
                           "https://dev.monmatics.com/api",
                           "https://monmatics.com/api"
@@ -133,14 +136,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: Text(value),
                           );
                         }).toList(),
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            selectedUrl = newValue;
-                            baseUrl = newValue ?? '';
-                            updateUrls(baseUrl); // Call the function to update URLs
-                          });
-                        },
-
                       ),
                       inputCard(
                           'Email',
@@ -181,7 +176,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         onPressed: () async{
                           FocusScope.of(context).unfocus();
-                          if(formkey.currentState!.validate())
+                          if(_formKey.currentState!.validate())
                           {
                             if(selectedUrl != null) {
                               print(baseUrl);
@@ -227,3 +222,5 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+
+

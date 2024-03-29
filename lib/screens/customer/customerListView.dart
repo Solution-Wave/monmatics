@@ -158,7 +158,7 @@ class CustomerListTile extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.only(left: 10.0, right: 10.0, top: 7),
         child: Container(
-          margin: EdgeInsets.only(top: 10.0),
+          margin: const EdgeInsets.only(top: 10.0),
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12.0),
               border: Border.all(color: primaryColor)),
@@ -193,7 +193,7 @@ class CustomerListTile extends StatelessWidget {
                           }
                         }
                       },
-                      icon: Icon(Icons.phone)),
+                      icon: const Icon(Icons.phone)),
                   IconButton(
                       iconSize: 20.0,
                       onPressed: () async {
@@ -214,7 +214,7 @@ class CustomerListTile extends StatelessWidget {
                         }
 
                       },
-                      icon: Icon(Icons.mail)),
+                      icon: const Icon(Icons.mail)),
                 ],
               )
             ],
@@ -229,7 +229,7 @@ class SearchCustomer extends SearchDelegate {
   @override
   List<Widget>? buildActions(BuildContext context) => [
         IconButton(
-          icon: Icon(Icons.clear),
+          icon: const Icon(Icons.clear),
           onPressed: () {
             query.isEmpty ? close(context, null) : query = '';
           },
@@ -237,7 +237,7 @@ class SearchCustomer extends SearchDelegate {
       ];
   @override
   Widget? buildLeading(BuildContext context) => IconButton(
-      icon: Icon(Icons.arrow_back), onPressed: () => close(context, null));
+      icon: const Icon(Icons.arrow_back), onPressed: () => close(context, null));
 
   List getResults(String query) {
     List results = [];
