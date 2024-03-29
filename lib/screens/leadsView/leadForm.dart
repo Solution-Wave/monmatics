@@ -289,6 +289,7 @@ class _AddLeadState extends State<AddLead> {
                           }
                         },
                         text: 'Add Lead',
+                        padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 50.0)
                       )
                     ],
                   ),

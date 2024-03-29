@@ -52,20 +52,22 @@ class CustomButton extends StatelessWidget {
     required this.loading,
     required this.onPressed,
     required this.text,
+    required this.padding,
   });
 
   final bool loading;
   final VoidCallback onPressed;
   final String text;
+  final EdgeInsets padding;
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-            backgroundColor: popupmenuButtonCol,
+            backgroundColor: primaryColor,
             foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 50.0)
+            padding: padding,
         ),
         child: loading ? const SizedBox(
             height: 18.0,

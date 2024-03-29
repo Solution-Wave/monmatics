@@ -385,6 +385,7 @@ class _AddCustomerState extends State<AddCustomer> {
                          }
                        },
                        text: 'Add Customer',
+                        padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 50.0)
                      )
                     ],
                   ),

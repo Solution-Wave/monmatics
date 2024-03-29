@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../components/loginInputField.dart';
-import '../components/passwordInputField.dart';
 import '../controllers/authenticationControllers.dart';
 import '../utils/colors.dart';
 import '../utils/constants.dart';
@@ -22,7 +20,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  TextEditingController usernameController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   AuthenticateController loginController = AuthenticateController();
 
@@ -33,7 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       loading = true;
     });
-    var result = await  loginController.login(usernameController.text, passwordController.text);
+    var result = await  loginController.login(emailController.text, passwordController.text);
     print(result);
     setState(() {
       loading = false;
@@ -45,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
       updateUrls(selectedUrl ?? '');
       Provider.of<UrlProvider>(context, listen: false)
           .setSelectedUrl(selectedUrl ?? '');
-      usernameController.clear();
+      emailController.clear();
       passwordController.clear();
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext)=>  App()));
       showSnackMessage(context, message);
@@ -72,14 +70,14 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    usernameController.text = 'hassaanahmad4321@gmail.com';
+    emailController.text = 'hassaanahmad4321@gmail.com';
     passwordController .text = 'admin123';
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
-    usernameController.dispose();
+    emailController.dispose();
     passwordController.dispose();
     super.dispose();
   }
@@ -137,10 +135,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           );
                         }).toList(),
                       ),
-                      inputCard(
-                          'Email',
-                          Icon(Icons.person, color: primaryColor,),
-                              (val) {
+                      const SizedBox(height: 15.0,),
+                      CustomTextFormField(
+                          nameController: emailController,
+                          hintText: "Email",
+                          labelText: "Email",
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (val) {
                             if (val == null || val.isEmpty) {
                               return validatorText;
                             }
@@ -148,58 +149,45 @@ class _LoginScreenState extends State<LoginScreen> {
                               return null;
                             }
                           },
-                          usernameController
+                          prefixIcon: Icon(Icons.person, color: primaryColor,),
                       ),
-
-                      passwordInputCard(
-                          showPassword,
-                          'Password',
-                          //change
-                              () {
-                            setState(() {
-                              changePassField();
-                            });
-                          },
-                              (val) {
-                            if (val == null || val.isEmpty) {
-                              return validatorText;
-                            }
-                            else {
-                              return null;
-                            }
-                          },
-                          passwordController
-                      ),
-                      FilledButton(
-                        style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.resolveWith((states) => primaryColor)
-                        ),
-                        onPressed: () async{
-                          FocusScope.of(context).unfocus();
-                          if(_formKey.currentState!.validate())
-                          {
-                            if(selectedUrl != null) {
-                              print(baseUrl);
-                              DoLogin();
-                            }
-                            else{
-                              print("Please Choose a Link");
-                              showSnackMessage(context, 'Please Choose a Link');
-                            }
-                          }else{
-                            showSnackMessage(context, 'Fields should not be left empty');
+                      const SizedBox(height: 15.0,),
+                      CustomTextFormField(
+                        nameController: passwordController,
+                        hintText: "Password",
+                        labelText: "Password",
+                        keyboardType: TextInputType.text,
+                        validator: (val) {
+                          if (val == null || val.isEmpty) {
+                            return validatorText;
+                          }
+                          else {
+                            return null;
                           }
                         },
-                        child: loading?
-                        const SizedBox(
-                          height: 18.0,
-                          width: 18.0,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                          ),
-                        )
-                            :
-                        const Text('Login',),
+                        prefixIcon: Icon(Icons.password, color: primaryColor,),
+                      ),
+                      const SizedBox(height: 15.0,),
+                      CustomButton(
+                          loading: loading,
+                          onPressed: () async{
+                            FocusScope.of(context).unfocus();
+                            if(_formKey.currentState!.validate())
+                            {
+                              if(selectedUrl != null) {
+                                print(baseUrl);
+                                DoLogin();
+                              }
+                              else{
+                                print("Please Choose a Link");
+                                showSnackMessage(context, 'Please Choose a Link');
+                              }
+                            }else{
+                              showSnackMessage(context, 'Fields should not be left empty');
+                            }
+                          },
+                          text: "Login",
+                          padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 40.0),
                       ),
                     ],
                   ),
