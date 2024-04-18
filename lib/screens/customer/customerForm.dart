@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:monmatics/utils/messages.dart';
+import 'package:hive/hive.dart';
+import '../../Functions/exportFunctions.dart';
+import '../../functions/searchFunctions.dart';
+import '../../models/customerItem.dart';
 import '../../utils/customWidgets.dart';
+import '../../utils/messages.dart';
 import '../../utils/themes.dart';
+import 'package:uuid/uuid.dart';
+
 
 class AddCustomer extends StatefulWidget {
   const AddCustomer({super.key});
@@ -25,11 +31,58 @@ class _AddCustomerState extends State<AddCustomer> {
   TextEditingController marginController = TextEditingController();
 
   bool loading = false;
+  var uuid = const Uuid();
   String? selectedCategory;
   String? selectedAccount;
   String? selectedLimit;
   String? selectedStatus;
   String? selectedType;
+
+  ExportFunctions exportFunctions = ExportFunctions();
+
+
+  // Add Customer Through Hive
+  void addCustomer()async{
+    exportFunctions.postCustomerToApi();
+    var uid = uuid.v1();
+    Box? customer = await Hive.openBox('customers');
+    CustomerHive newCustomer = CustomerHive()
+    ..id = uid
+    ..name = nameController.text
+    ..email = emailController.text
+    ..phone = phoneController.text
+    ..category = selectedCategory!
+    ..account = selectedAccount!
+    ..accountCode = codeController.text
+    ..limit = selectedLimit!
+    ..amount = amountController.text
+    ..taxNumber = taxController.text
+    ..status = selectedStatus!
+    ..type = selectedType!
+    ..margin = marginController.text
+    ..note = noteController.text
+    ..address = addressController.text;
+
+    await customer.add(newCustomer);
+    showSnackMessage(context, "Customer Added Successfully");
+    setState(() {
+      nameController.clear();
+      emailController.clear();
+      phoneController.clear();
+      codeController.clear();
+      amountController.clear();
+      taxController.clear();
+      marginController.clear();
+      noteController.clear();
+      addressController.clear();
+      selectedType = null;
+      selectedStatus = null;
+      selectedLimit = null;
+      selectedAccount = null;
+      selectedCategory = null;
+    });
+
+  }
 
 
   @override
@@ -37,7 +90,7 @@ class _AddCustomerState extends State<AddCustomer> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Add Customer', style: headerTextStyle),
+          title: Text('Customer Details', style: headerTextStyle),
           centerTitle: true,
         ),
         body: SingleChildScrollView(
@@ -50,9 +103,6 @@ class _AddCustomerState extends State<AddCustomer> {
                   key: _formKey,
                   child: Column(
                     children: [
-                      const Text("Customer Details",
-                        style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.bold),),
-                      const SizedBox(height: 20.0,),
                       CustomTextFormField(
                         labelText: "Name",
                         hintText: "Name",
@@ -354,7 +404,6 @@ class _AddCustomerState extends State<AddCustomer> {
                       ),
                       const SizedBox(height: 20.0,),
                       CustomButton(
-                         loading: loading,
                        onPressed: () {
                          if(_formKey.currentState!.validate()){
                            if(selectedCategory != null && selectedAccount !=null
@@ -364,7 +413,7 @@ class _AddCustomerState extends State<AddCustomer> {
                              setState(() {
                                loading = true;
                              });
-                             showSnackMessage(context, "Customer Added Successfully");
+                             addCustomer();
                              setState(() {
                                loading = false;
                              });
@@ -384,8 +433,11 @@ class _AddCustomerState extends State<AddCustomer> {
                            showSnackMessage(context, "Please Fill All the Fields");
                          }
                        },
-                       text: 'Add Customer',
-                        padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 50.0)
+                        padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 50.0),
+                        child: loading ?
+                        const SizedBox(height: 18,width: 18,
+                          child: CircularProgressIndicator(color: Colors.white,),):
+                        const Text("Add Customer"),
                      )
                     ],
                   ),

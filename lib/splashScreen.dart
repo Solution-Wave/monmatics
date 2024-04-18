@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'screens/bottomNavigationBarScreen.dart';
 import 'screens/firstScreen.dart';
 import 'screens/loginScreen.dart';
+import 'utils/urls.dart';
 
 
 class splashScreen extends StatefulWidget {
@@ -13,6 +15,18 @@ class splashScreen extends StatefulWidget {
 }
 
 class _splashScreenState extends State<splashScreen> {
+
+  String? selectedUrl;
+  String baseUrl = '';
+
+  Future<void> loadSelectedUrl() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      selectedUrl = prefs.getString('selectedUrl') ?? ''; // Load the selected URL from shared preferences
+      baseUrl = selectedUrl ?? '';
+      updateUrls(baseUrl);
+    });
+  }
 
   void checkSession()async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -26,6 +40,7 @@ class _splashScreenState extends State<splashScreen> {
       ));
     } else
       {
+        await loadSelectedUrl();
         Timer(const Duration(seconds: 2),
                 ()=>Navigator.pushReplacement(context,
                     MaterialPageRoute(builder:

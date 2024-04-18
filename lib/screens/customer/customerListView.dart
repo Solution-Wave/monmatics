@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:monmatics/utils/themes.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../Functions/importFunctions.dart';
+import '../../models/customerItem.dart';
+import '../../searchScreens/customerSearch.dart';
 import '../../utils/colors.dart';
 import '../../utils/messages.dart';
+import '../../utils/themes.dart';
 import 'customerExtendedView.dart';
 import 'customerForm.dart';
 
@@ -25,6 +28,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
     return Future.value(true);
   }
 
+
   Future<bool> getList() async {
     customerList.clear();
     List tempList = customer!.values.toList();
@@ -44,31 +48,11 @@ class _CustomerScreenState extends State<CustomerScreen> {
     );
   }
 
-  // void GetData()async{
-  //   await GetToken();
-  //   customerList.clear();
-  //   setState(() {
-  //     loading=true;
-  //   });
-  //   var result = await controller.getCustomer(token!);
-  //   setState(() {
-  //     if (result == 'Some error occured') {
-  //       showSnackMessage(context, result);
-  //     } else {
-  //       print("result variable: $result");
-  //       for (int i = 0; i < result.length; i++) {
-  //         // Map<String, dynamic> obj = result[i];
-  //         customer item = customer();
-  //         item = customer.fromJson(result[i]);
-  //         customerList.add(item);
-  //       }
-  //       loading = false;
-  //     }
-  //   });
-  // }
+  ImportFunctions importFunctions = ImportFunctions();
+
   @override
   void initState() {
-    // TODO: implement initState
+    importFunctions.fetchCustomersFromApi();
     super.initState();
   }
 
@@ -98,7 +82,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                           shrinkWrap: true,
                           itemCount: customer?.length,
                           itemBuilder: (BuildContext context, index) {
-                            return CustomerListTile(obj: customer?.get(index));
+                            return CustomerListTile(obj: customer?.getAt(index));
                           },
                         );
                       } else {
@@ -133,7 +117,8 @@ class _CustomerScreenState extends State<CustomerScreen> {
           onPressed: () {
             Navigator.push(context, MaterialPageRoute(builder: (context) => const AddCustomer()));
           },
-          child: const Icon(Icons.add),
+          child: const Icon(Icons.add,
+            size: 40.0),
         ),
       ),
     );
@@ -142,154 +127,92 @@ class _CustomerScreenState extends State<CustomerScreen> {
 
 class CustomerListTile extends StatelessWidget {
   const CustomerListTile({
-    super.key,
+    Key? key,
     required this.obj,
-  });
+  }) : super(key: key);
 
-  final obj;
+  final CustomerHive obj;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(context,
-            MaterialPageRoute(builder: (BuildContext) => CustomerView(obj)));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (BuildContext) => CustomerView(obj)),
+        );
       },
-      child: Padding(
-        padding: const EdgeInsets.only(left: 10.0, right: 10.0, top: 7),
-        child: Container(
-          margin: const EdgeInsets.only(top: 10.0),
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12.0),
-              border: Border.all(color: primaryColor)),
+      child: Container(
+        margin: const EdgeInsets.only(top: 10.0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12.0),
+          border: Border.all(color: primaryColor),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 10.0, right: 10.0),
-                child: OverflowBar(
-                  spacing: 20.0,
-                  overflowSpacing: 10.0,
-                  children: [
-                    Text(obj['Name']),
-                    Text(obj['Category']),
-                  ],
+              Expanded(
+                child: Text(
+                  obj.name,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              Row(
-                children: [
-                  IconButton(
-                      iconSize: 20.0,
-                      onPressed: () async {
-                        Uri phoneno = Uri.parse('tel:${obj['Phone']}');
-                        if (obj['Phone'] == '') {
-                          showSnackMessage(
-                              context, 'Phone number not provided');
-                        } else {
-                          try {
-                            await launchUrl(phoneno);
-                          } catch (_e) {
-                            print(_e);
-                          }
-                        }
-                      },
-                      icon: const Icon(Icons.phone)),
-                  IconButton(
-                      iconSize: 20.0,
-                      onPressed: () async {
-                        Uri mail = Uri(
-                          scheme: 'mailto',
-                          path: obj['Email'],
-                          query: 'subject=emails&body=',
-                        );
-                        if (obj['Email'] == '') {
-                          showSnackMessage(
-                              context, 'Email not provided');
-                        } else {
-                          try {
-                            await launchUrl(mail);
-                          } catch (_e) {
-                            print(_e);
-                          }
-                        }
-
-                      },
-                      icon: const Icon(Icons.mail)),
-                ],
+              IconButton(
+                iconSize: 20.0,
+                onPressed: () async {
+                  Uri phoneno = Uri.parse('tel:${obj.phone}');
+                  if (obj.phone.isEmpty) {
+                    showSnackMessage(context, 'Phone number not provided');
+                  } else {
+                    try {
+                      await launchUrl(phoneno);
+                    } catch (_e) {
+                      print(_e);
+                    }
+                  }
+                },
+                icon: const Icon(Icons.phone),
+              ),
+              IconButton(
+                iconSize: 20.0,
+                onPressed: () async {
+                  Uri mail = Uri(
+                    scheme: 'mailto',
+                    path: obj.email,
+                    query: 'subject=emails&body=',
+                  );
+                  if (obj.email.isEmpty) {
+                    showSnackMessage(context, 'Email not provided');
+                  } else {
+                    try {
+                      await launchUrl(mail);
+                    } catch (_e) {
+                      print(_e);
+                    }
+                  }
+                },
+                icon: const Icon(Icons.mail),
+              ),
+              IconButton(
+                iconSize: 20.0,
+                onPressed: () async {
+                  String phoneNumber = obj.phone;
+                  String message = "Hello, this is a test message.";
+                  String url = "https://wa.me/+92$phoneNumber/?text=${Uri.parse(message)}";
+                  if (await canLaunch(url)) {
+                    await launch(url);
+                  } else {
+                    throw 'Could not launch $url';
+                  }
+                },
+                icon: const Icon(Icons.phone_android_sharp),
               )
             ],
           ),
         ),
       ),
     );
-  }
-}
-
-class SearchCustomer extends SearchDelegate {
-  @override
-  List<Widget>? buildActions(BuildContext context) => [
-        IconButton(
-          icon: const Icon(Icons.clear),
-          onPressed: () {
-            query.isEmpty ? close(context, null) : query = '';
-          },
-        )
-      ];
-  @override
-  Widget? buildLeading(BuildContext context) => IconButton(
-      icon: const Icon(Icons.arrow_back), onPressed: () => close(context, null));
-
-  List getResults(String query) {
-    List results = [];
-    int i = 0;
-    //List tempList = model.data!;
-    int len = customerList.length;
-
-    for (i; i < len; i++) {
-      if (customerList[i]['Name'].toLowerCase().contains(query.toLowerCase()) ||
-          customerList[i]['Category']
-              .toLowerCase()
-              .contains(query.toLowerCase())) {
-        results.add(customerList[i]);
-      }
-    }
-    return results;
-  }
-
-  List getSuggestions(String query) {
-    List suggestions = [];
-    int i = 0;
-    //List tempList = model.data!;
-    int len = customerList.length;
-
-    for (i; i < len; i++) {
-      if (customerList[i]['Name'].toLowerCase().contains(query.toLowerCase()) ||
-          customerList[i]['Category']
-              .toLowerCase()
-              .contains(query.toLowerCase())) {
-        suggestions.add(customerList[i]);
-      }
-    }
-    return suggestions;
-  }
-
-  @override
-  Widget buildResults(BuildContext context) {
-    List results = query.isEmpty ? [] : getSuggestions(query);
-    return ListView.builder(
-        itemCount: results.length,
-        itemBuilder: (context, index) {
-          return CustomerListTile(obj: results[index]);
-        });
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    List suggestions = query.isEmpty ? [] : getSuggestions(query);
-    return ListView.builder(
-        itemCount: suggestions.length,
-        itemBuilder: (context, index) {
-          return CustomerListTile(obj: suggestions[index]);
-        });
   }
 }

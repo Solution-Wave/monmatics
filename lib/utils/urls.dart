@@ -11,7 +11,11 @@ String saveTasksUrl = '';
 String saveCallsUrl = '';
 String saveContacts = '';
 String saveLeads = '';
+String saveCustomers = '';
 String saveNotes = '';
+String getUsers = '';
+String deleteNotes = '';
+String updateNotes = '';
 
 void updateUrls(String newBaseUrl) {
   baseUrl = newBaseUrl;
@@ -22,10 +26,14 @@ void updateUrls(String newBaseUrl) {
   getContacts = '$baseUrl/get_contacts';
   getLeads = '$baseUrl/get_leads';
   getNotes = '$baseUrl/get_notes';
-  getCustomer = '$baseUrl/get_customer';
+  getCustomer = '$baseUrl/get_customers';
   saveTasksUrl = '$baseUrl/save_tasks';
   saveCallsUrl = '$baseUrl/save_calls';
   saveContacts = '$baseUrl/save_contacts';
   saveLeads = '$baseUrl/save_leads';
+  saveCustomers = '$baseUrl/save_customers';
   saveNotes = '$baseUrl/save_notes';
+  getUsers = '$baseUrl/get_users';
+  deleteNotes = '$baseUrl/delete_notes';
+  updateNotes = '$baseUrl/update_notes';
 }

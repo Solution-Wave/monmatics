@@ -16,7 +16,9 @@ class SegmentedWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     //final color = this.color ?? Theme.of(context).accentColor;
-    Color color=  Theme.of(context).brightness == Brightness.dark?  Color(0xFF394867): Color(0xFF0C76FF);
+    Color color=  Theme.of(context).brightness == Brightness.dark?
+    Color(0xFF394867):
+    Color(0xFF0C76FF);
 
     final shape = RoundedRectangleBorder(
       side: BorderSide(color: color),

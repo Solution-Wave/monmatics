@@ -8,7 +8,6 @@ import '../utils/urls.dart';
 class AuthenticateController {
   final Future<SharedPreferences> prefs = SharedPreferences.getInstance();
   Future<Map<String, dynamic>> login(String email, String password) async {
-
     SharedPreferences prefs = await SharedPreferences.getInstance();
     try {
       http.Response response = await http.post(
@@ -22,17 +21,31 @@ class AuthenticateController {
 
       if (response.statusCode == 200) {
         // If login is successful, save user data and token in SharedPreferences
-        prefs.setString('token', data['token'] ?? '');
-        prefs.setString('id', data['user']['id'].toString() ?? '');
-        prefs.setString('name', data['user']['name'] ?? '');
-        prefs.setString('email', data['user']['email'] ?? '');
-        prefs.setString('role', data['user']['role'] ?? '');
+        Map<String, dynamic> userData = data['user'];
+        userData.forEach((key, value) {
+          prefs.setString(key, value.toString());
+        });
+        String? token = data['user']['remember_token'];
+        int id = data['user']['id'];
+        if (token != null) {
+          prefs.setString('token', token);
+          prefs.setString('id', id.toString());
+        } else {
+          throw Exception('Token not found in response data');
+        }
+
+        // Save database_info in SharedPreferences
+        Map<String, dynamic> databaseInfo = data['database_info'] ?? {};
+        // Convert databaseInfo to a JSON string before saving
+        String databaseInfoJson = jsonEncode(databaseInfo);
+        prefs.setString('database_info', databaseInfoJson);
+
         return {
           'status': 200,
           'result': true,
           'message': 'Login Successful',
-          'user': data['user'] ?? {},
-          'database_info': data['database_info'] ?? {},
+          'user': userData,
+          'database_info': databaseInfo,
         };
       } else {
         return {
@@ -51,10 +64,13 @@ class AuthenticateController {
       return {
         'status': -1,
         'result': false,
-        'message': 'Something went wrong',
+        'message': 'Error: ${e.toString()}',
       };
     }
   }
+
+
+
 
 
   // Register Function

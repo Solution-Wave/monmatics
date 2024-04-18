@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:monmatics/utils/messages.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../Functions/importFunctions.dart';
 import '../controllers/localdbController.dart';
+import '../functions/exportFunctions.dart';
+import '../models/noteItem.dart';
+import '../models/taskItem.dart';
 import '../screens/calenderScreen.dart';
-import '../screens/callsListView.dart';
+import '../screens/calls/callsListView.dart';
 import '../screens/customer/customerListView.dart';
 import '../screens/leadsView/leadListView.dart';
-import '../screens/opportunitiesView/opportunitysListView.dart';
 import '../utils/colors.dart';
 import '../utils/constants.dart';
 import 'logout.dart';
@@ -20,13 +25,15 @@ class navigationdrawer extends StatefulWidget {
 }
 
 class _navigationdrawerState extends State<navigationdrawer> {
-    String? name;
+    String? firstName;
+    String? lastName;
     String? role;
 
     Future GetSharedData() async {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       setState(() {
-        name = prefs.getString('name');
+        firstName = prefs.getString('firstName') ?? "";
+        lastName = prefs.getString('lastName') ?? "";
         role= prefs.getString('role');
       });
       return true;
@@ -65,6 +72,12 @@ class _navigationdrawerState extends State<navigationdrawer> {
     FunctionCall();
   }
 
+  ExportFunctions exportFunctions = ExportFunctions();
+   ImportFunctions importFunctions = ImportFunctions();
+
+   String? assignId;
+   String? relatedId;
+
    @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -75,7 +88,7 @@ class _navigationdrawerState extends State<navigationdrawer> {
             : primaryColor,
         child: Column(
           children: <Widget>[
-            DrawerHeader(context, name??'User Name', role??'Role'),
+            DrawerHeader(context,"$firstName $lastName" ??'User Name', role??'Role'),
             Column(
               children: <Widget>[
                 ListTile(
@@ -118,14 +131,14 @@ class _navigationdrawerState extends State<navigationdrawer> {
 
                   },
                 ),
-                ListTile(
-                  visualDensity: VisualDensity(vertical: drawerTileHeight),
-                  leading: Icon(RpgAwesome.supersonic_arrow, color: drawerTextCol,),
-                  title: Text('Opportunities',style: TextStyle(color: drawerTextCol),),
-                  onTap: () {
-                    // Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(builder: (context) => OpportunityScreen())) ;
-                  },
-                ),
+                // ListTile(
+                //   visualDensity: VisualDensity(vertical: drawerTileHeight),
+                //   leading: Icon(RpgAwesome.supersonic_arrow, color: drawerTextCol,),
+                //   title: Text('Opportunities',style: TextStyle(color: drawerTextCol),),
+                //   onTap: () {
+                //     // Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(builder: (context) => OpportunityScreen())) ;
+                //   },
+                // ),
                 ListTile(
                   visualDensity: VisualDensity(vertical: drawerTileHeight),
                   leading: Icon(RpgAwesome.magnet, color: drawerTextCol,),
@@ -135,32 +148,53 @@ class _navigationdrawerState extends State<navigationdrawer> {
                     Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(builder: (context) => leadsScreen())) ;
                   },
                 ),
-
                 ListTile(
                   visualDensity: VisualDensity(vertical: drawerTileHeight),
                   leading: Icon(Icons.file_upload, color: drawerTextCol,),
                   title: Text('Upload Data', style: TextStyle(color: drawerTextCol),),
-                  onTap: () {
-                    Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(builder: (context) => leadsScreen())) ;
+                  onTap: () async {
+                    try {
+                      exportFunctions.postCustomerToApi();
+                      exportFunctions.postContactsToApi();
+                      Hive.openBox<TaskHive>("tasks").then((tasksBox) {
+                        exportFunctions.postTasksToApi(tasksBox, Ids(assignId!, relatedId!));
+                      });
+                      Hive.openBox<NoteHive>("notes").then((notesBox) {
+                        exportFunctions.postNotesToApi(notesBox, Ids(assignId!, relatedId!));
+                      });
+                      exportFunctions.postLeadToApi();
+                      showSnackMessage(context, "Data Uploaded Successfully.");
+                      print('Data Uploaded successfully.');
+                    } catch (e) {
+                      print('Error Uploading Data: $e');
+                    }
+
                   },
                 ),
-
                 ListTile(
                   visualDensity: VisualDensity(vertical: drawerTileHeight),
                   leading: Icon(Icons.file_download, color: drawerTextCol,),
                   title: Text('Download Data', style: TextStyle(color: drawerTextCol),),
                   onTap: () async{
-                    Navigator.pop(context);
-                    StorageController cont = StorageController();
-                      showProgressDialog(context,_keyLoader);
-                      await cont.GetAllData();
-                      print('data loaded');
-                    Navigator.of(_keyLoader.currentContext!,rootNavigator: true).pop();
-
+                    try {
+                      importFunctions.fetchUsersFromApi();
+                      importFunctions.fetchTasksFromApi();
+                      importFunctions.fetchContactsFromApi();
+                      importFunctions.fetchCustomersFromApi();
+                      importFunctions.fetchLeadsFromApi();
+                      importFunctions.fetchNotesFromApi();
+                      print('Data Fetched successfully.');
+                    } catch (e) {
+                      print('Error Fetching Data: $e');
+                    }
+                    // Navigator.pop(context);
+                    // StorageController cont = StorageController();
+                    //   showProgressDialog(context,_keyLoader);
+                    //   await cont.GetAllData();
+                    //   print('data loaded');
+                    // Navigator.of(_keyLoader.currentContext!,rootNavigator: true).pop();
                   },
                 ),
-
-
                 ListTile(
                   visualDensity: VisualDensity(vertical: drawerTileHeight),
                   leading: Icon(Icons.logout, color: drawerTextCol,),
@@ -170,7 +204,6 @@ class _navigationdrawerState extends State<navigationdrawer> {
                     // Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(builder: (context) => leadsScreen())) ;
                   },
                 ),
-
               ],
             )
           ],
@@ -195,12 +228,12 @@ Widget DrawerHeader(BuildContext context, String name , String role) {
           children: [
             CircleAvatar(
               maxRadius: MediaQuery.of(context).size.width * 0.04,
-              backgroundImage: AssetImage('assets/accountImgPlaceholder.jpeg', ),
+              backgroundImage: const AssetImage('assets/accountImgPlaceholder.jpeg', ),
             ),
             const SizedBox(height: 10.0,),
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
+              // crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(name, style: TextStyle( fontSize: 12.0, fontWeight: FontWeight.bold, color:Theme.of(context).brightness == Brightness.light? drawerTextCol: null),),
                 Text(role, style: TextStyle( fontSize: 10.0, fontWeight: FontWeight.w200,  color: Theme.of(context).brightness == Brightness.light? drawerTextCol: null),),

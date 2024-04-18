@@ -1,8 +1,14 @@
-import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hive_flutter/adapters.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
+import 'hiveadapters/callAdapter.dart';
+import 'hiveadapters/conatctAdapter.dart';
+import 'hiveadapters/customerAdapter.dart';
+import 'hiveadapters/leadAdapter.dart';
+import 'hiveadapters/notesAdapter.dart';
+import 'hiveadapters/taskAdapter.dart';
+import 'hiveadapters/userAdapter.dart';
 import 'splashScreen.dart';
 import 'utils/colors.dart';
 import 'utils/themes.dart';
@@ -16,6 +22,13 @@ void main()async {
   ]);
   // Initialize hive
   await Hive.initFlutter();
+  Hive.registerAdapter(NoteAdapter());
+  Hive.registerAdapter(TaskAdapter());
+  Hive.registerAdapter(CustomerAdapter());
+  Hive.registerAdapter(LeadAdapter());
+  Hive.registerAdapter(ContactAdapter());
+  Hive.registerAdapter(CallsAdapter());
+  Hive.registerAdapter(UserAdapter());
   runApp(
   //   DevicePreview(
   //     enabled: !kReleaseMode,
@@ -44,8 +57,8 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      locale: DevicePreview.locale(context),
-      builder: DevicePreview.appBuilder,
+      // locale: DevicePreview.locale(context),
+      // builder: DevicePreview.appBuilder,
       // title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -79,3 +92,12 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
+
+
+// Note Hive Id 0
+// Customer Hive Id 1
+// Task Hive Id 2
+// Lead Hive Id 3
+// Contact Hive Id 4
+// Call Hive Id 5
+// Users Hive Id 6

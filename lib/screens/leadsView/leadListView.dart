@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../Functions/importFunctions.dart';
 import '../../controllers/crmControllers.dart';
 import '../../utils/colors.dart';
 import '../../utils/messages.dart';
@@ -28,34 +29,6 @@ class _leadsScreenState extends State<leadsScreen> {
     token = prefs.getString('token');
   }
 
- //  void getData() async{
- //
- //    setState(() {
- //      loading = true;
- //    });
- //    await GetToken();
- //  var result = await controller.getLeadData(token!);
- //
- // setState(() {
- //
- //   if(result=='Some error occured')
- //   {
- //     showSnackMessage(context, result);
- //   }
- //   else
- //   {
- //     for(int i=0;i<result.length;i++)
- //     {
- //       Map<String, dynamic> obj = result[i];
- //       Lead item = Lead();
- //       item = Lead.fromJson(obj);
- //       leadsList.add(item);
- //     }
- //     loading=false;
- //   }
- // });
- //
- //  }
  Future<bool> GetDataFromBox()async{
    leadsBox = await Hive.openBox('leads');
    setState(() {
@@ -82,9 +55,12 @@ class _leadsScreenState extends State<leadsScreen> {
     );
  }
 
+ ImportFunctions importFunctions = ImportFunctions();
+
+
   @override
   void initState() {
-    // TODO: implement initState
+    importFunctions.fetchLeadsFromApi();
     super.initState();
   }
   Widget build(BuildContext context) {
@@ -145,15 +121,13 @@ class _leadsScreenState extends State<leadsScreen> {
         onPressed: () {
           Navigator.push(context, MaterialPageRoute(builder: (context) => const AddLead()));
         },
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add,
+        size: 40.0,),
       ),
     )
     );
   }
 }
-
-
-
 
 class LeadListTile extends StatelessWidget {
    LeadListTile(
@@ -192,11 +166,11 @@ class LeadListTile extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(obj['Name'],
+                      Text(obj.name,
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                       ),
-                      Text(obj['Category'],
+                      Text(obj.category,
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                       ),
@@ -212,8 +186,8 @@ class LeadListTile extends StatelessWidget {
                   padding: const EdgeInsets.all(2.0),
                     iconSize: 20.0,
                     onPressed: () async{
-                      Uri phoneno = Uri.parse('tel:${obj['phone']}');
-                      if(obj['phone'] == '')
+                      Uri phoneno = Uri.parse('tel:${obj.phone}');
+                      if(obj.phone == '')
                       {
                         showSnackMessage(context, 'Phone number not provided');
                       }
@@ -231,7 +205,7 @@ class LeadListTile extends StatelessWidget {
                     padding: const EdgeInsets.all(2.0),
                     iconSize: 20.0,
                     onPressed: ()async{
-                      String email = obj['Email'];
+                      String email = obj.email;
                       Uri mail = Uri(
                         scheme: 'mailto',
                         path: email,
@@ -249,7 +223,21 @@ class LeadListTile extends StatelessWidget {
                         }
                       }
                     },
-                    icon: const Icon(Icons.mail))
+                    icon: const Icon(Icons.mail)),
+                IconButton(
+                  iconSize: 20.0,
+                  onPressed: () async {
+                    String phoneNumber = obj.phone;
+                    String message = "Hello, this is a test message.";
+                    String url = "https://wa.me/+92$phoneNumber/?text=${Uri.parse(message)}";
+                    if (await canLaunch(url)) {
+                      await launch(url);
+                    } else {
+                      throw 'Could not launch $url';
+                    }
+                  },
+                  icon: const Icon(Icons.phone_android_sharp),
+                ),
               ],
             ),
 
@@ -283,7 +271,7 @@ class SearchLeads  extends SearchDelegate{
     int len = leadsList.length;
 
     for (i; i < len; i++) {
-      if (leadsList[i]['Name'].toLowerCase().contains(query.toLowerCase()) || leadsList[i]['Category'].toLowerCase().contains(query.toLowerCase())) {
+      if (leadsList[i].name.toLowerCase().contains(query.toLowerCase()) || leadsList[i].category.toLowerCase().contains(query.toLowerCase())) {
         results.add(leadsList[i]);
       }
     }
@@ -297,7 +285,7 @@ class SearchLeads  extends SearchDelegate{
     int len = leadsList.length;
 
     for (i; i < len; i++) {
-      if (leadsList[i]['Name'].toLowerCase().contains(query.toLowerCase()) || leadsList[i]['Category'].toLowerCase().contains(query.toLowerCase())) {
+      if (leadsList[i].name.toLowerCase().contains(query.toLowerCase()) || leadsList[i].category.toLowerCase().contains(query.toLowerCase())) {
         suggestions.add(leadsList[i]);
       }
     }

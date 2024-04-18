@@ -1,14 +1,24 @@
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:monmatics/utils/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
-
-import 'package:monmatics/models/taskItem.dart';
+import 'package:http/http.dart' as http;
+import 'package:uuid/uuid.dart';
+import '../Functions/exportFunctions.dart';
+import '../Functions/importFunctions.dart';
+import '../Functions/searchFunctions.dart';
 import '../controllers/crmControllers.dart';
+import '../models/taskItem.dart';
+import '../models/userItem.dart';
+import '../utils/customWidgets.dart';
 import '../utils/messages.dart';
 import '../utils/themes.dart';
+import '../utils/urls.dart';
+import 'tasks/tasksViewScreen.dart';
 
 
 class CustomTableCalendar extends StatefulWidget {
@@ -24,8 +34,6 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
   final _initialCalendarDate = DateTime(2000);
   final _lastCalendarDate = DateTime(2050);
   DateTime? selectedCalendarDate;
-  final titleController = TextEditingController();
-  final descpController = TextEditingController();
 
   CalendarFormat calendarFormatVal = CalendarFormat.month;
   Box? task;
@@ -35,190 +43,19 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
   Map<DateTime, List<Tasks>>? mySelectedEvents;
     ValueNotifier<List<Tasks>>? _selectedEvents;
   bool loading = false;
-  Future GetToken() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    token = prefs.getString('token');
-  }
-
-  void AddData()async {
-    loading= true;
-    TaskList.clear();
-    await GetToken();
-    var result = await tasksController.getTasks(token!);
-    setState(() {
-      if (result == 'Some error occured') {
-        showSnackMessage(context, result);
-      } else {
-        //print("result variable: $result");
-        for (int i = 0; i < result.length; i++) {
-          Map<String, dynamic> obj = result[i];
-          Tasks item = Tasks();
-          item = Tasks.fromJson(obj);
-          if (mySelectedEvents?[DateTime.parse(item.DueDate!)] != null) {
-            mySelectedEvents?[DateTime.parse(item.DueDate!)]?.add(item);
-          } else {
-            mySelectedEvents?[DateTime.parse(item.DueDate!)] = [
-             item
-            ];
-          }
-        }
-      }
-      loading = false;
-      _selectedEvents = ValueNotifier(_listOfDayEvents(selectedCalendarDate!));
-    });
-  }
-
-  void DataFromBox()async{
-    loading= true;
-    task = await Hive.openBox('tasks');
-    setState(() {
-      List<dynamic> list = task!.values.toList();
-      for (int i = 0; i < list.length; i++) {
-        Map obj = list[i];
-        print(obj);
-        Tasks item = Tasks();
-        item = Tasks.fromJson(obj);
-        if (mySelectedEvents?[DateTime.parse(item.DueDate!)] != null) {
-          mySelectedEvents?[DateTime.parse(item.DueDate!)]?.add(item);
-        } else {
-          mySelectedEvents?[DateTime.parse(item.DueDate!)] = [
-            item
-          ];
-        }
-      }
-      loading = false;
-      _selectedEvents = ValueNotifier(_listOfDayEvents(selectedCalendarDate!));
-    });
-}
 
   @override
   void initState() {
     super.initState();
     selectedCalendarDate = _focusedCalendarDate;
     mySelectedEvents = {};
-    DataFromBox();
-    //AddData();
+    getTasksFromBox();
 
-  }
-
-  @override
-  void dispose() {
-    titleController.dispose();
-    descpController.dispose();
-    super.dispose();
   }
 
   List<Tasks> _listOfDayEvents(DateTime dateTime) {
     DateTime formattedDate = DateTime(dateTime.year, dateTime.month, dateTime.day);
     return mySelectedEvents?[formattedDate] ?? [];
-  }
-
-  _showAddEventDialog() async {
-    await showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-              backgroundColor: Theme.of(context).brightness == Brightness.dark
-                  ? eventDialogDarkBgColor
-                  : eventDialogLightBgColor,
-              title: const Text('New Event'),
-              titleTextStyle: TextStyle(
-                  fontSize: 20,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? null
-                      : eventDialogTextColorLight),
-              content: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  buildTextField(
-                      controller: titleController, hint: 'Enter Title'),
-                  const SizedBox(
-                    height: 20.0,
-                  ),
-                  buildTextField(
-                      controller: descpController, hint: 'Enter Description'),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(
-                    'Cancel',
-                    style: TextStyle(
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? null
-                            : eventDialogTextColorLight),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    // if (titleController.text.isEmpty &&
-                    //     descpController.text.isEmpty) {
-                    //   ScaffoldMessenger.of(context).showSnackBar(
-                    //     const SnackBar(
-                    //       content: Text(
-                    //         'Please enter title & description',
-                    //       ),
-                    //       duration: Duration(seconds: 3),
-                    //     ),
-                    //   );
-                    //   //Navigator.pop(context);
-                    //   return;
-                    // } else {
-                    //   setState(() {
-                    //     if (mySelectedEvents?[selectedCalendarDate] != null) {
-                    //       mySelectedEvents?[selectedCalendarDate]?.add(MyEvents(
-                    //           eventTitle: titleController.text,
-                    //           eventDescp: descpController.text));
-                    //     } else {
-                    //       mySelectedEvents?[selectedCalendarDate!] = [
-                    //         MyEvents(
-                    //             eventTitle: titleController.text,
-                    //             eventDescp: descpController.text)
-                    //       ];
-                    //     }
-                    //   });
-                    //   print(mySelectedEvents);
-                    //   titleController.clear();
-                    //   descpController.clear();
-                    //
-                    //   Navigator.pop(context);
-                    //   return;
-                    // }
-                  },
-                  child: Text(
-                    'Add',
-                    style: TextStyle(
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? null
-                            : eventDialogTextColorLight),
-                  ),
-                ),
-              ],
-            ));
-  }
-
-  Widget buildTextField(
-      {String? hint, required TextEditingController controller}) {
-    return TextField(
-      controller: controller,
-      textCapitalization: TextCapitalization.words,
-      decoration: InputDecoration(
-        labelText: hint ?? '',
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: primaryColor, width: 1.5),
-          borderRadius: BorderRadius.circular(
-            10.0,
-          ),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.black38, width: 1.5),
-          borderRadius: BorderRadius.circular(
-            10.0,
-          ),
-        ),
-      ),
-    );
   }
 
   @override
@@ -229,22 +66,16 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
         centerTitle: true,
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddEventDialog(),
-        label: const Text('Add Event'),
+        onPressed: () => showTaskDialog(),
+        label: const Text('Add Task'),
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // loading ?
-            //     Center(
-            //       child: CircularProgressIndicator(
-            //         color: primaryColor,
-            //       ),
-            //     ) :
             Card(
               margin: const EdgeInsets.all(8.0),
               elevation: 5.0,
-              shape: RoundedRectangleBorder(
+              shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(
                   Radius.circular(10),
                 ),
@@ -262,25 +93,14 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                   CalendarFormat.week: 'Week',
                 },
                 focusedDay: _focusedCalendarDate,
-                // today's date
                 firstDay: _initialCalendarDate,
-                // earliest possible date
                 lastDay: _lastCalendarDate,
-                // latest allowed date
                 calendarFormat: calendarFormatVal,
-                // default view when displayed
-                // default is Saturday & Sunday but can be set to any day.
-                // instead of day number can be mentioned as well.
                 weekendDays: const [DateTime.sunday, 6],
-                // default is Sunday but can be changed according to locale
                 startingDayOfWeek: StartingDayOfWeek.monday,
-                // height between the day row and 1st date row, default is 16.0
                 daysOfWeekHeight: 40.0,
-                // height between the date rows, default is 52.0
                 rowHeight: 60.0,
-                // this property needs to be added if we want to show events
                 eventLoader: _listOfDayEvents,
-                // Calendar Header Styling
                 headerStyle: HeaderStyle(
                   titleTextStyle: TextStyle(
                     color: calendarHeaderTextColor,
@@ -288,14 +108,14 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                   ),
                   decoration: BoxDecoration(
                       color: primaryColor,
-                      borderRadius: BorderRadius.only(
+                      borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(10),
                           topRight: Radius.circular(10))),
                   formatButtonTextStyle:
                       TextStyle(color: calendarHeaderTextColor, fontSize: 16.0),
                   formatButtonDecoration: BoxDecoration(
                     color: primaryColor,
-                    borderRadius: BorderRadius.all(
+                    borderRadius: const BorderRadius.all(
                       Radius.circular(5.0),
                     ),
                   ),
@@ -310,21 +130,15 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                     size: 28,
                   ),
                 ),
-                // Calendar Days Styling
                 daysOfWeekStyle: DaysOfWeekStyle(
-                  // Weekend days color (Sat,Sun)
                   weekendStyle: TextStyle(color: calendarWeekendDays),
                 ),
-                // Calendar Dates styling
                 calendarStyle: CalendarStyle(
-                  // Weekend dates color (Sat & Sun Column)
                   weekendTextStyle: TextStyle(color: calendarWeekendDays),
-                  // highlighted color for today
                   todayDecoration: BoxDecoration(
                     color: primaryColor,
                     shape: BoxShape.circle,
                   ),
-                  // highlighted color for selected day
                   selectedDecoration: BoxDecoration(
                     color: selectedDayColor,
                     shape: BoxShape.circle,
@@ -333,60 +147,439 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                       color: primaryColor, shape: BoxShape.circle),
                 ),
                 selectedDayPredicate: (currentSelectedDate) {
-                  // as per the documentation 'selectedDayPredicate' needs to determine
-                  // current selected day
                   return (isSameDay(
                       selectedCalendarDate!, currentSelectedDate));
                 },
                 onDaySelected: (selectedDay, focusedDay) {
-                  // as per the documentation
                   if (!isSameDay(selectedCalendarDate, selectedDay)) {
                     setState(() {
                       selectedCalendarDate = selectedDay.toLocal();
                       _selectedEvents = ValueNotifier(_listOfDayEvents(selectedCalendarDate!));
-
                       _focusedCalendarDate = focusedDay;
                     });
                   }
                 },
               ),
             ),
+            const SizedBox(height: 20.0,),
             loading ?
             Center(
               child: CircularProgressIndicator(
                 color: primaryColor,
               ),
             ) :
-            ValueListenableBuilder<List<Tasks>>(
-              valueListenable: _selectedEvents!,
-              builder: (context, value, _) {
-                return ListView.builder(
-                  itemCount: value.length,
-                  shrinkWrap: true,
-                  itemBuilder: (context, index) {
-                    return Container(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 12.0,
-                        vertical: 4.0,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(),
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                      child: ListTile(
-                        onTap: () => print('${value[index]}'),
-                        title: Text('${value[index].Subject}'),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-
+            _buildTasksWidget(),
           ],
         ),
       ),
     );
   }
-}
 
+
+  Widget _buildTasksWidget() {
+    if (task == null) {
+      return const Center(
+          child: CircularProgressIndicator());
+    } else if (task!.isEmpty) {
+      return const Center(
+          child: Text('No Tasks Found'));
+    } else {
+      return ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: task!.length,
+        itemBuilder: (context, index) {
+          return taskListTile(task!.getAt(index)!);
+        },
+      );
+    }
+  }
+
+  String? role;
+  String? relatedTo;
+  String? status;
+  String? priority;
+
+  TextEditingController subjectController = TextEditingController();
+  TextEditingController searchController = TextEditingController();
+  TextEditingController contactController = TextEditingController();
+  TextEditingController startDateController = TextEditingController();
+  TextEditingController dueDateController = TextEditingController();
+  TextEditingController assignController = TextEditingController();
+  TextEditingController descriptionController = TextEditingController();
+
+  SearchFunctions searFunctions = SearchFunctions();
+  ExportFunctions exportFunctions = ExportFunctions();
+  ImportFunctions importFunctions = ImportFunctions();
+
+
+  DateTime startDate = DateTime.now();
+  DateTime endDate = DateTime.now();
+  var uuid = const Uuid();
+
+  // Date Pick Function
+  Future<void> _selectStartDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: startDate,
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2500),
+    );
+    if (picked != null && picked != startDate) {
+      setState(() {
+        startDate = picked;
+        startDateController.text =
+        "${picked.month.toString().padLeft(2, '0')}/${picked.day.toString()
+            .padLeft(2, '0')}/${picked.year}";
+      });
+    }
+  }
+
+  Future<void> _selectDueDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: endDate,
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2500),
+    );
+    if (picked != null && picked != endDate) {
+      setState(() {
+        endDate = picked;
+        dueDateController.text = "${picked.month.toString()
+            .padLeft(2, '0')}/${picked.day.toString().padLeft(2, '0')}/${picked.year}";
+      });
+    }
+  }
+
+
+  GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  // Add Tasks Form
+  Future<void> showTaskDialog() async {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Dialog(
+                insetPadding: EdgeInsets.zero,
+                // backgroundColor: Colors.transparent,
+                child: AlertDialog(
+                  contentPadding: const EdgeInsets.symmetric(vertical: 20.0),
+                  title: const Center(child: Text('Add Task')),
+                  content: SingleChildScrollView(
+                    child: Form(
+                      key: formKey,
+                      child: Column(
+                        // mainAxisSize: MainAxisSize.min,
+                        // crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CustomTextFormField(
+                              nameController: subjectController,
+                              hintText: "Subject",
+                              labelText: "Subject",
+                              keyboardType: TextInputType.text,
+                              validator: (value){
+                                if(value.isEmpty){
+                                  return "Please Enter Subject";
+                                }
+                                return null;
+                              },
+                              prefixIcon: const Icon(Icons.subject)
+                          ),
+                          const SizedBox(height: 15.0,),
+                          CustomDropdownButtonFormField(
+                            value: status,
+                            hintText: "Select Status",
+                            labelText: "Status",
+                            prefixIcon: const Icon(Icons.person_3),
+                            onChanged: (value) {
+                              print('Status: $value');
+                              setState(() {
+                                status = value;
+                              });
+                            },
+                            items: <String>[
+                              "Close",
+                              "Open",
+                            ].map((String value) {
+                              return DropdownMenuItem<String>(
+                                alignment: AlignmentDirectional.center,
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList(),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please Choose an Option';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 15.0,),
+                          CustomDropdownButtonFormField(
+                            value: relatedTo,
+                            hintText: "Select Type",
+                            labelText: "Related To",
+                            prefixIcon: const Icon(Icons.person_3),
+                            onChanged: (value) {
+                              print('Related To: $value');
+                              setState(() {
+                                relatedTo = value;
+                              });
+                            },
+                            items: <String>[
+                              "Lead",
+                              "Customer",
+                              "Contacts",
+                              // "Project",
+                            ].map((String value) {
+                              return DropdownMenuItem<String>(
+                                alignment: AlignmentDirectional.center,
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList(),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please Choose an Option';
+                              }
+                              return null;
+                            },
+                          ),
+                          relatedTo == "Lead" ? Column(
+                            children: [
+                              const SizedBox(height: 10.0,),
+                              CustomTextFormField(
+                                  onTap: (){
+                                    searFunctions.searchLead(context, contactController);
+                                  },
+                                  nameController: contactController,
+                                  hintText: "Search",
+                                  labelText: "Search Name",
+                                  keyboardType: TextInputType.none,
+                                  validator: (value){
+                                    if(value.isEmpty){
+                                      return "Please Enter a Value";
+                                    }
+                                    return null;
+                                  },
+                                  prefixIcon: const Icon(Icons.search)
+                              ),
+                            ],
+                          ) : Container(),
+                          relatedTo == "Customer" ? Column(
+                            children: [
+                              const SizedBox(height: 10.0,),
+                              CustomTextFormField(
+                                  onTap: (){
+                                    searFunctions.searchCustomer(context, contactController);
+                                  },
+                                  nameController: contactController,
+                                  hintText: "Search",
+                                  labelText: "Search Name",
+                                  keyboardType: TextInputType.none,
+                                  validator: (value){
+                                    if(value.isEmpty){
+                                      return "Please Enter a Value";
+                                    }
+                                    return null;
+                                  },
+                                  prefixIcon: const Icon(Icons.search)
+                              ),
+                            ],
+                          ) : Container(),
+                          relatedTo == "Contacts" ? Column(
+                            children: [
+                              const SizedBox(height: 10.0,),
+                              CustomTextFormField(
+                                  onTap: (){
+                                    searFunctions.searchContacts(context, contactController);
+                                  },
+                                  nameController: contactController,
+                                  hintText: "Search",
+                                  labelText: "Search Name",
+                                  keyboardType: TextInputType.none,
+                                  validator: (value){
+                                    if(value.isEmpty){
+                                      return "Please Enter a Value";
+                                    }
+                                    return null;
+                                  },
+                                  prefixIcon: const Icon(Icons.search)
+                              ),
+                            ],
+                          ) : Container(),
+                          const SizedBox(height: 10.0,),
+                          CustomTextFormField(
+                            labelText: "Start Date",
+                            hintText: "Date",
+                            onTap: () => _selectStartDate(context),
+                            keyboardType: TextInputType.none,
+                            nameController: startDateController,
+                            prefixIcon: const Icon(Icons.calendar_month),
+                            validator: (value) {
+                              if(value.isEmpty){
+                                return "Please Enter Start Date";
+                              }
+                              else {
+                                return null;
+                              }
+                            },
+
+                          ),
+                          const SizedBox(height: 10.0,),
+                          CustomTextFormField(
+                            labelText: "Due Date",
+                            hintText: "Date",
+                            onTap: () => _selectDueDate(context),
+                            keyboardType: TextInputType.none,
+                            nameController: dueDateController,
+                            prefixIcon: const Icon(Icons.calendar_month),
+                            validator: (value) {
+                              if(value.isEmpty){
+                                return "Please Enter Due Date";
+                              }
+                              else {
+                                return null;
+                              }
+                            },
+
+                          ),
+                          const SizedBox(height: 15.0,),
+                          CustomDropdownButtonFormField(
+                            value: priority,
+                            hintText: "Select Priority",
+                            labelText: "Priority",
+                            prefixIcon: const Icon(Icons.person_3),
+                            onChanged: (value) {
+                              print('Priority: $value');
+                              setState(() {
+                                priority = value;
+                              });
+                            },
+                            items: <String>[
+                              "New",
+                              "Old",
+                            ].map((String value) {
+                              return DropdownMenuItem<String>(
+                                alignment: AlignmentDirectional.center,
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList(),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please Choose an Option';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 10.0,),
+                          CustomTextFormField(
+                              onTap: (){
+                                searFunctions.searchUsers(context, assignController);
+                              },
+                              nameController: assignController,
+                              hintText: "Contact",
+                              labelText: "Assign To",
+                              keyboardType: TextInputType.none,
+                              validator: (value){
+                                if(value.isEmpty){
+                                  return "Please Enter a Value";
+                                }
+                                return null;
+                              },
+                              prefixIcon: const Icon(Icons.person)
+                          ),
+                          const SizedBox(height: 10.0,),
+                          CustomTextFormField(
+                            keyboardType: TextInputType.text,
+                            labelText: "Description",
+                            hintText: "Description",
+                            minLines: 1,
+                            maxLines: null,
+                            nameController: descriptionController,
+                            validator: (value) {
+                              if(value.isEmpty){
+                                return "Please Enter Description";
+                              }
+                              else {
+                                return null;
+                              }
+                            },
+                            prefixIcon: const Icon(Icons.sticky_note_2),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: (){
+                        addTask();
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Add'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        clearFields();
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Cancel'),
+                    ),
+                  ],
+                ),
+              );
+            }
+        );
+      },
+    );
+  }
+
+  // Add Task Through Hive
+  void addTask() async{
+    if(formKey.currentState!.validate()){
+      var uid = uuid.v1();
+      TaskHive newTask = TaskHive()
+        ..id = uid
+        ..subject = subjectController.text
+        ..status = status!
+        ..type = relatedTo!
+        ..contact = contactController.text
+        ..startDate = startDateController.text
+        ..dueDate = dueDateController.text
+        ..priority = priority!
+        ..assignTo = assignController.text
+        ..description = descriptionController.text;
+
+      await task!.add(newTask);
+      showSnackMessage(context, "Task Added Successfully");
+
+      clearFields();
+    }
+    else {
+      showSnackMessage(context, "Please Fill All Fields");
+    }
+  }
+
+  void clearFields(){
+    setState(() {
+      subjectController.clear();
+      contactController.clear();
+      startDateController.clear();
+      dueDateController.clear();
+      assignController.clear();
+      descriptionController.clear();
+      relatedTo = null;
+      status = null;
+      priority = null;
+    });
+  }
+
+  Future<void> getTasksFromBox() async {
+    task = await Hive.openBox<TaskHive>('tasks');
+    setState(() {});
+  }
+
+}

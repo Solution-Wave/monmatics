@@ -14,6 +14,7 @@ class CustomTextFormField extends StatelessWidget {
     required this.prefixIcon,
     this.maxLines,
     this.minLines,
+    this.onTap,
   });
 
   final TextEditingController nameController;
@@ -24,6 +25,7 @@ class CustomTextFormField extends StatelessWidget {
   final Icon prefixIcon;
   final int? maxLines;
   final int? minLines;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +35,7 @@ class CustomTextFormField extends StatelessWidget {
       validator: validator,
       maxLines: maxLines,
       minLines: minLines,
+      onTap: onTap,
       decoration: InputDecoration(
         prefixIcon: prefixIcon,
         hintText: hintText,
@@ -49,15 +52,13 @@ class CustomTextFormField extends StatelessWidget {
 class CustomButton extends StatelessWidget {
   const CustomButton({
     super.key,
-    required this.loading,
     required this.onPressed,
-    required this.text,
     required this.padding,
+    required this.child,
   });
 
-  final bool loading;
+  final Widget child;
   final VoidCallback onPressed;
-  final String text;
   final EdgeInsets padding;
 
   @override
@@ -69,12 +70,7 @@ class CustomButton extends StatelessWidget {
             foregroundColor: Colors.white,
             padding: padding,
         ),
-        child: loading ? const SizedBox(
-            height: 18.0,
-            width: 18.0,
-            child: CircularProgressIndicator()
-        )
-            : Text(text, style: const TextStyle(fontSize: 18.0),)
+        child: child,
     );
   }
 }

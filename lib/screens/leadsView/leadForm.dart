@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:monmatics/utils/messages.dart';
+import 'package:hive/hive.dart';
+import 'package:uuid/uuid.dart';
+import '../../Functions/exportFunctions.dart';
+import '../../models/leadItem.dart';
 import '../../utils/customWidgets.dart';
+import '../../utils/messages.dart';
 import '../../utils/themes.dart';
 
 class AddLead extends StatefulWidget {
@@ -27,9 +31,42 @@ class _AddLeadState extends State<AddLead> {
   bool loading = false;
   String? selectedCategory;
   String? selectedSource;
-  String? selectedLimit;
   String? selectedStatus;
   String? selectedType;
+  var uuid = const Uuid();
+  ExportFunctions exportFunctions = ExportFunctions();
+
+  // Add Lead Through Hive
+  void addLead() async{
+    exportFunctions.postLeadToApi();
+    var uid = uuid.v1();
+    Box? lead = await Hive.openBox("leads");
+    LeadHive newLead = LeadHive()
+    ..id = uid
+    ..name = nameController.text
+    ..email = emailController.text
+    ..phone = phoneController.text
+    ..category = selectedCategory!
+    ..leadSource = selectedSource!
+    ..status = selectedStatus!
+    ..type = selectedType!
+    ..note = noteController.text
+    ..address = addressController.text;
+
+    await lead.add(newLead);
+    showSnackMessage(context, "Lead Added Successfully");
+    setState(() {
+      nameController.clear();
+      emailController.clear();
+      phoneController.clear();
+      selectedCategory = null;
+      selectedSource = null;
+      selectedStatus = null;
+      selectedType = null;
+      noteController.clear();
+      addressController.clear();
+    });
+  }
 
 
   @override
@@ -37,7 +74,7 @@ class _AddLeadState extends State<AddLead> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Add Lead', style: headerTextStyle),
+          title: Text('Lead Details', style: headerTextStyle),
           centerTitle: true,
         ),
         body: SingleChildScrollView(
@@ -50,9 +87,6 @@ class _AddLeadState extends State<AddLead> {
                   key: _formKey,
                   child: Column(
                     children: [
-                      const Text("Lead Details",
-                        style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.bold),),
-                      const SizedBox(height: 20.0,),
                       CustomTextFormField(
                         labelText: "Name",
                         hintText: "Name",
@@ -257,21 +291,18 @@ class _AddLeadState extends State<AddLead> {
                       ),
                       const SizedBox(height: 20.0,),
                       CustomButton(
-                        loading: loading,
                         onPressed: () {
                           if(_formKey.currentState!.validate()){
                             if(selectedCategory != null && selectedSource !=null
-                                && selectedLimit !=null && selectedStatus != null
-                                && selectedType != null){
+                                && selectedStatus != null && selectedType != null){
                               print('Form is valid');
                               setState(() {
                                 loading = true;
                               });
-                              showSnackMessage(context, "Lead Added Successfully");
+                              addLead();
                               setState(() {
                                 loading = false;
-                              }
-                              );
+                              });
                             } else{
                               print('Select Dropdown Values');
                               setState(() {
@@ -288,8 +319,11 @@ class _AddLeadState extends State<AddLead> {
                             showSnackMessage(context, "Please Fill All the Fields");
                           }
                         },
-                        text: 'Add Lead',
-                        padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 50.0)
+                        padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 50.0),
+                        child: loading ?
+                        const SizedBox(height: 18,width: 18,
+                          child: CircularProgressIndicator(color: Colors.white,),):
+                        const Text("Add Lead"),
                       )
                     ],
                   ),

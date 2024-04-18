@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../Functions/importFunctions.dart';
+import 'bottomNavigationBarScreen.dart';
 import '../controllers/authenticationControllers.dart';
 import '../utils/colors.dart';
 import '../utils/constants.dart';
@@ -7,7 +10,6 @@ import '../utils/customWidgets.dart';
 import '../utils/messages.dart';
 import '../utils/urlprovider.dart';
 import '../utils/urls.dart';
-import 'firstScreen.dart';
 
 
 class LoginScreen extends StatefulWidget {
@@ -24,9 +26,13 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController passwordController = TextEditingController();
   AuthenticateController loginController = AuthenticateController();
 
-  bool showPassword = false;
+  bool showPassword = true;
   bool loading = false;
   String? selectedUrl;
+
+  ImportFunctions importFunctions = ImportFunctions();
+
+  // Login Function
   void DoLogin() async {
     setState(() {
       loading = true;
@@ -46,6 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
       emailController.clear();
       passwordController.clear();
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext)=>  App()));
+      importFunctions.fetchUsersFromApi();
       showSnackMessage(context, message);
 
     }
@@ -82,11 +89,18 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  Future<void> saveSelectedUrl(String value) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      selectedUrl = value;
+      baseUrl = value;
+    });
+    await prefs.setString('selectedUrl', value);
+    updateUrls(baseUrl);
+  }
+
   @override
   Widget build(BuildContext context) {
-    void changePassField() {
-      showPassword ? showPassword=false : showPassword =true;
-    }
     return SafeArea(
       child:
       Scaffold(
@@ -116,7 +130,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           setState(() {
                             selectedUrl = value;
                             baseUrl = value ?? '';
-                            updateUrls(baseUrl); // Call the function to update URLs
+                            updateUrls(baseUrl);
+                            saveSelectedUrl(value!);
                           });
                         },
                         validator: (value) {
@@ -152,24 +167,36 @@ class _LoginScreenState extends State<LoginScreen> {
                           prefixIcon: Icon(Icons.person, color: primaryColor,),
                       ),
                       const SizedBox(height: 15.0,),
-                      CustomTextFormField(
-                        nameController: passwordController,
-                        hintText: "Password",
-                        labelText: "Password",
+                      TextFormField(
+                        controller: passwordController,
                         keyboardType: TextInputType.text,
+                        obscureText: showPassword,
+                        decoration: InputDecoration(
+                          prefixIcon: Icon(Icons.lock, color: primaryColor),
+                          suffixIcon: IconButton(
+                            onPressed: () {
+                              setState(() {
+                                showPassword = !showPassword;
+                              });
+                            },
+                            icon: showPassword ? const Icon(Icons.visibility) :  const Icon(Icons.visibility_off),
+                          ),
+                          hintText: "Password",
+                          labelText: "Password",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
                         validator: (val) {
                           if (val == null || val.isEmpty) {
                             return validatorText;
-                          }
-                          else {
+                          } else {
                             return null;
                           }
                         },
-                        prefixIcon: Icon(Icons.password, color: primaryColor,),
                       ),
                       const SizedBox(height: 15.0,),
                       CustomButton(
-                          loading: loading,
                           onPressed: () async{
                             FocusScope.of(context).unfocus();
                             if(_formKey.currentState!.validate())
@@ -186,8 +213,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               showSnackMessage(context, 'Fields should not be left empty');
                             }
                           },
-                          text: "Login",
                           padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 40.0),
+                          child: loading ?
+                          const SizedBox(height: 18,width: 18,
+                          child: CircularProgressIndicator(color: Colors.white,),):
+                              const Text("Login"),
                       ),
                     ],
                   ),

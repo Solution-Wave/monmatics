@@ -1,11 +1,21 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
+import '../Functions/importFunctions.dart';
 import '../components/navDrawer.dart';
 import '../components/segmentedBar.dart';
+import '../functions/exportFunctions.dart';
+import '../functions/otherFunctions.dart';
+import '../models/noteItem.dart';
+import '../models/taskItem.dart';
+import '../models/userItem.dart';
 import '../utils/colors.dart';
-import 'NotesViewScreen.dart';
-import 'tasksViewScreen.dart';
+import '../utils/customWidgets.dart';
+import '../utils/messages.dart';
+import 'notes/NotesViewScreen.dart';
+import 'tasks/tasksViewScreen.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -16,101 +26,672 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int _currIndex = 0;
-  int index = 1;
+  int index = 0;
   Box? notes;
   Box? task;
-  String? name;
+  String? firstName;
+  String? lastName;
   String? role;
+  String? relatedTo;
+  String? status;
+  String? priority;
+  String? relatedId;
+  String? assignId;
 
-  Future GetSharedData() async {
+  TextEditingController subjectController = TextEditingController();
+  TextEditingController searchController = TextEditingController();
+  TextEditingController contactController = TextEditingController();
+  TextEditingController startDateController = TextEditingController();
+  TextEditingController dueDateController = TextEditingController();
+  TextEditingController assignController = TextEditingController();
+  TextEditingController descriptionController = TextEditingController();
+
+
+  DateTime startDate = DateTime.now();
+  DateTime endDate = DateTime.now();
+  var uuid = const Uuid();
+
+  // Date Pick Function
+  Future<void> _selectStartDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: startDate,
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2500),
+    );
+    if (picked != null && picked != startDate) {
+      setState(() {
+        startDate = picked;
+        startDateController.text =
+        "${picked.month.toString().padLeft(2, '0')}/${picked.day.toString()
+            .padLeft(2, '0')}/${picked.year}";
+      });
+    }
+  }
+
+  Future<void> _selectDueDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: endDate,
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2500),
+    );
+    if (picked != null && picked != endDate) {
+      setState(() {
+        endDate = picked;
+        dueDateController.text = "${picked.month.toString()
+            .padLeft(2, '0')}/${picked.day.toString().padLeft(2, '0')}/${picked.year}";
+      });
+    }
+  }
+
+  GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
+  Future<void> GetSharedData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    name = prefs.getString('name');
+    firstName = prefs.getString('firstName');
+    lastName = prefs.getString('lastName');
     role= prefs.getString('role');
   }
 
-  void FunctionCall()async{
+  Future<void> FunctionCall() async {
     await GetSharedData();
   }
 
-  Future<bool> GetNotesFromBox() async {
-    notes = await Hive.openBox('notes');
-    setState(() {
+  ImportFunctions importFunctions = ImportFunctions();
+  ExportFunctions exportFunctions = ExportFunctions();
+  OtherFunctions otherFunctions = OtherFunctions();
 
-    });
-    return Future.value(true);
-  }
-
-  // void GetNotes()async {
-  //   loading = true;
-  //   NotesList.clear();
-  //   await GetToken();
-  //   var result = await notesController.getNotes(token!);
-  //   // print('Notes result: $result');
-  //   setState(() {
-  //     if (result == 'Some error occured') {
-  //       showSnackMessage(context, result);
-  //     } else {
-  //       for (int i = 0; i < result.length; i++) {
-  //         // Map<String, dynamic> obj = result[i];
-  //         Note item = Note();
-  //         item = Note.fromJson(result[i]);
-  //         NotesList.add(item);
-  //       }
-  //       loading = false;
-  //     }
-  //   });
-  // }
-  Future<bool> GetTasksFromBox() async {
-    task = await Hive.openBox('tasks');
-    setState(() {
-
-    });
-    return Future.value(true);
-  }
-
-  // void GetTasks() async {
-  //   loading = true;
-  //   TaskList.clear();
-  //   await GetToken();
-  //   var result = await tasksController.getTasks(token!);
-  //   setState(() {
-  //     if (result == 'Some error occured') {
-  //       showSnackMessage(context, result);
-  //     } else {
-  //       for (int i = 0; i < result.length; i++) {
-  //         Map<String, dynamic> obj = result[i];
-  //         Tasks item = Tasks();
-  //         item = Tasks.fromJson(obj);
-  //         TaskList.add(item);
-  //       }
-  //       loading = false;
-  //     }
-  //   });
-  // }
-
-  Future showNotesDialog() async {
-    return showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Add Notes'),
-            content: const Column(
-              children: [
-                Text('assign to'),
-              ],
-            ),
-            actions: [
-              TextButton(onPressed: () {}, child: const Text('Add')),
-              TextButton(onPressed: () {Navigator.pop(context);}, child: const Text('Cancel')),
-            ],
-          );
-        });
-  }
 
   @override
   void initState() {
-    // TODO: implement initState
+    formKey = GlobalKey<FormState>();
     super.initState();
+    importFunctions.fetchNotesFromApi();
+    importFunctions.fetchTasksFromApi();
+    Hive.openBox<NoteHive>("notes").then((notesBox) {
+      exportFunctions.postNotesToApi(notesBox, Ids(assignId!, relatedId!));
+    });
+    Hive.openBox<TaskHive>("tasks").then((tasksBox) {
+      exportFunctions.postTasksToApi(tasksBox, Ids(assignId!, relatedId!));
+    });
+    GetNotesFromBox();
+    GetTasksFromBox();
+    FunctionCall();
+  }
+
+
+  Future<void> GetNotesFromBox() async {
+    notes = await Hive.openBox<NoteHive>('notes');
+    setState(() {});
+  }
+
+  Future<void> GetTasksFromBox() async {
+    task = await Hive.openBox<TaskHive>('tasks');
+    setState(() {});
+  }
+
+
+  void addNote() async {
+    print(assignId); // Ensure assignId is accessible here
+    print(relatedId); // Ensure relatedId is accessible here
+
+    Hive.openBox<NoteHive>("notes").then((notesBox) {
+      exportFunctions.postNotesToApi(notesBox, Ids(assignId!, relatedId!));
+    });
+
+
+    if (formKey.currentState!.validate()) {
+      var uid = uuid.v1();
+      NoteHive newNote = NoteHive()
+        ..id = uid
+        ..subject = subjectController.text
+        ..relatedTo = relatedTo!
+        ..search = searchController.text
+        ..assignTo = assignId! // Assuming assignId is not null
+        ..description = descriptionController.text;
+
+      await notes!.add(newNote);
+      showSnackMessage(context, "Note Added Successfully");
+      Navigator.pop(context);
+      clearFields();
+    } else {
+      showSnackMessage(context, "Please Fill All Fields");
+    }
+  }
+
+  // Add Task Through Hive
+  void addTask() async{
+    Hive.openBox<TaskHive>("tasks").then((tasksBox) {
+      exportFunctions.postTasksToApi(tasksBox, Ids(assignId!, relatedId!));
+    });
+    print(assignId);
+    print(assignId);
+    if(formKey.currentState!.validate()){
+      var uid = uuid.v1();
+      TaskHive newTask = TaskHive()
+          ..id = uid
+          ..subject = subjectController.text
+          ..status = status!
+          ..type = relatedTo!
+          ..contact = contactController.text
+          ..startDate = startDateController.text
+          ..dueDate = dueDateController.text
+          ..priority = priority!
+          ..assignTo = assignController.text
+          ..description = descriptionController.text;
+
+      await task!.add(newTask);
+      showSnackMessage(context, "Task Added Successfully");
+
+      clearFields();
+    }
+    else {
+      showSnackMessage(context, "Please Fill All Fields");
+    }
+  }
+
+  void clearFields(){
+    setState(() {
+      subjectController.clear();
+      contactController.clear();
+      startDateController.clear();
+      dueDateController.clear();
+      assignController.clear();
+      descriptionController.clear();
+      relatedTo = null;
+      status = null;
+      priority = null;
+    });
+  }
+
+  // Function to update an existing note
+  void updateNote(NoteHive note) async {
+    otherFunctions.updateNoteAndDatabase(note, note.id);
+    note.subject = subjectController.text;
+    note.relatedTo = relatedTo!;
+    note.search = searchController.text;
+    note.assignTo = assignController.text;
+    note.description = descriptionController.text;
+
+    await notes!.put(note.key, note);
+    showSnackMessage(context, "Note Updated Successfully");
+    Navigator.pop(context);
+    clearFields();
+  }
+
+  // Add Notes Form
+  Future<void> showNotesDialog({NoteHive? note}) async {
+    if (note != null) {
+      subjectController.text = note.subject ?? '';
+      relatedTo = note.relatedTo ?? '';
+      searchController.text = note.search ?? '';
+      assignController.text = note.assignTo ?? '';
+      descriptionController.text = note.description ?? '';
+    }
+    bool isEditMode = note != null;
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Dialog(
+                insetPadding: EdgeInsets.zero,
+                child: AlertDialog(
+                  contentPadding: const EdgeInsets.symmetric(vertical: 20.0),
+                  title: isEditMode
+                      ? const Center(child: Text('Edit Note'))
+                      : const Center(child: Text('Add Notes')),
+                  content: SingleChildScrollView(
+                    child: Form(
+                      key: formKey,
+                      child: Column(
+                        children: [
+                          CustomTextFormField(
+                              nameController: subjectController,
+                              hintText: "Subject",
+                              labelText: "Subject",
+                              keyboardType: TextInputType.text,
+                              validator: (value) {
+                                if (value.isEmpty) {
+                                  return "Please Enter Subject";
+                                }
+                                return null;
+                              },
+                              prefixIcon: const Icon(Icons.subject)
+                          ),
+                          const SizedBox(height: 20.0,),
+                          CustomDropdownButtonFormField(
+                            value: relatedTo,
+                            hintText: "Select",
+                            labelText: "Related To",
+                            prefixIcon: const Icon(Icons.person_3),
+                            onChanged: (value) {
+                              print('Related To: $value');
+                              setState(() {
+                                relatedTo = value;
+                              });
+                            },
+                            items: <String>[
+                              "lead",
+                              "customer",
+                              "project",
+                              "",
+                            ].map((String value) {
+                              return DropdownMenuItem<String>(
+                                alignment: AlignmentDirectional.center,
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList(),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please Choose an Option';
+                              }
+                              return null;
+                            },
+                          ),
+                          relatedTo == "lead"
+                              ? Column(
+                            children: [
+                              const SizedBox(height: 20.0,),
+                              CustomTextFormField(
+                                onTap: () {
+                                  searchLead(context, searchController);
+                                },
+                                labelText: "Lead Search",
+                                hintText: "Lead Name",
+                                keyboardType: TextInputType.none,
+                                nameController: searchController,
+                                prefixIcon: const Icon(Icons.search),
+                                validator: (value) {
+                                  if (value.isEmpty) {
+                                    return "Please Enter a value";
+                                  }
+                                  else {
+                                    return null;
+                                  }
+                                },
+                              )
+                            ],
+                          )
+                              : Container(),
+                          relatedTo == "customer"
+                              ? Column(
+                            children: [
+                              const SizedBox(height: 20.0,),
+                              CustomTextFormField(
+                                onTap: () {
+                                  searchCustomer(context, searchController);
+                                },
+                                labelText: "Customer Search",
+                                hintText: "Customer Name",
+                                keyboardType: TextInputType.none,
+                                nameController: searchController,
+                                prefixIcon: const Icon(Icons.search),
+                                validator: (value) {
+                                  if (value.isEmpty) {
+                                    return "Please Enter a value";
+                                  }
+                                  else {
+                                    return null;
+                                  }
+                                },
+                              )
+                            ],
+                          )
+                              : Container(),
+                          const SizedBox(height: 20.0,),
+                          CustomTextFormField(
+                              onTap: (){
+                                searchUsers(context, assignController);
+                              },
+                              nameController: assignController,
+                              hintText: "User",
+                              labelText: "Assign To",
+                              keyboardType: TextInputType.none,
+                              validator: (value) {
+                                if (value.isEmpty) {
+                                  return "Please Enter a Value";
+                                }
+                                return null;
+                              },
+                              prefixIcon: const Icon(Icons.person)
+                          ),
+                          const SizedBox(height: 20.0,),
+                          CustomTextFormField(
+                            keyboardType: TextInputType.text,
+                            labelText: "Description",
+                            hintText: "Description",
+                            minLines: 1,
+                            maxLines: null,
+                            nameController: descriptionController,
+                            validator: (value) {
+                              if (value.isEmpty) {
+                                return "Please Enter Description";
+                              }
+                              else {
+                                return null;
+                              }
+                            },
+                            prefixIcon: const Icon(Icons.sticky_note_2),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        if (isEditMode) {
+                          // updateNoteAndDatabase(note);
+                          updateNote(note);
+                        } else {
+                          addNote();
+                        }
+                      },
+                      child: Text(isEditMode
+                          ? 'Update'
+                          : 'Add'), // Change text based on isEditMode
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        clearFields();
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Cancel'),
+                    ),
+                  ],
+                ),
+              );
+            }
+        );
+      },
+    );
+  }
+
+  // Add Tasks Form
+  Future<void> showTaskDialog() async {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Dialog(
+                insetPadding: EdgeInsets.zero,
+                // backgroundColor: Colors.transparent,
+                child: AlertDialog(
+                  contentPadding: const EdgeInsets.symmetric(vertical: 20.0),
+                  title: const Center(child: Text('Add Task')),
+                  content: SingleChildScrollView(
+                    child: Form(
+                      key: formKey,
+                      child: Column(
+                        // mainAxisSize: MainAxisSize.min,
+                        // crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CustomTextFormField(
+                              nameController: subjectController,
+                              hintText: "Subject",
+                              labelText: "Subject",
+                              keyboardType: TextInputType.text,
+                              validator: (value){
+                                if(value.isEmpty){
+                                  return "Please Enter Subject";
+                                }
+                                return null;
+                              },
+                              prefixIcon: const Icon(Icons.subject)
+                          ),
+                          const SizedBox(height: 15.0,),
+                          CustomDropdownButtonFormField(
+                            value: status,
+                            hintText: "Select Status",
+                            labelText: "Status",
+                            prefixIcon: const Icon(Icons.person_3),
+                            onChanged: (value) {
+                              print('Status: $value');
+                              setState(() {
+                                status = value;
+                              });
+                            },
+                            items: <String>[
+                              "Close",
+                              "Open",
+                            ].map((String value) {
+                              return DropdownMenuItem<String>(
+                                alignment: AlignmentDirectional.center,
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList(),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please Choose an Option';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 15.0,),
+                          CustomDropdownButtonFormField(
+                            value: relatedTo,
+                            hintText: "Select Type",
+                            labelText: "Related To",
+                            prefixIcon: const Icon(Icons.person_3),
+                            onChanged: (value) {
+                              print('Related To: $value');
+                              setState(() {
+                                relatedTo = value;
+                              });
+                            },
+                            items: <String>[
+                              "Lead",
+                              "Customer",
+                              "Contacts",
+                              // "Project",
+                            ].map((String value) {
+                              return DropdownMenuItem<String>(
+                                alignment: AlignmentDirectional.center,
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList(),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please Choose an Option';
+                              }
+                              return null;
+                            },
+                          ),
+                          relatedTo == "Lead" ? Column(
+                            children: [
+                              const SizedBox(height: 10.0,),
+                              CustomTextFormField(
+                                  onTap: (){
+                                    searchLead(context, contactController);
+                                  },
+                                  nameController: contactController,
+                                  hintText: "Search",
+                                  labelText: "Search Name",
+                                  keyboardType: TextInputType.none,
+                                  validator: (value){
+                                    if(value.isEmpty){
+                                      return "Please Enter a Value";
+                                    }
+                                    return null;
+                                  },
+                                  prefixIcon: const Icon(Icons.search)
+                              ),
+                            ],
+                          ) : Container(),
+                          relatedTo == "Customer" ? Column(
+                            children: [
+                              const SizedBox(height: 10.0,),
+                              CustomTextFormField(
+                                  onTap: (){
+                                    searchCustomer(context, contactController);
+                                  },
+                                  nameController: contactController,
+                                  hintText: "Search",
+                                  labelText: "Search Name",
+                                  keyboardType: TextInputType.none,
+                                  validator: (value){
+                                    if(value.isEmpty){
+                                      return "Please Enter a Value";
+                                    }
+                                    return null;
+                                  },
+                                  prefixIcon: const Icon(Icons.search)
+                              ),
+                            ],
+                          ) : Container(),
+                          relatedTo == "Contacts" ? Column(
+                            children: [
+                              const SizedBox(height: 10.0,),
+                              CustomTextFormField(
+                                  onTap: (){
+                                    searchContacts(context, contactController);
+                                  },
+                                  nameController: contactController,
+                                  hintText: "Search",
+                                  labelText: "Search Name",
+                                  keyboardType: TextInputType.none,
+                                  validator: (value){
+                                    if(value.isEmpty){
+                                      return "Please Enter a Value";
+                                    }
+                                    return null;
+                                  },
+                                  prefixIcon: const Icon(Icons.search)
+                              ),
+                            ],
+                          ) : Container(),
+                          const SizedBox(height: 10.0,),
+                          CustomTextFormField(
+                            labelText: "Start Date",
+                            hintText: "Date",
+                            onTap: () => _selectStartDate(context),
+                            keyboardType: TextInputType.none,
+                            nameController: startDateController,
+                            prefixIcon: const Icon(Icons.calendar_month),
+                            validator: (value) {
+                              if(value.isEmpty){
+                                return "Please Enter Start Date";
+                              }
+                              else {
+                                return null;
+                              }
+                            },
+
+                          ),
+                          const SizedBox(height: 10.0,),
+                          CustomTextFormField(
+                            labelText: "Due Date",
+                            hintText: "Date",
+                            onTap: () => _selectDueDate(context),
+                            keyboardType: TextInputType.none,
+                            nameController: dueDateController,
+                            prefixIcon: const Icon(Icons.calendar_month),
+                            validator: (value) {
+                              if(value.isEmpty){
+                                return "Please Enter Due Date";
+                              }
+                              else {
+                                return null;
+                              }
+                            },
+
+                          ),
+                          const SizedBox(height: 15.0,),
+                          CustomDropdownButtonFormField(
+                            value: priority,
+                            hintText: "Select Priority",
+                            labelText: "Priority",
+                            prefixIcon: const Icon(Icons.person_3),
+                            onChanged: (value) {
+                              print('Priority: $value');
+                              setState(() {
+                                priority = value;
+                              });
+                            },
+                            items: <String>[
+                              "New",
+                              "Old",
+                            ].map((String value) {
+                              return DropdownMenuItem<String>(
+                                alignment: AlignmentDirectional.center,
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList(),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please Choose an Option';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 10.0,),
+                          CustomTextFormField(
+                              onTap: (){
+                                searchUsers(context, assignController);
+                              },
+                              nameController: assignController,
+                              hintText: "Contact",
+                              labelText: "Assign To",
+                              keyboardType: TextInputType.none,
+                              validator: (value){
+                                if(value.isEmpty){
+                                  return "Please Enter a Value";
+                                }
+                                return null;
+                              },
+                              prefixIcon: const Icon(Icons.person)
+                          ),
+                          const SizedBox(height: 10.0,),
+                          CustomTextFormField(
+                            keyboardType: TextInputType.text,
+                            labelText: "Description",
+                            hintText: "Description",
+                            minLines: 1,
+                            maxLines: null,
+                            nameController: descriptionController,
+                            validator: (value) {
+                              if(value.isEmpty){
+                                return "Please Enter Description";
+                              }
+                              else {
+                                return null;
+                              }
+                            },
+                            prefixIcon: const Icon(Icons.sticky_note_2),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: (){
+                        addTask();
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Add'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        clearFields();
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Cancel'),
+                    ),
+                  ],
+                ),
+              );
+            }
+        );
+      },
+    );
   }
 
   @override
@@ -120,7 +701,8 @@ class _HomeState extends State<Home> {
       appBar: AppBar(
         centerTitle: true,
         title: Image.asset(
-            Theme.of(context).brightness == Brightness.dark?'assets/White.jpeg':'assets/_Logo.png',
+            Theme.of(context).brightness ==
+                Brightness.dark?'assets/White.jpeg':'assets/_Logo.png',
           height: MediaQuery.of(context).size.height*0.05,
         ),
       ),
@@ -145,82 +727,9 @@ class _HomeState extends State<Home> {
               Padding(
                 padding: const EdgeInsets.only(top: 10.0),
                 child: index == 0
-                    ? FutureBuilder(
-                  future: GetNotesFromBox(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasError) {
-                      return Center(
-                        child: Text('Error: ${snapshot.error}'),
-                      );
-                    } else {
-                      if (notes != null && notes!.isNotEmpty) {
-                        return ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: notes!.length,
-                          itemBuilder: (BuildContext, index) {
-                            return NotesTile(obj: notes!.get(index));
-                          },
-                        );
-                      } else {
-                        return const Center(child: Text('No Notes Found'));
-                      }
-                    }
-                  },
-                )
-                // loading ==true ?
-                    //     CircularProgressIndicator( color: primaryColor,)
-                    // :
-                    // ListView.builder(
-                    //         shrinkWrap: true,
-                    //         itemCount: NotesList.length,
-                    //         itemBuilder: (context, index) {
-                    //           return NotesListTile(NotesList[index]);
-                    //         })
-                    :
-                // index == 1
-                //         ?
-                FutureBuilder(
-                            future: GetTasksFromBox(),
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData) {
-                                if (task!.isNotEmpty) {
-                                  return ListView.builder(
-                                    shrinkWrap: true,
-                                    physics: const NeverScrollableScrollPhysics(),
-                                    itemCount: task?.length,
-                                    itemBuilder: (BuildContext context, index) {
-                                      return taskListTile(task?.get(index));
-                                    },
-                                  );
-                                } else {
-                                  return const Center(child: Text('No Task Found'));
-                                }
-                              } else {
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    color: primaryColor,
-                                  ),
-                                );
-                              }
-                            }
-                            )
-                        // ? loading == true
-                        //     ? CircularProgressIndicator(
-                        //         color: primaryColor,
-                        //       )
-                        //     :
-                        //     // Navigator.push(context, MaterialPageRoute(builder: (BuildContext)=>TaskExpandedView()))
-                        //     ListView.builder(
-                        //         shrinkWrap: true,
-                        //         itemCount: TaskList.length,
-                        //         itemBuilder: (context, index) {
-                        //           return taskListTile(TaskList[index]);
-                        //         })
-                        // : const Center(
-                        //     child: Text('Events View'),
-                        //   ),
-              )
+                    ? _buildNotesWidget()
+                    : _buildTasksWidget(),
+              ),
             ],
           ),
         ),
@@ -301,7 +810,9 @@ class _HomeState extends State<Home> {
                 ),
               ),
               PopupMenuItem(
-                onTap: () {},
+                onTap: () {
+                  showTaskDialog();
+                },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -324,4 +835,251 @@ class _HomeState extends State<Home> {
       ),
     );
   }
+
+  Widget _buildNotesWidget() {
+    if (notes == null) {
+      return const Center(child: CircularProgressIndicator());
+    } else if (notes!.isEmpty) {
+      return const Center(child: Text('No Notes Found'));
+    } else {
+      return ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: notes!.length,
+        itemBuilder: (context, index) {
+          return NotesTile(
+            obj: notes!.getAt(index)!,
+            onEdit: (notes) {
+              showNotesDialog(note: notes);
+            },
+            onDelete: (notes) {
+              deleteNote(notes, index);
+            },
+          );
+        },
+      );
+    }
+  }
+
+  // Function to handle delete action
+  void deleteNote(NoteHive note, int index) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Note'),
+          content: const Text('Are you sure you want to delete this note?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () async {
+                // Delete the note from the database
+                try {
+                  await otherFunctions.deleteNoteFromDatabase(note.id);
+                } catch (e) {
+                  print('Error deleting note from database: $e');
+                  // Handle error if necessary
+                }
+
+                // Delete the note from the UI
+                setState(() {
+                  notes!.deleteAt(index);
+                });
+                Navigator.of(context).pop(); // Close dialog
+              },
+              child: const Text('Yes'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+              },
+              child: const Text('No'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildTasksWidget() {
+    if (task == null) {
+      return const Center(
+          child: CircularProgressIndicator());
+    } else if (task!.isEmpty) {
+      return const Center(
+          child: Text('No Tasks Found'));
+    } else {
+      return ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: task!.length,
+        itemBuilder: (context, index) {
+          return taskListTile(task!.getAt(index)!);
+        },
+      );
+    }
+  }
+
+  void searchCustomer(BuildContext context, TextEditingController textFieldController) async {
+    try {
+      if (!Hive.isBoxOpen('customers')) {
+        await Hive.openBox('customers');
+      }
+      Box contactBox = Hive.box('customers');
+      List<Map<String, dynamic>> customers = [];
+      for (var customer in contactBox.values) {
+        customers.add({
+          'id': customer.id,
+          'name': customer.name,
+        });
+      }
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Center(child: Text('Customers List')),
+            content: SingleChildScrollView(
+              child: Column(
+                children: customers.map((customer) => ListTile(
+                  title: Text('${customer['name']}'),
+                  onTap: () {
+                    relatedId = customer['id'];
+                    textFieldController.text = customer['name'];
+                    Navigator.pop(context);
+                  },
+                )).toList(),
+              ),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      print('Error fetching customer names: $e');
+      // Handle error appropriately
+    }
+  }
+  void searchLead(BuildContext context, TextEditingController textFieldController) async {
+    try {
+      if (!Hive.isBoxOpen('leads')) {
+        await Hive.openBox('leads');
+      }
+
+      Box leadBox = Hive.box('leads');
+      List<Map<String, dynamic>> leads = [];
+      for (var lead in leadBox.values) {
+        leads.add({
+          'id': lead.id,
+          'name': lead.name,
+        });
+      }
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Center(child: Text('Leads List')),
+            content: SingleChildScrollView(
+              child: Column(
+                children: leads.map((lead) => ListTile(
+                  title: Text('${lead['name']}'),
+                  onTap: () {
+                    relatedId = lead['id'];
+                    textFieldController.text = lead['name'];
+                    Navigator.pop(context);
+                  },
+                )).toList(),
+              ),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      print('Error fetching lead names: $e');
+      // Handle error appropriately
+    }
+  }
+  void searchContacts(BuildContext context, TextEditingController textFieldController) async {
+    try {
+      // Open the Hive box if it's not already open
+      if (!Hive.isBoxOpen('contacts')) {
+        await Hive.openBox('contacts');
+      }
+
+      // Get the box
+      Box contactBox = Hive.box('contacts');
+      List<String> customerNames = [];
+      for (var contact in contactBox.values) {
+        customerNames.add(
+            '${contact.fName} ''${contact.lName}');
+      }
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Center(child: Text('Contacts List')),
+            content: SingleChildScrollView(
+              child: Column(
+                children: customerNames.map((id) => ListTile(
+                  title: Text(id),
+                  onTap: () {
+                    textFieldController.text = id;
+                    Navigator.pop(context);
+                  },
+                )).toList(),
+              ),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      print('Error fetching customer names: $e');
+      // Handle error appropriately
+    }
+  }
+  void searchUsers(BuildContext context, TextEditingController textFieldController,) async {
+    try {
+      // Open the Hive box if it's not already open
+      if (!Hive.isBoxOpen('users')) {
+        await Hive.openBox<UsersHive>('users');
+      }
+
+      // Get the box
+      Box<UsersHive> userBox = Hive.box<UsersHive>('users');
+
+      // Convert users to a list of maps containing required data
+      List<Map<String, dynamic>> userNames = userBox.values.map((user) {
+        return {
+          'id': user.id,
+          'firstName': user.fName,
+          'lastName': user.lName,
+        };
+      }).toList();
+
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Center(child: Text('Users List')),
+            content: SingleChildScrollView(
+              child: Column(
+                children: userNames.map((user) {
+                  String displayName = '${user['firstName']} ${user['lastName']}';
+                  return ListTile(
+                    title: Text(displayName),
+                    onTap: () {
+                      assignId = user['id'];
+                      textFieldController.text = displayName;
+                      Navigator.pop(context);
+                    },
+                  );
+                }).toList(),
+              ),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      print('Error fetching User names: $e');
+      // Handle error appropriately
+    }
+  }
+
 }
