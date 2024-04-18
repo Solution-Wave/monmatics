@@ -89,9 +89,12 @@ class _HomeState extends State<Home> {
 
   Future<void> GetSharedData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    firstName = prefs.getString('firstName');
-    lastName = prefs.getString('lastName');
-    role= prefs.getString('role');
+    setState(() {
+      firstName = prefs.getString('firstName');
+      lastName = prefs.getString('lastName');
+      role= prefs.getString('role');
+      assignId = prefs.getString('id');
+    });
   }
 
   Future<void> FunctionCall() async {
@@ -105,6 +108,7 @@ class _HomeState extends State<Home> {
 
   @override
   void initState() {
+    FunctionCall();
     formKey = GlobalKey<FormState>();
     super.initState();
     importFunctions.fetchNotesFromApi();
@@ -117,7 +121,6 @@ class _HomeState extends State<Home> {
     });
     GetNotesFromBox();
     GetTasksFromBox();
-    FunctionCall();
   }
 
 
@@ -133,8 +136,8 @@ class _HomeState extends State<Home> {
 
 
   void addNote() async {
-    print(assignId); // Ensure assignId is accessible here
-    print(relatedId); // Ensure relatedId is accessible here
+    print(assignId);
+    print(relatedId);
 
     Hive.openBox<NoteHive>("notes").then((notesBox) {
       exportFunctions.postNotesToApi(notesBox, Ids(assignId!, relatedId!));
@@ -147,8 +150,8 @@ class _HomeState extends State<Home> {
         ..id = uid
         ..subject = subjectController.text
         ..relatedTo = relatedTo!
-        ..search = searchController.text
-        ..assignTo = assignId! // Assuming assignId is not null
+        ..search = relatedId!
+        ..assignTo = assignId!
         ..description = descriptionController.text;
 
       await notes!.add(newNote);
@@ -174,11 +177,11 @@ class _HomeState extends State<Home> {
           ..subject = subjectController.text
           ..status = status!
           ..type = relatedTo!
-          ..contact = contactController.text
+          ..contact = relatedId!
           ..startDate = startDateController.text
           ..dueDate = dueDateController.text
           ..priority = priority!
-          ..assignTo = assignController.text
+          ..assignTo = assignId!
           ..description = descriptionController.text;
 
       await task!.add(newTask);
@@ -352,7 +355,7 @@ class _HomeState extends State<Home> {
                               keyboardType: TextInputType.none,
                               validator: (value) {
                                 if (value.isEmpty) {
-                                  return "Please Enter a Value";
+                                  return null;
                                 }
                                 return null;
                               },
@@ -642,7 +645,7 @@ class _HomeState extends State<Home> {
                               keyboardType: TextInputType.none,
                               validator: (value){
                                 if(value.isEmpty){
-                                  return "Please Enter a Value";
+                                  return null;
                                 }
                                 return null;
                               },

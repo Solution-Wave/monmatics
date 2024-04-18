@@ -22,7 +22,7 @@ class _splashScreenState extends State<splashScreen> {
   Future<void> loadSelectedUrl() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      selectedUrl = prefs.getString('selectedUrl') ?? ''; // Load the selected URL from shared preferences
+      selectedUrl = prefs.getString('selectedUrl') ?? '';
       baseUrl = selectedUrl ?? '';
       updateUrls(baseUrl);
     });

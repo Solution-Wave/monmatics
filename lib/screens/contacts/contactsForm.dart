@@ -23,6 +23,27 @@ class AddContact extends StatefulWidget {
 class _AddContactState extends State<AddContact> {
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  String? userId;
+
+  Future<void> getSharedData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userId = prefs.getString('id');
+      assignId = prefs.getString('id');
+    });
+  }
+
+
+  void FunctionCall()async{
+    await getSharedData();
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    FunctionCall();
+  }
 
   TextEditingController firstnameController = TextEditingController();
   TextEditingController lastnameController = TextEditingController();
@@ -61,8 +82,8 @@ class _AddContactState extends State<AddContact> {
     ..lName = lastnameController.text
     ..title = titleController.text
     ..relatedTo = relatedTo!
-    ..search = searchController.text
-    ..assignTo = assignController.text
+    ..search = relatedId!
+    ..assignTo = assignId!
     ..phone = phoneController.text
     ..email = emailController.text
     ..officePhone = officePhoneController.text
@@ -285,7 +306,7 @@ class _AddContactState extends State<AddContact> {
                         prefixIcon: const Icon(Icons.person_2),
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter a Value";
+                            return null;
                           }
                           else {
                             return null;
@@ -564,44 +585,6 @@ class _AddContactState extends State<AddContact> {
       // Handle error appropriately
     }
   }
-  void searchContacts(BuildContext context, TextEditingController textFieldController) async {
-    try {
-      // Open the Hive box if it's not already open
-      if (!Hive.isBoxOpen('contacts')) {
-        await Hive.openBox('contacts');
-      }
-
-      // Get the box
-      Box contactBox = Hive.box('contacts');
-      List<String> customerNames = [];
-      for (var contact in contactBox.values) {
-        customerNames.add(
-            '${contact.fName} ''${contact.lName}');
-      }
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Center(child: Text('Contacts List')),
-            content: SingleChildScrollView(
-              child: Column(
-                children: customerNames.map((id) => ListTile(
-                  title: Text(id),
-                  onTap: () {
-                    textFieldController.text = id;
-                    Navigator.pop(context);
-                  },
-                )).toList(),
-              ),
-            ),
-          );
-        },
-      );
-    } catch (e) {
-      print('Error fetching customer names: $e');
-      // Handle error appropriately
-    }
-  }
   void searchUsers(BuildContext context, TextEditingController textFieldController,) async {
     try {
       // Open the Hive box if it's not already open
@@ -649,5 +632,4 @@ class _AddContactState extends State<AddContact> {
       // Handle error appropriately
     }
   }
-
 }

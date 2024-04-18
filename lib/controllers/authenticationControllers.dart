@@ -25,7 +25,7 @@ class AuthenticateController {
         userData.forEach((key, value) {
           prefs.setString(key, value.toString());
         });
-        String? token = data['user']['remember_token'];
+        String? token = data['user']['api_token'];
         int id = data['user']['id'];
         if (token != null) {
           prefs.setString('token', token);
