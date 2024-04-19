@@ -1,5 +1,9 @@
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:monmatics/models/contactItem.dart';
+import 'package:monmatics/models/customerItem.dart';
+import 'package:monmatics/models/leadItem.dart';
 import 'package:monmatics/utils/messages.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Functions/importFunctions.dart';
@@ -11,6 +15,8 @@ import '../screens/calenderScreen.dart';
 import '../screens/calls/callsListView.dart';
 import '../screens/customer/customerListView.dart';
 import '../screens/leadsView/leadListView.dart';
+import '../screens/opportunitiesView/opportunitysListView.dart';
+import '../splashScreen.dart';
 import '../utils/colors.dart';
 import '../utils/constants.dart';
 import 'logout.dart';
@@ -28,8 +34,9 @@ class _navigationdrawerState extends State<navigationdrawer> {
     String? firstName;
     String? lastName;
     String? role;
+    bool loading = false;
 
-    Future GetSharedData() async {
+    Future getSharedData() async {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       setState(() {
         firstName = prefs.getString('firstName') ?? "";
@@ -38,15 +45,14 @@ class _navigationdrawerState extends State<navigationdrawer> {
       });
       return true;
     }
-    void FunctionCall()async{
-      await GetSharedData();
+    void functionCall()async{
+      await getSharedData();
     }
-   final GlobalKey<State> _keyLoader = GlobalKey<State>();
 
    Future<void> showProgressDialog(BuildContext context, GlobalKey key) async {
      return showDialog<void>(
        context: context,
-       barrierDismissible: false, // Prevent dismissing the dialog by tapping outside
+       barrierDismissible: false,
        builder: (BuildContext context) {
          return SimpleDialog(
            key: key,
@@ -54,9 +60,9 @@ class _navigationdrawerState extends State<navigationdrawer> {
              Column(
                mainAxisSize: MainAxisSize.min,
                children: [
-                 CircularProgressIndicator(), // Display a CircularProgressIndicator
-                 SizedBox(height: 16.0), // Optional spacing
-                 Text('Please wait...'), // Optional text message
+                 CircularProgressIndicator(),
+                 SizedBox(height: 16.0),
+                 Text('Please wait...'),
                ],
              ),
            ]
@@ -69,7 +75,26 @@ class _navigationdrawerState extends State<navigationdrawer> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    FunctionCall();
+    functionCall();
+  }
+
+    void clearHomeHiveData()async{
+      final tasksBox = await Hive.openBox<TaskHive>('tasks');
+      final notesBox = await Hive.openBox<NoteHive>('notes');
+
+      await tasksBox.clear();
+      await notesBox.clear();
+    }
+
+  void clearHiveData()async{
+      clearHomeHiveData();
+    final customersBox = await Hive.openBox<CustomerHive>('customers');
+    final leadsBox = await Hive.openBox<LeadHive>('leads');
+    final contactsBox = await Hive.openBox<ContactHive>('contacts');
+
+    await customersBox.clear();
+    await leadsBox.clear();
+    await contactsBox.clear();
   }
 
   ExportFunctions exportFunctions = ExportFunctions();
@@ -78,7 +103,13 @@ class _navigationdrawerState extends State<navigationdrawer> {
    String? assignId;
    String? relatedId;
 
-   @override
+    Future<bool> isConnected() async {
+      var connectivityResult = await Connectivity().checkConnectivity();
+      return connectivityResult != ConnectivityResult.none;
+    }
+
+
+    @override
   Widget build(BuildContext context) {
     return Drawer(
       width: MediaQuery.of(context).size.width * 0.55,
@@ -101,7 +132,8 @@ class _navigationdrawerState extends State<navigationdrawer> {
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.of(context, rootNavigator: true)
-                        .push(MaterialPageRoute(builder: (context) => const CustomTableCalendar())) ;
+                        .push(MaterialPageRoute(builder: (context) =>
+                    const CustomTableCalendar())) ;
 
                   },
                 ),
@@ -112,7 +144,8 @@ class _navigationdrawerState extends State<navigationdrawer> {
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.of(context, rootNavigator: true)
-                        .push(MaterialPageRoute(builder: (context) => const CustomerScreen())) ;
+                        .push(MaterialPageRoute(builder: (context) =>
+                    const CustomerScreen())) ;
                   },
                 ),
                 // ListTile(
@@ -127,81 +160,140 @@ class _navigationdrawerState extends State<navigationdrawer> {
                   title: Text('Calls', style: TextStyle(color: drawerTextCol),),
                   onTap: () {
                     Navigator.pop(context);
-                    Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(builder: (context) => CallsScreen())) ;
+                    Navigator.of(context, rootNavigator: true)
+                        .push(MaterialPageRoute(builder: (context) =>
+                    const CallsScreen())) ;
 
                   },
                 ),
-                // ListTile(
-                //   visualDensity: VisualDensity(vertical: drawerTileHeight),
-                //   leading: Icon(RpgAwesome.supersonic_arrow, color: drawerTextCol,),
-                //   title: Text('Opportunities',style: TextStyle(color: drawerTextCol),),
-                //   onTap: () {
-                //     // Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(builder: (context) => OpportunityScreen())) ;
-                //   },
-                // ),
+                ListTile(
+                  visualDensity: VisualDensity(vertical: drawerTileHeight),
+                  leading: Icon(RpgAwesome.supersonic_arrow, color: drawerTextCol,),
+                  title: Text('Opportunities',style: TextStyle(color: drawerTextCol),),
+                  onTap: () {
+                    Navigator.of(context, rootNavigator: true)
+                    .push(MaterialPageRoute(builder: (context) =>
+                        OpportunityScreen())) ;
+                  },
+                ),
                 ListTile(
                   visualDensity: VisualDensity(vertical: drawerTileHeight),
                   leading: Icon(RpgAwesome.magnet, color: drawerTextCol,),
                   title: Text('Leads', style: TextStyle(color: drawerTextCol),),
                   onTap: () {
                     Navigator.pop(context);
-                    Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(builder: (context) => leadsScreen())) ;
+                    Navigator.of(context, rootNavigator: true)
+                        .push(MaterialPageRoute(builder: (context) =>
+                    const leadsScreen())) ;
                   },
                 ),
                 ListTile(
                   visualDensity: VisualDensity(vertical: drawerTileHeight),
                   leading: Icon(Icons.file_upload, color: drawerTextCol,),
                   title: Text('Upload Data', style: TextStyle(color: drawerTextCol),),
-                  onTap: () async {
-                    try {
-                      exportFunctions.postCustomerToApi();
-                      exportFunctions.postContactsToApi();
-                      Hive.openBox<TaskHive>("tasks").then((tasksBox) {
-                        exportFunctions.postTasksToApi(tasksBox, Ids(assignId!, relatedId!));
-                      });
-                      Hive.openBox<NoteHive>("notes").then((notesBox) {
-                        exportFunctions.postNotesToApi(notesBox, Ids(assignId!, relatedId!));
-                      });
-                      exportFunctions.postLeadToApi();
-                      showSnackMessage(context, "Data Uploaded Successfully.");
-                      print('Data Uploaded successfully.');
-                    } catch (e) {
-                      print('Error Uploading Data: $e');
+                    onTap: () async {
+                      if (await isConnected()) {
+                        try {
+                          exportFunctions.postCustomerToApi();
+                          exportFunctions.postContactsToApi();
+                          Hive.openBox<TaskHive>("tasks").then((tasksBox) {
+                            exportFunctions.postTasksToApi(tasksBox, Ids(assignId!, relatedId!));
+                          });
+                          Hive.openBox<NoteHive>("notes").then((notesBox) {
+                            exportFunctions.postNotesToApi(notesBox, Ids(assignId!, relatedId!));
+                          });
+                          exportFunctions.postLeadToApi();
+                          showSnackMessage(context, "Data Uploaded Successfully.");
+                          Navigator.pushAndRemoveUntil(context,
+                              MaterialPageRoute(builder: (context) =>
+                              const splashScreen()), (route) => false);
+                          print('Data Uploaded successfully.');
+                        } catch (e) {
+                          showSnackMessage(context, "Error Uploading Data");
+                          Navigator.pushAndRemoveUntil(context,
+                              MaterialPageRoute(builder: (context) =>
+                              const splashScreen()), (route) => false);
+                          print('Error Uploading Data: $e');
+                        }
+                      } else {
+                        showSnackMessage(
+                            context, "No Internet Connection. Please check your connection and try again.");
+                      }
                     }
-
-                  },
                 ),
                 ListTile(
                   visualDensity: VisualDensity(vertical: drawerTileHeight),
                   leading: Icon(Icons.file_download, color: drawerTextCol,),
-                  title: Text('Download Data', style: TextStyle(color: drawerTextCol),),
+                  title: Text('Download Data',
+                    style: TextStyle(color: drawerTextCol),),
                   onTap: () async{
-                    try {
-                      importFunctions.fetchUsersFromApi();
-                      importFunctions.fetchTasksFromApi();
-                      importFunctions.fetchContactsFromApi();
-                      importFunctions.fetchCustomersFromApi();
-                      importFunctions.fetchLeadsFromApi();
-                      importFunctions.fetchNotesFromApi();
-                      print('Data Fetched successfully.');
-                    } catch (e) {
-                      print('Error Fetching Data: $e');
+                    if (await isConnected()) {
+                      try {
+                        importFunctions.fetchUsersFromApi();
+                        importFunctions.fetchTasksFromApi();
+                        importFunctions.fetchContactsFromApi();
+                        importFunctions.fetchCustomersFromApi();
+                        importFunctions.fetchLeadsFromApi();
+                        importFunctions.fetchNotesFromApi();
+                        print('Data Fetched successfully.');
+                        Navigator.pushAndRemoveUntil(context,
+                            MaterialPageRoute(builder: (
+                                context) => const splashScreen()), (
+                                route) => false);
+                        showSnackMessage(
+                            context, "Data Downloaded Successfully.");
+                      } catch (e) {
+                        print('Error Fetching Data: $e');
+                        Navigator.pushAndRemoveUntil(context,
+                            MaterialPageRoute(builder: (
+                                context) => const splashScreen()), (
+                                route) => false);
+                        showSnackMessage(context, "Error Fetching Data.");
+                      }
+                    } else {
+                      showSnackMessage(
+                          context, "No Internet Connection. Please check your connection and try again.");
                     }
                     // Navigator.pop(context);
                     // StorageController cont = StorageController();
                     //   showProgressDialog(context,_keyLoader);
                     //   await cont.GetAllData();
                     //   print('data loaded');
-                    // Navigator.of(_keyLoader.currentContext!,rootNavigator: true).pop();
+                    // Navigator.of(_keyLoader.currentContext!,
+                    // rootNavigator: true).pop();
+                  },
+                ),
+                ListTile(
+                  visualDensity: VisualDensity(vertical: drawerTileHeight),
+                  leading: Icon(Icons.close, color: drawerTextCol,),
+                  title: Text('Clear Data', style: TextStyle(color: drawerTextCol),),
+                  onTap: () {
+                    try{
+                      clearHiveData();
+                      Navigator.pushAndRemoveUntil(context,
+                          MaterialPageRoute(builder: (context) => const splashScreen()), (route) => false);
+                      showSnackMessage(context, "Data Cleared Successfully.");
+                    } catch(e){
+                      print("Error: $e");
+                      showSnackMessage(context, "Error In Clearing Data.");
+                    }
                   },
                 ),
                 ListTile(
                   visualDensity: VisualDensity(vertical: drawerTileHeight),
                   leading: Icon(Icons.logout, color: drawerTextCol,),
                   title: Text('Logout', style: TextStyle(color: drawerTextCol),),
-                  onTap: () {
-                    logOut(context);
-                    // Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(builder: (context) => leadsScreen())) ;
+                  onTap: () async{
+                    if(await isConnected()){
+                      logOut(context);
+                      clearHomeHiveData();
+                    } else {
+                      showSnackMessage(
+                          context, "No Internet Connection. Please check your connection and try again.");
+                    }
+                    // Navigator.of(context, rootNavigator: true)
+                    // .push(MaterialPageRoute(builder: (context) =>
+                    // leadsScreen())) ;
                   },
                 ),
               ],
@@ -235,9 +327,17 @@ Widget DrawerHeader(BuildContext context, String name , String role) {
               mainAxisAlignment: MainAxisAlignment.center,
               // crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: TextStyle( fontSize: 12.0, fontWeight: FontWeight.bold, color:Theme.of(context).brightness == Brightness.light? drawerTextCol: null),),
-                Text(role, style: TextStyle( fontSize: 10.0, fontWeight: FontWeight.w200,  color: Theme.of(context).brightness == Brightness.light? drawerTextCol: null),),
-                //Text('user_email@gmail.com', style: TextStyle( fontSize: 10.0, fontWeight: FontWeight.w200,  color: Theme.of(context).brightness == Brightness.light? drawerTextCol: null),),
+                Text(name, style: TextStyle(fontSize: 12.0,
+                    fontWeight: FontWeight.bold, color:Theme
+                        .of(context).brightness == Brightness.light? drawerTextCol: null),
+                ),
+                Text(role, style: TextStyle(fontSize: 10.0,
+                    fontWeight: FontWeight.w200,  color: Theme
+                        .of(context).brightness == Brightness.light? drawerTextCol: null),
+                ),
+                //Text('user_email@gmail.com', style: TextStyle( fontSize: 10.0,
+                // fontWeight: FontWeight.w200,  color: Theme
+                // .of(context).brightness == Brightness.light? drawerTextCol: null),),
               ],
             )
           ],

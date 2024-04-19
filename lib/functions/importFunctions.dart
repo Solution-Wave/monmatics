@@ -45,7 +45,7 @@ class ImportFunctions{
       final List<dynamic> leadsJson = jsonDecode(response.body)['data'];
 
       // Open the leads Hive box
-      final leadsBox = await Hive.openBox<dynamic>('leads');
+      final leadsBox = await Hive.openBox<LeadHive>('leads');
 
       // Clear existing leads before adding new ones
       await leadsBox.clear();
@@ -81,7 +81,7 @@ class ImportFunctions{
       final List<dynamic> customersJson = jsonDecode(response.body)['data'];
 
       // Open the customers Hive box
-      final customersBox = await Hive.openBox<dynamic>('customers');
+      final customersBox = await Hive.openBox<CustomerHive>('customers');
 
       // Clear existing customers before adding new ones
       await customersBox.clear();
@@ -110,13 +110,14 @@ class ImportFunctions{
     String apiUrl = getContacts;
     String finalUrl = '$apiUrl?_token=$token$databaseInfoQuery';
     final response = await http.get(Uri.parse(finalUrl));
+    print(finalUrl);
 
     if (response.statusCode == 200) {
       // If the request is successful, parse the JSON response
       final List<dynamic> contactsJson = jsonDecode(response.body)['data'];
 
       // Open the contacts Hive box
-      final contactsBox = await Hive.openBox<dynamic>('contacts');
+      final contactsBox = await Hive.openBox<ContactHive>('contacts');
 
       // Clear existing contacts before adding new ones
       await contactsBox.clear();
@@ -196,6 +197,7 @@ class ImportFunctions{
         // If the request is successful, parse the JSON response
         final dynamic responseData = jsonDecode(response.body);
         final List<dynamic> notesJson = responseData['data'] ?? [];
+        print(notesJson);
 
         // Open the Notes Hive box
         final notesBox = await Hive.openBox<NoteHive>('notes');

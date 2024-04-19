@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:monmatics/models/leadItem.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../Functions/importFunctions.dart';
@@ -30,7 +31,7 @@ class _leadsScreenState extends State<leadsScreen> {
   }
 
  Future<bool> GetDataFromBox()async{
-   leadsBox = await Hive.openBox('leads');
+   leadsBox = await Hive.openBox<LeadHive>('leads');
    setState(() {
 
    });
@@ -60,7 +61,7 @@ class _leadsScreenState extends State<leadsScreen> {
 
   @override
   void initState() {
-    importFunctions.fetchLeadsFromApi();
+    // importFunctions.fetchLeadsFromApi();
     super.initState();
   }
   Widget build(BuildContext context) {

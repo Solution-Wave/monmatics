@@ -40,7 +40,7 @@ class _AddLeadState extends State<AddLead> {
   void addLead() async{
     exportFunctions.postLeadToApi();
     var uid = uuid.v1();
-    Box? lead = await Hive.openBox("leads");
+    Box? lead = await Hive.openBox<LeadHive>("leads");
     LeadHive newLead = LeadHive()
     ..id = uid
     ..name = nameController.text

@@ -11,6 +11,7 @@ import 'package:uuid/uuid.dart';
 import '../Functions/exportFunctions.dart';
 import '../Functions/importFunctions.dart';
 import '../Functions/searchFunctions.dart';
+import '../components/navDrawer.dart';
 import '../controllers/crmControllers.dart';
 import '../models/taskItem.dart';
 import '../models/userItem.dart';
@@ -61,6 +62,7 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: navigationdrawer(),
       appBar: AppBar(
         title: Text('Calendar', style: headerTextStyle),
         centerTitle: true,

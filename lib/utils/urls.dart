@@ -16,6 +16,7 @@ String saveNotes = '';
 String getUsers = '';
 String deleteNotes = '';
 String updateNotes = '';
+String saveUpdate = "";
 
 void updateUrls(String newBaseUrl) {
   baseUrl = newBaseUrl;
@@ -36,4 +37,5 @@ void updateUrls(String newBaseUrl) {
   getUsers = '$baseUrl/get_users';
   deleteNotes = '$baseUrl/delete_notes';
   updateNotes = '$baseUrl/update_notes';
+  saveUpdate = '$baseUrl/save-or-update_note';
 }

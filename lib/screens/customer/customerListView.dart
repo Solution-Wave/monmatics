@@ -23,7 +23,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
   Box? customer;
 
   Future<bool> getCustomers() async {
-    customer = await Hive.openBox('customers');
+    customer = await Hive.openBox<CustomerHive>('customers');
     setState(() {});
     return Future.value(true);
   }
@@ -52,7 +52,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
 
   @override
   void initState() {
-    importFunctions.fetchCustomersFromApi();
+    // importFunctions.fetchCustomersFromApi();
     super.initState();
   }
 

@@ -1,5 +1,6 @@
 import 'package:hive/hive.dart';
 import 'package:flutter/material.dart';
+import '../models/customerItem.dart';
 import '../models/userItem.dart';
 
 
@@ -11,9 +12,9 @@ class SearchFunctions{
   void searchCustomer(BuildContext context, TextEditingController textFieldController) async {
     try {
       if (!Hive.isBoxOpen('customers')) {
-        await Hive.openBox('customers');
+        await Hive.openBox<CustomerHive>('customers');
       }
-      Box contactBox = Hive.box('customers');
+      Box contactBox = Hive.box<CustomerHive>('customers');
       List<Map<String, dynamic>> customers = [];
       for (var customer in contactBox.values) {
         customers.add({
@@ -49,10 +50,10 @@ class SearchFunctions{
   void searchLead(BuildContext context, TextEditingController textFieldController) async {
     try {
       if (!Hive.isBoxOpen('leads')) {
-        await Hive.openBox('leads');
+        await Hive.openBox<CustomerHive>('leads');
       }
 
-      Box leadBox = Hive.box('leads');
+      Box leadBox = Hive.box<CustomerHive>('leads');
       List<Map<String, dynamic>> leads = [];
       for (var lead in leadBox.values) {
         leads.add({
@@ -89,11 +90,11 @@ class SearchFunctions{
     try {
       // Open the Hive box if it's not already open
       if (!Hive.isBoxOpen('contacts')) {
-        await Hive.openBox('contacts');
+        await Hive.openBox<CustomerHive>('contacts');
       }
 
       // Get the box
-      Box contactBox = Hive.box('contacts');
+      Box contactBox = Hive.box<CustomerHive>('contacts');
       List<String> customerNames = [];
       for (var contact in contactBox.values) {
         customerNames.add(

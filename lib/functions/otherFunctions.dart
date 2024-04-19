@@ -10,7 +10,7 @@ class OtherFunctions{
 
   ImportFunctions importFunctions = ImportFunctions();
   // Function to update an existing note and update data in the database
-  Future<void> updateNoteAndDatabase(NoteHive note, String? id) async {
+  Future<void> updateNoteAndDatabase(NoteHive note) async {
     // Update data in the remote database
     Map<String, dynamic>? databaseInfo = await importFunctions.getDatabaseInfo();
     if (databaseInfo == null) {
@@ -20,7 +20,7 @@ class OtherFunctions{
     try {
       // Prepare data to update note
       Map<String, dynamic> postData = {
-        'id': id,
+        'id': note.id,
         'subject': note.subject,
         'assign_ID': note.assignTo,
         'related_ID': note.search,
@@ -29,7 +29,7 @@ class OtherFunctions{
         'updated_at': DateTime.now().toIso8601String(),
       };
 
-      String noteId = id!;
+      String noteId = note.id;
       print(noteId);
 
       String jsonData = jsonEncode(postData);

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:monmatics/models/contactItem.dart';
+import 'package:monmatics/models/customerItem.dart';
+import 'package:monmatics/models/leadItem.dart';
 import 'package:uuid/uuid.dart';
 import '../../functions/searchFunctions.dart';
 import '../../models/callItem.dart';
@@ -103,7 +106,7 @@ class _AddCallsState extends State<AddCalls> {
 
   // Add Call Through Hive
   void addCall() async{
-    Box? call = await Hive.openBox("calls");
+    Box? call = await Hive.openBox<CallHive>("calls");
     var uid = uuid.v1();
     CallHive newCall = CallHive()
     ..id = uid
@@ -610,9 +613,9 @@ class _AddCallsState extends State<AddCalls> {
   void searchCustomer(BuildContext context, TextEditingController textFieldController) async {
     try {
       if (!Hive.isBoxOpen('customers')) {
-        await Hive.openBox('customers');
+        await Hive.openBox<CustomerHive>('customers');
       }
-      Box contactBox = Hive.box('customers');
+      Box contactBox = Hive.box<CustomerHive>('customers');
       List<Map<String, dynamic>> customers = [];
       for (var customer in contactBox.values) {
         customers.add({
@@ -648,10 +651,10 @@ class _AddCallsState extends State<AddCalls> {
   void searchLead(BuildContext context, TextEditingController textFieldController) async {
     try {
       if (!Hive.isBoxOpen('leads')) {
-        await Hive.openBox('leads');
+        await Hive.openBox<LeadHive>('leads');
       }
 
-      Box leadBox = Hive.box('leads');
+      Box leadBox = Hive.box<LeadHive>('leads');
       List<Map<String, dynamic>> leads = [];
       for (var lead in leadBox.values) {
         leads.add({
@@ -688,11 +691,11 @@ class _AddCallsState extends State<AddCalls> {
     try {
       // Open the Hive box if it's not already open
       if (!Hive.isBoxOpen('contacts')) {
-        await Hive.openBox('contacts');
+        await Hive.openBox<ContactHive>('contacts');
       }
 
       // Get the box
-      Box contactBox = Hive.box('contacts');
+      Box contactBox = Hive.box<ContactHive>('contacts');
       List<String> customerNames = [];
       for (var contact in contactBox.values) {
         customerNames.add(

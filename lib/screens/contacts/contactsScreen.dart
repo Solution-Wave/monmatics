@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:monmatics/models/contactItem.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../Functions/importFunctions.dart';
 import '../../components/navDrawer.dart';
@@ -25,7 +26,7 @@ class _contactScreenState extends State<contactScreen>
 
 
   Future<bool> GetContacts() async {
-    contactsBox = await Hive.openBox('contacts');
+    contactsBox = await Hive.openBox<ContactHive>('contacts');
     setState(() {});
     return Future.value(true);
   }
@@ -54,7 +55,7 @@ class _contactScreenState extends State<contactScreen>
   @override
   void initState() {
     super.initState();
-    importFunctions.fetchContactsFromApi();
+    // importFunctions.fetchContactsFromApi();
   }
 
 

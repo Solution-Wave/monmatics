@@ -53,10 +53,18 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   /// 1) our themeMode "state" field
   ThemeMode _themeMode = ThemeMode.light;
+  Key appKey = UniqueKey();
+
+  void restartApp() {
+    setState(() {
+      appKey = UniqueKey();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      key: appKey,
       // locale: DevicePreview.locale(context),
       // builder: DevicePreview.appBuilder,
       // title: 'Flutter Demo',
@@ -78,7 +86,7 @@ class _MyAppState extends State<MyApp> {
 
       ),
       themeMode: _themeMode, // 2) ← ← ← use "state" field here //////////////
-      home: const splashScreen(),
+      home: splashScreen(onRestart: restartApp),
     );
   }
 

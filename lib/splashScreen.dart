@@ -2,13 +2,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/bottomNavigationBarScreen.dart';
-import 'screens/firstScreen.dart';
 import 'screens/loginScreen.dart';
 import 'utils/urls.dart';
 
 
 class splashScreen extends StatefulWidget {
-  const splashScreen({Key? key}) : super(key: key);
+  final Function? onRestart;
+  const splashScreen({Key? key, this.onRestart}) : super(key: key);
 
   @override
   State<splashScreen> createState() => _splashScreenState();
@@ -56,6 +56,7 @@ class _splashScreenState extends State<splashScreen> {
   void initState() {
     super.initState();
     checkSession();
+    widget.onRestart;
   }
   @override
   Widget build(BuildContext context) {

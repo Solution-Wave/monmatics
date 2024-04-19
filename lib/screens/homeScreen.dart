@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:monmatics/models/contactItem.dart';
+import 'package:monmatics/models/customerItem.dart';
+import 'package:monmatics/models/leadItem.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../Functions/importFunctions.dart';
@@ -87,7 +90,7 @@ class _HomeState extends State<Home> {
 
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
-  Future<void> GetSharedData() async {
+  Future<void> getSharedData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       firstName = prefs.getString('firstName');
@@ -97,8 +100,8 @@ class _HomeState extends State<Home> {
     });
   }
 
-  Future<void> FunctionCall() async {
-    await GetSharedData();
+  Future<void> functionCall() async {
+    await getSharedData();
   }
 
   ImportFunctions importFunctions = ImportFunctions();
@@ -108,28 +111,28 @@ class _HomeState extends State<Home> {
 
   @override
   void initState() {
-    FunctionCall();
+    functionCall();
     formKey = GlobalKey<FormState>();
     super.initState();
-    importFunctions.fetchNotesFromApi();
-    importFunctions.fetchTasksFromApi();
+    // importFunctions.fetchNotesFromApi();
+    // importFunctions.fetchTasksFromApi();
     Hive.openBox<NoteHive>("notes").then((notesBox) {
       exportFunctions.postNotesToApi(notesBox, Ids(assignId!, relatedId!));
     });
     Hive.openBox<TaskHive>("tasks").then((tasksBox) {
       exportFunctions.postTasksToApi(tasksBox, Ids(assignId!, relatedId!));
     });
-    GetNotesFromBox();
-    GetTasksFromBox();
+    getNotesFromBox();
+    getTasksFromBox();
   }
 
 
-  Future<void> GetNotesFromBox() async {
+  Future<void> getNotesFromBox() async {
     notes = await Hive.openBox<NoteHive>('notes');
     setState(() {});
   }
 
-  Future<void> GetTasksFromBox() async {
+  Future<void> getTasksFromBox() async {
     task = await Hive.openBox<TaskHive>('tasks');
     setState(() {});
   }
@@ -138,12 +141,10 @@ class _HomeState extends State<Home> {
   void addNote() async {
     print(assignId);
     print(relatedId);
-
     Hive.openBox<NoteHive>("notes").then((notesBox) {
       exportFunctions.postNotesToApi(notesBox, Ids(assignId!, relatedId!));
     });
-
-
+    importFunctions.fetchNotesFromApi();
     if (formKey.currentState!.validate()) {
       var uid = uuid.v1();
       NoteHive newNote = NoteHive()
@@ -202,15 +203,19 @@ class _HomeState extends State<Home> {
       dueDateController.clear();
       assignController.clear();
       descriptionController.clear();
+      searchController.clear();
       relatedTo = null;
       status = null;
       priority = null;
+      relatedId = null;
+      assignId = null;
     });
   }
 
   // Function to update an existing note
   void updateNote(NoteHive note) async {
-    otherFunctions.updateNoteAndDatabase(note, note.id);
+    print(note.id);
+    otherFunctions.updateNoteAndDatabase(note);
     note.subject = subjectController.text;
     note.relatedTo = relatedTo!;
     note.search = searchController.text;
@@ -387,7 +392,6 @@ class _HomeState extends State<Home> {
                     TextButton(
                       onPressed: () {
                         if (isEditMode) {
-                          // updateNoteAndDatabase(note);
                           updateNote(note);
                         } else {
                           addNote();
@@ -395,7 +399,8 @@ class _HomeState extends State<Home> {
                       },
                       child: Text(isEditMode
                           ? 'Update'
-                          : 'Add'), // Change text based on isEditMode
+                          : 'Add',
+                      ),
                     ),
                     TextButton(
                       onPressed: () {
@@ -925,9 +930,9 @@ class _HomeState extends State<Home> {
   void searchCustomer(BuildContext context, TextEditingController textFieldController) async {
     try {
       if (!Hive.isBoxOpen('customers')) {
-        await Hive.openBox('customers');
+        await Hive.openBox<CustomerHive>('customers');
       }
-      Box contactBox = Hive.box('customers');
+      Box contactBox = Hive.box<CustomerHive>('customers');
       List<Map<String, dynamic>> customers = [];
       for (var customer in contactBox.values) {
         customers.add({
@@ -963,10 +968,10 @@ class _HomeState extends State<Home> {
   void searchLead(BuildContext context, TextEditingController textFieldController) async {
     try {
       if (!Hive.isBoxOpen('leads')) {
-        await Hive.openBox('leads');
+        await Hive.openBox<LeadHive>('leads');
       }
 
-      Box leadBox = Hive.box('leads');
+      Box leadBox = Hive.box<LeadHive>('leads');
       List<Map<String, dynamic>> leads = [];
       for (var lead in leadBox.values) {
         leads.add({
@@ -1003,11 +1008,11 @@ class _HomeState extends State<Home> {
     try {
       // Open the Hive box if it's not already open
       if (!Hive.isBoxOpen('contacts')) {
-        await Hive.openBox('contacts');
+        await Hive.openBox<ContactHive>('contacts');
       }
 
       // Get the box
-      Box contactBox = Hive.box('contacts');
+      Box contactBox = Hive.box<ContactHive>('contacts');
       List<String> customerNames = [];
       for (var contact in contactBox.values) {
         customerNames.add(

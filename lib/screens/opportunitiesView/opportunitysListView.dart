@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../utils/colors.dart';
 import '../../utils/themes.dart';
 import 'opportunityExtendedView.dart';
+import 'opportunityForm.dart';
 
 class OpportunityScreen extends StatelessWidget {
    OpportunityScreen({super.key});
@@ -52,14 +53,14 @@ class OpportunityScreen extends StatelessWidget {
             itemBuilder: (BuildContext, index){
               return GestureDetector(
                 onTap: (){
-                  Navigator.push(context, MaterialPageRoute(builder: (BuildContext)=>OpportunityExtendedScreen() ));
+                  Navigator.push(context, MaterialPageRoute(builder: (BuildContext)=>const OpportunityExtendedScreen() ));
                 },
                 child: Container(
-                  constraints: BoxConstraints(
+                  constraints: const BoxConstraints(
                       minHeight: 70
                   ),
                   child: Container(
-                    margin: EdgeInsets.only(top: 10.0),
+                    margin: const EdgeInsets.only(top: 10.0),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12.0),
                         border: Border.all(color: primaryColor)
@@ -83,11 +84,11 @@ class OpportunityScreen extends StatelessWidget {
                           IconButton(
                               iconSize: 20.0,
                               onPressed: (){},
-                              icon: Icon(Icons.phone)),
+                              icon: const Icon(Icons.phone)),
                           IconButton(
                               iconSize: 20.0,
                               onPressed: (){},
-                              icon: Icon(Icons.mail)),
+                              icon: const Icon(Icons.mail)),
                         ],)
 
                       ],
@@ -97,6 +98,16 @@ class OpportunityScreen extends StatelessWidget {
               );
             },
           ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: Theme.of(context).brightness == Brightness.light
+              ? popupmenuButtonCol
+              : null,
+          onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const AddOpportunity()));
+          },
+          child: const Icon(Icons.add,
+              size: 40.0),
         ),
       ),
     );

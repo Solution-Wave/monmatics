@@ -48,7 +48,7 @@ class ExportFunctions {
       print(companyId);
 
       // Open Hive box
-      Box? leadBox = await Hive.openBox("leads");
+      Box? leadBox = await Hive.openBox<LeadHive>("leads");
 
       List<dynamic> leadsDynamic = leadBox.values.toList();
       List<LeadHive> leads = leadsDynamic.cast<LeadHive>();
@@ -180,7 +180,7 @@ class ExportFunctions {
       print(companyId);
 
       // Open Hive box
-      Box? customerBox = await Hive.openBox("customers");
+      Box? customerBox = await Hive.openBox<CustomerHive>("customers");
 
       List<dynamic> customersDynamic = customerBox.values.toList();
       List<CustomerHive> customers = customersDynamic.cast<CustomerHive>();
@@ -306,7 +306,7 @@ class ExportFunctions {
       print(companyId);
 
       // Open Hive box
-      Box? contactBox = await Hive.openBox("contacts");
+      Box? contactBox = await Hive.openBox<ContactHive>("contacts");
 
       List<dynamic> contactsDynamic = contactBox.values.toList();
       List<ContactHive> contacts = contactsDynamic.cast<ContactHive>();
@@ -426,7 +426,7 @@ class ExportFunctions {
       return;
     }
 
-    String apiUrl = saveNotes;
+    String apiUrl = saveUpdate;
     print(apiUrl);
     print(id);
 
@@ -438,8 +438,6 @@ class ExportFunctions {
       }
       String companyId = databaseInfo['company_id'] ?? '';
       print(companyId);
-
-
       List<dynamic> contactsDynamic = notesBox.values.toList();
       List<NoteHive> contacts = contactsDynamic.cast<NoteHive>();
       for (NoteHive contact in contacts) {
@@ -468,6 +466,7 @@ class ExportFunctions {
         });
 
         String finalUrl = '$apiUrl?$databaseInfoQuery';
+        print(finalUrl);
         http.Response response = await http.post(
           Uri.parse(finalUrl),
           headers: <String, String>{
@@ -475,6 +474,7 @@ class ExportFunctions {
           },
           body: jsonData,
         );
+        print(jsonData);
 
         if (response.statusCode == 200) {
           print('Note added successfully: ${contact.id}');

@@ -1,4 +1,10 @@
 import 'package:hive/hive.dart';
+import 'package:monmatics/models/callItem.dart';
+import 'package:monmatics/models/contactItem.dart';
+import 'package:monmatics/models/customerItem.dart';
+import 'package:monmatics/models/leadItem.dart';
+import 'package:monmatics/models/noteItem.dart';
+import 'package:monmatics/models/taskItem.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'crmControllers.dart';
@@ -28,12 +34,12 @@ class StorageController {
   Future openBox() async {
     var dir = await getApplicationDocumentsDirectory();
     Hive.init(dir.path);
-    boxleads = await Hive.openBox('leads');
-    boxNotes = await Hive.openBox('notes');
-    boxTasks = await Hive.openBox('tasks');
-    boxContacts = await Hive.openBox('contacts');
-    boxCalls= await Hive.openBox('calls');
-    boxCustomers = await Hive.openBox('customers');
+    boxleads = await Hive.openBox<LeadHive>('leads');
+    boxNotes = await Hive.openBox<NoteHive>('notes');
+    boxTasks = await Hive.openBox<TaskHive>('tasks');
+    boxContacts = await Hive.openBox<ContactHive>('contacts');
+    boxCalls= await Hive.openBox<CallHive>('calls');
+    boxCustomers = await Hive.openBox<CustomerHive>('customers');
     return;
   }
 

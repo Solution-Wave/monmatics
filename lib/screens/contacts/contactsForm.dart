@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:monmatics/models/customerItem.dart';
+import 'package:monmatics/models/leadItem.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../../Functions/exportFunctions.dart';
@@ -74,7 +76,7 @@ class _AddContactState extends State<AddContact> {
   void addContact() async{
     exportFunctions.postContactsToApi();
     var uid = uuid.v1();
-    Box? contact = await Hive.openBox("contacts");
+    Box? contact = await Hive.openBox<ContactHive>("contacts");
     ContactHive newContact = ContactHive()
     ..id = uid
     ..type = selectedType!
@@ -511,9 +513,9 @@ class _AddContactState extends State<AddContact> {
   void searchCustomer(BuildContext context, TextEditingController textFieldController) async {
     try {
       if (!Hive.isBoxOpen('customers')) {
-        await Hive.openBox('customers');
+        await Hive.openBox<CustomerHive>('customers');
       }
-      Box contactBox = Hive.box('customers');
+      Box contactBox = Hive.box<CustomerHive>('customers');
       List<Map<String, dynamic>> customers = [];
       for (var customer in contactBox.values) {
         customers.add({
@@ -549,10 +551,10 @@ class _AddContactState extends State<AddContact> {
   void searchLead(BuildContext context, TextEditingController textFieldController) async {
     try {
       if (!Hive.isBoxOpen('leads')) {
-        await Hive.openBox('leads');
+        await Hive.openBox<LeadHive>('leads');
       }
 
-      Box leadBox = Hive.box('leads');
+      Box leadBox = Hive.box<LeadHive>('leads');
       List<Map<String, dynamic>> leads = [];
       for (var lead in leadBox.values) {
         leads.add({

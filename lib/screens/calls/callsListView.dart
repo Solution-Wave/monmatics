@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:monmatics/models/callItem.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../controllers/crmControllers.dart';
 import '../../utils/colors.dart';
@@ -29,7 +30,7 @@ class _CallsScreenState extends State<CallsScreen> {
     token = prefs.getString('token');
   }
    Future<bool> getCallsRecord() async {
-     call = await Hive.openBox('calls');
+     call = await Hive.openBox<CallHive>('calls');
      setState(() {
      });
      return Future.value(true);
