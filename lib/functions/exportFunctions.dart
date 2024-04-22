@@ -426,7 +426,7 @@ class ExportFunctions {
       return;
     }
 
-    String apiUrl = saveUpdate;
+    String apiUrl = saveUpdateNotes;
     print(apiUrl);
     print(id);
 
@@ -563,7 +563,7 @@ class ExportFunctions {
       return;
     }
 
-    String apiUrl = saveTasksUrl;
+    String apiUrl = saveUpdateTasks;
     print(apiUrl);
 
     try {
@@ -589,14 +589,15 @@ class ExportFunctions {
           'id': task.id,
           'subject': task.subject,
           'status': task.status,
-          // 'start_date': "task.startDate",
-          // 'due_date': "task.dueDate",
+          'start_date': task.startDate,
+          'due_date': task.dueDate,
           'priority' : task.priority,
-          'assign_ID': assignId,
-          'related_ID': relatedId,
+          'assigned_to': assignId,
+          'related_id': relatedId,
           'related_to_type': task.type,
-          'contact_ID' : assignId,
+          'contact_id' : assignId,
           'description' : task.description,
+          'companyId' : companyId,
           'created_at': DateTime.now().toIso8601String(),
         };
 

@@ -20,7 +20,8 @@ class CallsAdapter extends TypeAdapter<CallHive>{
         ..endTime = reader.readString()
         ..communicationType = reader.readString()
         ..assignTo = reader.readString()
-        ..description = reader.readString();
+        ..description = reader.readString()
+        ..assignId = reader.readString();
   }
 
   @override
@@ -38,5 +39,6 @@ class CallsAdapter extends TypeAdapter<CallHive>{
     writer.writeString(obj.communicationType);
     writer.writeString(obj.assignTo);
     writer.writeString(obj.description);
+    writer.writeString(obj.assignId);
   }
 }

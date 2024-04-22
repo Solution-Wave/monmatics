@@ -1,9 +1,8 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:monmatics/models/callItem.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../controllers/crmControllers.dart';
+import '../../models/callItem.dart';
 import '../../utils/colors.dart';
 import '../../utils/themes.dart';
 import 'callsForm.dart';
@@ -116,7 +115,9 @@ class _CallsScreenState extends State<CallsScreen> {
               ? popupmenuButtonCol
               : null,
           onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const AddCalls()));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const AddCalls(
+
+            )));
           },
           child: const Icon(Icons.add,
             size: 40.0,),
@@ -135,6 +136,15 @@ class CallsListTile extends StatefulWidget {
 }
 
 class _CallsListTileState extends State<CallsListTile> {
+
+  void navigateToEditScreen(BuildContext context, CallHive obj) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddCalls(existingCall: obj),
+      ),
+    );
+  }
   bool _isExpanded=false;
 
   @override
@@ -169,10 +179,18 @@ class _CallsListTileState extends State<CallsListTile> {
                 children: [
                   const Icon(Icons.av_timer),
                   Text(widget.obj.startDate, style: listViewTextStyle ,),
-
                 ],
-              )
+              ),
+              IconButton(
+                  onPressed: () => navigateToEditScreen(context, widget.obj),
+                  icon: const Icon(Icons.edit, color: Colors.blueAccent,)
+              ),
+              IconButton(
+                  onPressed: (){
 
+                  },
+                  icon: const Icon(Icons.delete, color: Colors.red)
+              ),
             ],
           ),
           childrenPadding: const EdgeInsets.only(
@@ -230,8 +248,6 @@ class _CallsListTileState extends State<CallsListTile> {
                     Container(
                       width: MediaQuery.of(context).size.width*0.6,
                         child: Text(widget.obj.description,style: normalStyle,)),
-
-
                   ],
                 )
               ],

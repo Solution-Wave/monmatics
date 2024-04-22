@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:icons_flutter/icons_flutter.dart';
-import 'package:monmatics/models/leadItem.dart';
+import '../../models/leadItem.dart';
+import '../../models/opportunityItem.dart';
+import '../../models/userItem.dart';
 import '../../utils/customWidgets.dart';
 import '../../utils/messages.dart';
 import '../../utils/themes.dart';
@@ -9,60 +11,147 @@ import 'package:uuid/uuid.dart';
 
 
 class AddOpportunity extends StatefulWidget {
-  const AddOpportunity({super.key});
+  final OpportunityHive? existingOpportunity;
+
+  const AddOpportunity({super.key, this.existingOpportunity});
 
   @override
   State<AddOpportunity> createState() => _AddOpportunityState();
 }
 
 class _AddOpportunityState extends State<AddOpportunity> {
-
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
+  // Initialize text controllers
   TextEditingController nameController = TextEditingController();
   TextEditingController leadController = TextEditingController();
   TextEditingController amountController = TextEditingController();
   TextEditingController dateController = TextEditingController();
-  TextEditingController addressController = TextEditingController();
-  TextEditingController noteController = TextEditingController();
-  TextEditingController codeController = TextEditingController();
-  TextEditingController taxController = TextEditingController();
-  TextEditingController marginController = TextEditingController();
+  TextEditingController nextStepController = TextEditingController();
+  TextEditingController assignController = TextEditingController();
+  TextEditingController descriptionController = TextEditingController();
+
+  // Initialize dropdown values
+  String? selectedCurrency;
+  String? selectedStage;
+  String? selectedSource;
+  String? selectedCampaign;
+  String? selectedType;
 
   bool loading = false;
-  var uuid = const Uuid();
-  String? selectedCurrency;
-  String? selectedAccount;
-  String? selectedLimit;
-  String? selectedStatus;
-  String? selectedType;
+  String? assignId;
   String? relatedId;
+
+  // Initialize date
   DateTime date = DateTime.now();
 
-  // Date Pick Function
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: date,
-      firstDate: DateTime(1900),
-      lastDate: DateTime(2500),
-    );
-    if (picked != null && picked != date) {
-      setState(() {
-        date = picked;
-        dateController.text = "${picked.month.toString().padLeft(2, '0')}/${picked.day.toString().padLeft(2, '0')}/${picked.year}";
-      });
+  // Load existing data if provided
+  @override
+  void initState() {
+    super.initState();
+    if (widget.existingOpportunity != null) {
+      OpportunityHive opportunity = widget.existingOpportunity!;
+      // Pre-fill form fields with existing data
+      nameController.text = opportunity.name;
+      leadController.text = opportunity.lead;
+      amountController.text = opportunity.amount;
+      dateController.text = opportunity.closeDate;
+      nextStepController.text = opportunity.nextStep;
+      assignController.text = opportunity.assignTo;
+      descriptionController.text = opportunity.description;
+
+      selectedCurrency = opportunity.currency;
+      selectedStage = opportunity.stage;
+      selectedSource = opportunity.source;
+      selectedCampaign = opportunity.campaign;
+      selectedType = opportunity.type;
+
+      // Parse date from the string format if available
+      if (dateController.text.isNotEmpty) {
+        List<String> dateParts = dateController.text.split('/');
+        if (dateParts.length == 3) {
+          date = DateTime(
+            int.parse(dateParts[2]),
+            int.parse(dateParts[0]),
+            int.parse(dateParts[1]),
+          );
+        }
+      }
     }
   }
 
+  void saveOpportunity() async {
+    // Open the Hive box
+    Box<OpportunityHive> opportunityBox = await Hive.openBox<OpportunityHive>("opportunity");
 
+    OpportunityHive newOpportunity;
+    if (widget.existingOpportunity == null) {
+      // Add new opportunity if existing opportunity is null
+      String uid = Uuid().v1();
+      newOpportunity = OpportunityHive()
+        ..id = uid
+    ..name = nameController.text
+    ..lead = leadController.text
+    ..currency = selectedCurrency!
+    ..amount = amountController.text
+    ..closeDate = dateController.text
+    ..type = selectedType!
+    ..stage = selectedStage!
+    ..source = selectedSource!
+    ..campaign = selectedCampaign!
+    ..nextStep = nextStepController.text
+    ..assignTo = assignController.text
+    ..description = descriptionController.text;
+
+    // Add the new opportunity to the box
+    await opportunityBox.add(newOpportunity);
+    showSnackMessage(context, "Opportunity Added Successfully");
+    } else {
+    // Update existing opportunity
+    OpportunityHive existingOpportunity = widget.existingOpportunity!;
+    existingOpportunity
+    ..name = nameController.text
+    ..lead = leadController.text
+    ..currency = selectedCurrency!
+    ..amount = amountController.text
+    ..closeDate = dateController.text
+    ..type = selectedType!
+    ..stage = selectedStage!
+    ..source = selectedSource!
+    ..campaign = selectedCampaign!
+    ..nextStep = nextStepController.text
+    ..assignTo = assignController.text
+    ..description = descriptionController.text;
+
+    // Save the updated opportunity to the box
+    await existingOpportunity.save();
+    showSnackMessage(context, "Opportunity Updated Successfully");
+    }
+
+    // Clear the form fields
+    setState(() {
+    nameController.clear();
+    leadController.clear();
+    selectedCurrency = null;
+    amountController.clear();
+    dateController.clear();
+    selectedType = null;
+    selectedStage = null;
+    selectedSource = null;
+    selectedCampaign = null;
+    nextStepController.clear();
+    assignController.clear();
+    descriptionController.clear();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Opportunity Details', style: headerTextStyle),
+          title: Text(widget.existingOpportunity == null ?
+          'Add Opportunity' : 'Edit Opportunity', style: headerTextStyle),
           centerTitle: true,
         ),
         body: SingleChildScrollView(
@@ -97,7 +186,7 @@ class _AddOpportunityState extends State<AddOpportunity> {
                         },
                         labelText: "Lead",
                         hintText: "Lead",
-                        keyboardType: TextInputType.none,
+                        keyboardType: TextInputType.text,
                         nameController: leadController,
                         prefixIcon: const Icon(RpgAwesome.magnet),
                         validator: (value) {
@@ -147,7 +236,7 @@ class _AddOpportunityState extends State<AddOpportunity> {
                         prefixIcon: const Icon(Icons.money),
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Your Phone";
+                            return "Please Enter Your Amount";
                           }
                           else {
                             return null;
@@ -157,7 +246,7 @@ class _AddOpportunityState extends State<AddOpportunity> {
                       ),
                       const SizedBox(height: 10.0,),
                       CustomTextFormField(
-                        labelText: "Start Date",
+                        labelText: "Expected Close Date",
                         hintText: "Date",
                         onTap: () => _selectDate(context),
                         keyboardType: TextInputType.none,
@@ -165,152 +254,13 @@ class _AddOpportunityState extends State<AddOpportunity> {
                         prefixIcon: const Icon(Icons.calendar_month),
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Start Date";
+                            return "Please Enter Date";
                           }
                           else {
                             return null;
                           }
                         },
 
-                      ),
-                      const SizedBox(height: 15.0,),
-                      CustomDropdownButtonFormField(
-                        value: selectedAccount,
-                        hintText: "Select Account",
-                        labelText: "Main Account",
-                        prefixIcon: const Icon(Icons.account_balance),
-                        onChanged: (value) {
-                          print('Selected Main Account: $value');
-                          setState(() {
-                            selectedAccount = value;
-                          });
-                        },
-                        items: <String>[
-                          "0205005052555",
-                          "5550555588494",
-                          "7348697356376",
-                          "8947534579784",
-                          "4587975848795",
-                        ].map((String value) {
-                          return DropdownMenuItem<String>(
-                            alignment: AlignmentDirectional.center,
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please Choose a Main Account';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 10.0,),
-                      CustomTextFormField(
-                        keyboardType: TextInputType.text,
-                        labelText: "Account Code",
-                        hintText: "Account Code",
-                        nameController: codeController,
-                        validator: (value) {
-                          if(value.isEmpty){
-                            return "Please Enter Your Account Code";
-                          }
-                          else {
-                            return null;
-                          }
-                        },
-                        prefixIcon: const Icon(Icons.numbers),
-                      ),
-                      const SizedBox(height: 15.0,),
-                      CustomDropdownButtonFormField(
-                        value: selectedLimit,
-                        hintText: "Select Credit Limit",
-                        labelText: "Credit Limit",
-                        prefixIcon: const Icon(Icons.account_balance_wallet),
-                        onChanged: (value) {
-                          print('Selected Credit Limit: $value');
-                          setState(() {
-                            selectedLimit = value;
-                          });
-                        },
-                        items: <String>[
-                          "Cash",
-                          "Whole Sale"
-                        ].map((String value) {
-                          return DropdownMenuItem<String>(
-                            alignment: AlignmentDirectional.center,
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please Choose a Credit Limit';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 10.0,),
-                      CustomTextFormField(
-                        keyboardType: TextInputType.text,
-                        labelText: "Credit Amount",
-                        hintText: "Credit Amount",
-                        nameController: amountController,
-                        validator: (value) {
-                          if(value.isEmpty){
-                            return "Please Enter Credit Amount";
-                          }
-                          else {
-                            return null;
-                          }
-                        },
-                        prefixIcon: const Icon(Icons.attach_money),
-                      ),
-                      const SizedBox(height: 10.0,),
-                      CustomTextFormField(
-                        keyboardType: TextInputType.text,
-                        labelText: "Tax Number",
-                        hintText: "Tax Number",
-                        nameController: taxController,
-                        validator: (value) {
-                          if(value.isEmpty){
-                            return "Please Enter Tax Number";
-                          }
-                          else {
-                            return null;
-                          }
-                        },
-                        prefixIcon: const Icon(Icons.confirmation_number),
-                      ),
-                      const SizedBox(height: 15.0,),
-                      CustomDropdownButtonFormField(
-                        value: selectedStatus,
-                        hintText: "Select Status",
-                        labelText: "Status",
-                        prefixIcon: const Icon(Icons.access_time),
-                        onChanged: (value) {
-                          print('Selected Status: $value');
-                          setState(() {
-                            selectedStatus = value;
-                          });
-                        },
-                        items: <String>[
-                          "Active",
-                          "Suspended",
-                          "Closed",
-                        ].map((String value) {
-                          return DropdownMenuItem<String>(
-                            alignment: AlignmentDirectional.center,
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please Choose Status';
-                          }
-                          return null;
-                        },
                       ),
                       const SizedBox(height: 15.0,),
                       CustomDropdownButtonFormField(
@@ -341,33 +291,140 @@ class _AddOpportunityState extends State<AddOpportunity> {
                           return null;
                         },
                       ),
+                      const SizedBox(height: 15.0,),
+                      CustomDropdownButtonFormField(
+                        value: selectedStage,
+                        hintText: "Sale Stage",
+                        labelText: "Select Sale Stage",
+                        prefixIcon: const Icon(Icons.stacked_bar_chart),
+                        onChanged: (value) {
+                          print('Selected Stage: $value');
+                          setState(() {
+                            selectedStage = value;
+                          });
+                        },
+                        items: <String>[
+                          "In-Process",
+                          "Win",
+                          "Lose",
+                        ].map((String value) {
+                          return DropdownMenuItem<String>(
+                            alignment: AlignmentDirectional.center,
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please Choose a Stage';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 15.0,),
+                      CustomDropdownButtonFormField(
+                        value: selectedSource,
+                        hintText: "Lead Source",
+                        labelText: "Source",
+                        prefixIcon: const Icon(Icons.source),
+                        onChanged: (value) {
+                          print('Selected Source: $value');
+                          setState(() {
+                            selectedSource = value;
+                          });
+                        },
+                        items: <String>[
+                          "AL-2",
+                          "AL-3",
+                        ].map((String value) {
+                          return DropdownMenuItem<String>(
+                            alignment: AlignmentDirectional.center,
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please Choose a Source';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 15.0,),
+                      CustomDropdownButtonFormField(
+                        value: selectedCampaign,
+                        hintText: "Select Campaign",
+                        labelText: "Campaign",
+                        prefixIcon: const Icon(Icons.campaign),
+                        onChanged: (value) {
+                          print('Selected Compaign: $value');
+                          setState(() {
+                            selectedCampaign = value;
+                          });
+                        },
+                        items: <String>[
+                          "Cash",
+                          "Whole Sale"
+                        ].map((String value) {
+                          return DropdownMenuItem<String>(
+                            alignment: AlignmentDirectional.center,
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please Choose a Campaign';
+                          }
+                          return null;
+                        },
+                      ),
                       const SizedBox(height: 10.0,),
                       CustomTextFormField(
                         keyboardType: TextInputType.text,
-                        labelText: "Margin %",
-                        hintText: "Margin %",
-                        nameController: marginController,
+                        labelText: "Next Step",
+                        hintText: "Next Step",
+                        nameController: nextStepController,
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Margin %";
+                            return "Please Enter Next Step";
                           }
                           else {
                             return null;
                           }
                         },
-                        prefixIcon: const Icon(Icons.percent),
+                        prefixIcon: const Icon(Icons.auto_graph),
+                      ),
+                      const SizedBox(height: 10.0,),
+                      CustomTextFormField(
+                        onTap: (){
+                          searchUsers(context, assignController);
+                        },
+                        keyboardType: TextInputType.text,
+                        labelText: "Assign To",
+                        hintText: "User",
+                        nameController: assignController,
+                        validator: (value) {
+                          if(value.isEmpty){
+                            return "Please Enter User";
+                          }
+                          else {
+                            return null;
+                          }
+                        },
+                        prefixIcon: const Icon(Icons.person),
                       ),
                       const SizedBox(height: 10.0,),
                       CustomTextFormField(
                         keyboardType: TextInputType.text,
-                        labelText: "Note",
-                        hintText: "Note",
+                        labelText: "Description",
+                        hintText: "Description",
                         minLines: 1,
                         maxLines: null,
-                        nameController: noteController,
+                        nameController: descriptionController,
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter A Note";
+                            return "Please Enter Description";
                           }
                           else {
                             return null;
@@ -375,36 +432,18 @@ class _AddOpportunityState extends State<AddOpportunity> {
                         },
                         prefixIcon: const Icon(Icons.sticky_note_2),
                       ),
-                      const SizedBox(height: 10.0,),
-                      CustomTextFormField(
-                        keyboardType: TextInputType.text,
-                        labelText: "Address",
-                        hintText: "Address",
-                        minLines: 1,
-                        maxLines: null,
-                        nameController: addressController,
-                        prefixIcon: const Icon(Icons.map),
-                        validator: (value) {
-                          if(value.isEmpty){
-                            return "Please Enter Your Address";
-                          }
-                          else {
-                            return null;
-                          }
-                        },
-                      ),
                       const SizedBox(height: 20.0,),
                       CustomButton(
                         onPressed: () {
                           if(_formKey.currentState!.validate()){
-                            if(selectedCurrency != null && selectedAccount !=null
-                                && selectedLimit !=null && selectedStatus != null
+                            if(selectedCurrency != null && selectedStage !=null
+                                && selectedSource !=null && selectedCampaign != null
                                 && selectedType != null){
                               print('Form is valid');
                               setState(() {
                                 loading = true;
                               });
-                              // addCustomer();
+                              saveOpportunity();
                               setState(() {
                                 loading = false;
                               });
@@ -428,7 +467,8 @@ class _AddOpportunityState extends State<AddOpportunity> {
                         child: loading ?
                         const SizedBox(height: 18,width: 18,
                           child: CircularProgressIndicator(color: Colors.white,),):
-                        const Text("Add Opportunity"),
+                        Text(widget.existingOpportunity == null ?
+                        'Add Opportunity' : 'Edit Opportunity',),
                       )
                     ],
                   ),
@@ -441,13 +481,29 @@ class _AddOpportunityState extends State<AddOpportunity> {
     );
   }
 
+  // Date Pick Function
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: date,
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2500),
+    );
+    if (picked != null && picked != date) {
+      setState(() {
+        date = picked;
+        dateController.text = "${picked.month.toString().padLeft(2, '0')}/${picked.day.toString().padLeft(2, '0')}/${picked.year}";
+      });
+    }
+  }
+
   void searchLead(BuildContext context, TextEditingController textFieldController) async {
     try {
       if (!Hive.isBoxOpen('leads')) {
         await Hive.openBox<LeadHive>('leads');
       }
 
-      Box leadBox = Hive.box('leads');
+      Box leadBox = Hive.box<LeadHive>('leads');
       List<Map<String, dynamic>> leads = [];
       for (var lead in leadBox.values) {
         leads.add({
@@ -477,6 +533,53 @@ class _AddOpportunityState extends State<AddOpportunity> {
       );
     } catch (e) {
       print('Error fetching lead names: $e');
+      // Handle error appropriately
+    }
+  }
+  void searchUsers(BuildContext context, TextEditingController textFieldController,) async {
+    try {
+      // Open the Hive box if it's not already open
+      if (!Hive.isBoxOpen('users')) {
+        await Hive.openBox<UsersHive>('users');
+      }
+
+      // Get the box
+      Box<UsersHive> userBox = Hive.box<UsersHive>('users');
+
+      // Convert users to a list of maps containing required data
+      List<Map<String, dynamic>> userNames = userBox.values.map((user) {
+        return {
+          'id': user.id,
+          'firstName': user.fName,
+          'lastName': user.lName,
+        };
+      }).toList();
+
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Center(child: Text('Users List')),
+            content: SingleChildScrollView(
+              child: Column(
+                children: userNames.map((user) {
+                  String displayName = '${user['firstName']} ${user['lastName']}';
+                  return ListTile(
+                    title: Text(displayName),
+                    onTap: () {
+                      assignId = user['id'];
+                      textFieldController.text = displayName;
+                      Navigator.pop(context);
+                    },
+                  );
+                }).toList(),
+              ),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      print('Error fetching User names: $e');
       // Handle error appropriately
     }
   }

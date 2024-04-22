@@ -1,24 +1,23 @@
-
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:monmatics/utils/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
-import '../Functions/exportFunctions.dart';
-import '../Functions/importFunctions.dart';
-import '../Functions/searchFunctions.dart';
+import '../functions/exportFunctions.dart';
+import '../functions/importFunctions.dart';
+import '../functions/searchFunctions.dart';
 import '../components/navDrawer.dart';
 import '../controllers/crmControllers.dart';
+import '../functions/otherFunctions.dart';
+import '../models/contactItem.dart';
+import '../models/customerItem.dart';
+import '../models/leadItem.dart';
 import '../models/taskItem.dart';
 import '../models/userItem.dart';
+import '../utils/colors.dart';
 import '../utils/customWidgets.dart';
 import '../utils/messages.dart';
 import '../utils/themes.dart';
-import '../utils/urls.dart';
 import 'tasks/tasksViewScreen.dart';
 
 
@@ -37,13 +36,27 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
   DateTime? selectedCalendarDate;
 
   CalendarFormat calendarFormatVal = CalendarFormat.month;
-  Box? task;
+  Box? tasks;
   TasksCont tasksController = TasksCont();
   List TaskList = [];
   String? token;
   Map<DateTime, List<Tasks>>? mySelectedEvents;
     ValueNotifier<List<Tasks>>? _selectedEvents;
   bool loading = false;
+  String? relatedId;
+  String? assignId;
+
+  Future<void> getSharedData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      role= prefs.getString('role');
+      assignId = prefs.getString('id');
+    });
+  }
+
+  Future<void> functionCall() async {
+    await getSharedData();
+  }
 
   @override
   void initState() {
@@ -179,19 +192,26 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
 
 
   Widget _buildTasksWidget() {
-    if (task == null) {
+    if (tasks == null) {
       return const Center(
           child: CircularProgressIndicator());
-    } else if (task!.isEmpty) {
+    } else if (tasks!.isEmpty) {
       return const Center(
           child: Text('No Tasks Found'));
     } else {
       return ListView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        itemCount: task!.length,
+        itemCount: tasks!.length,
         itemBuilder: (context, index) {
-          return taskListTile(task!.getAt(index)!);
+          return TaskListTile(obj: tasks!.getAt(index)!,
+            onEdit: (tasks) {
+            showTaskDialog(task: tasks);
+          },
+            onDelete: (tasks){
+            deleteTask(tasks, index);
+            },
+          );
         },
       );
     }
@@ -256,7 +276,18 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
 
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
   // Add Tasks Form
-  Future<void> showTaskDialog() async {
+  Future<void> showTaskDialog({TaskHive? task}) async {
+    if(task != null ){
+      subjectController.text = task.subject;
+      status = task.status;
+      relatedTo = task.type;
+      startDateController.text = task.startDate;
+      dueDateController.text = task.dueDate;
+      priority = task.priority;
+      assignController.text = task.assignTo;
+      descriptionController.text = task.description;
+    }
+    bool isEditMode = task != null;
     return showDialog(
       context: context,
       builder: (context) {
@@ -267,7 +298,9 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                 // backgroundColor: Colors.transparent,
                 child: AlertDialog(
                   contentPadding: const EdgeInsets.symmetric(vertical: 20.0),
-                  title: const Center(child: Text('Add Task')),
+                  title: isEditMode
+                      ? const Center(child: Text('Edit Task'))
+                      : const Center(child: Text('Add Task')),
                   content: SingleChildScrollView(
                     child: Form(
                       key: formKey,
@@ -353,7 +386,7 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                               const SizedBox(height: 10.0,),
                               CustomTextFormField(
                                   onTap: (){
-                                    searFunctions.searchLead(context, contactController);
+                                    searchLead(context, contactController);
                                   },
                                   nameController: contactController,
                                   hintText: "Search",
@@ -374,7 +407,7 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                               const SizedBox(height: 10.0,),
                               CustomTextFormField(
                                   onTap: (){
-                                    searFunctions.searchCustomer(context, contactController);
+                                    searchCustomer(context, contactController);
                                   },
                                   nameController: contactController,
                                   hintText: "Search",
@@ -395,7 +428,7 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                               const SizedBox(height: 10.0,),
                               CustomTextFormField(
                                   onTap: (){
-                                    searFunctions.searchContacts(context, contactController);
+                                    searchContacts(context, contactController);
                                   },
                                   nameController: contactController,
                                   hintText: "Search",
@@ -479,7 +512,7 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                           const SizedBox(height: 10.0,),
                           CustomTextFormField(
                               onTap: (){
-                                searFunctions.searchUsers(context, assignController);
+                                searchUsers(context, assignController);
                               },
                               nameController: assignController,
                               hintText: "Contact",
@@ -487,7 +520,7 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                               keyboardType: TextInputType.none,
                               validator: (value){
                                 if(value.isEmpty){
-                                  return "Please Enter a Value";
+                                  return null;
                                 }
                                 return null;
                               },
@@ -517,11 +550,17 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                   ),
                   actions: [
                     TextButton(
-                      onPressed: (){
-                        addTask();
-                        Navigator.pop(context);
+                      onPressed: () {
+                        if (isEditMode) {
+                          updateTask(task);
+                        } else {
+                          addTask();
+                        }
                       },
-                      child: const Text('Add'),
+                      child: Text(isEditMode
+                          ? 'Update'
+                          : 'Add',
+                      ),
                     ),
                     TextButton(
                       onPressed: () {
@@ -534,6 +573,44 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                 ),
               );
             }
+        );
+      },
+    );
+  }
+
+  // Function to handle delete action
+  void deleteTask(TaskHive task, int index) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Task'),
+          content: const Text('Are you sure you want to delete this Task?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () async {
+                // Delete the Task from the database
+                try {
+                  await otherFunctions.deleteTaskFromDatabase(task.id);
+                } catch (e) {
+                  print('Error deleting note from database: $e');
+                  // Handle error if necessary
+                }
+
+                setState(() {
+                  tasks!.deleteAt(index);
+                });
+                Navigator.of(context).pop(); // Close dialog
+              },
+              child: const Text('Yes'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+              },
+              child: const Text('No'),
+            ),
+          ],
         );
       },
     );
@@ -555,7 +632,7 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
         ..assignTo = assignController.text
         ..description = descriptionController.text;
 
-      await task!.add(newTask);
+      await tasks!.add(newTask);
       showSnackMessage(context, "Task Added Successfully");
 
       clearFields();
@@ -579,9 +656,190 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
     });
   }
 
+  OtherFunctions otherFunctions = OtherFunctions();
+
+  // Function to update an existing note
+  void updateTask(TaskHive task) async {
+    print(task.id);
+    otherFunctions.updateTaskInDatabase(task, Ids(assignId!, relatedId!));
+    task.subject = subjectController.text;
+    task.type = relatedTo!;
+    task.type = searchController.text;
+    task.assignTo = assignController.text;
+    task.description = descriptionController.text;
+
+    await tasks!.put(task.key, task);
+    showSnackMessage(context, "Note Updated Successfully");
+    Navigator.pop(context);
+    clearFields();
+  }
+
   Future<void> getTasksFromBox() async {
-    task = await Hive.openBox<TaskHive>('tasks');
+    tasks = await Hive.openBox<TaskHive>('tasks');
     setState(() {});
+  }
+
+  void searchCustomer(BuildContext context, TextEditingController textFieldController) async {
+    try {
+      if (!Hive.isBoxOpen('customers')) {
+        await Hive.openBox<CustomerHive>('customers');
+      }
+      Box contactBox = Hive.box<CustomerHive>('customers');
+      List<Map<String, dynamic>> customers = [];
+      for (var customer in contactBox.values) {
+        customers.add({
+          'id': customer.id,
+          'name': customer.name,
+        });
+      }
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Center(child: Text('Customers List')),
+            content: SingleChildScrollView(
+              child: Column(
+                children: customers.map((customer) => ListTile(
+                  title: Text('${customer['name']}'),
+                  onTap: () {
+                    relatedId = customer['id'];
+                    textFieldController.text = customer['name'];
+                    Navigator.pop(context);
+                  },
+                )).toList(),
+              ),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      print('Error fetching customer names: $e');
+      // Handle error appropriately
+    }
+  }
+  void searchLead(BuildContext context, TextEditingController textFieldController) async {
+    try {
+      if (!Hive.isBoxOpen('leads')) {
+        await Hive.openBox<LeadHive>('leads');
+      }
+
+      Box leadBox = Hive.box<LeadHive>('leads');
+      List<Map<String, dynamic>> leads = [];
+      for (var lead in leadBox.values) {
+        leads.add({
+          'id': lead.id,
+          'name': lead.name,
+        });
+      }
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Center(child: Text('Leads List')),
+            content: SingleChildScrollView(
+              child: Column(
+                children: leads.map((lead) => ListTile(
+                  title: Text('${lead['name']}'),
+                  onTap: () {
+                    relatedId = lead['id'];
+                    textFieldController.text = lead['name'];
+                    Navigator.pop(context);
+                  },
+                )).toList(),
+              ),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      print('Error fetching lead names: $e');
+      // Handle error appropriately
+    }
+  }
+  void searchContacts(BuildContext context, TextEditingController textFieldController) async {
+    try {
+      // Open the Hive box if it's not already open
+      if (!Hive.isBoxOpen('contacts')) {
+        await Hive.openBox<ContactHive>('contacts');
+      }
+
+      // Get the box
+      Box contactBox = Hive.box<ContactHive>('contacts');
+      List<String> customerNames = [];
+      for (var contact in contactBox.values) {
+        customerNames.add(
+            '${contact.fName} ''${contact.lName}');
+      }
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Center(child: Text('Contacts List')),
+            content: SingleChildScrollView(
+              child: Column(
+                children: customerNames.map((id) => ListTile(
+                  title: Text(id),
+                  onTap: () {
+                    textFieldController.text = id;
+                    Navigator.pop(context);
+                  },
+                )).toList(),
+              ),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      print('Error fetching customer names: $e');
+      // Handle error appropriately
+    }
+  }
+  void searchUsers(BuildContext context, TextEditingController textFieldController,) async {
+    try {
+      // Open the Hive box if it's not already open
+      if (!Hive.isBoxOpen('users')) {
+        await Hive.openBox<UsersHive>('users');
+      }
+
+      // Get the box
+      Box<UsersHive> userBox = Hive.box<UsersHive>('users');
+
+      // Convert users to a list of maps containing required data
+      List<Map<String, dynamic>> userNames = userBox.values.map((user) {
+        return {
+          'id': user.id,
+          'firstName': user.fName,
+          'lastName': user.lName,
+        };
+      }).toList();
+
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Center(child: Text('Users List')),
+            content: SingleChildScrollView(
+              child: Column(
+                children: userNames.map((user) {
+                  String displayName = '${user['firstName']} ${user['lastName']}';
+                  return ListTile(
+                    title: Text(displayName),
+                    onTap: () {
+                      assignId = user['id'];
+                      textFieldController.text = displayName;
+                      Navigator.pop(context);
+                    },
+                  );
+                }).toList(),
+              ),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      print('Error fetching User names: $e');
+      // Handle error appropriately
+    }
   }
 
 }

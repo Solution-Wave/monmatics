@@ -31,7 +31,7 @@ class _HomeState extends State<Home> {
   int _currIndex = 0;
   int index = 0;
   Box? notes;
-  Box? task;
+  Box? tasks;
   String? firstName;
   String? lastName;
   String? role;
@@ -40,10 +40,10 @@ class _HomeState extends State<Home> {
   String? priority;
   String? relatedId;
   String? assignId;
+  String? companyId;
 
   TextEditingController subjectController = TextEditingController();
   TextEditingController searchController = TextEditingController();
-  TextEditingController contactController = TextEditingController();
   TextEditingController startDateController = TextEditingController();
   TextEditingController dueDateController = TextEditingController();
   TextEditingController assignController = TextEditingController();
@@ -65,9 +65,7 @@ class _HomeState extends State<Home> {
     if (picked != null && picked != startDate) {
       setState(() {
         startDate = picked;
-        startDateController.text =
-        "${picked.month.toString().padLeft(2, '0')}/${picked.day.toString()
-            .padLeft(2, '0')}/${picked.year}";
+        startDateController.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
       });
     }
   }
@@ -82,8 +80,7 @@ class _HomeState extends State<Home> {
     if (picked != null && picked != endDate) {
       setState(() {
         endDate = picked;
-        dueDateController.text = "${picked.month.toString()
-            .padLeft(2, '0')}/${picked.day.toString().padLeft(2, '0')}/${picked.year}";
+        dueDateController.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
       });
     }
   }
@@ -102,6 +99,8 @@ class _HomeState extends State<Home> {
 
   Future<void> functionCall() async {
     await getSharedData();
+    Map<String, dynamic>? databaseInfo = await importFunctions.getDatabaseInfo();
+    companyId = databaseInfo!['company_id'] ?? '';
   }
 
   ImportFunctions importFunctions = ImportFunctions();
@@ -133,7 +132,7 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> getTasksFromBox() async {
-    task = await Hive.openBox<TaskHive>('tasks');
+    tasks = await Hive.openBox<TaskHive>('tasks');
     setState(() {});
   }
 
@@ -144,15 +143,17 @@ class _HomeState extends State<Home> {
     Hive.openBox<NoteHive>("notes").then((notesBox) {
       exportFunctions.postNotesToApi(notesBox, Ids(assignId!, relatedId!));
     });
-    importFunctions.fetchNotesFromApi();
+    // importFunctions.fetchNotesFromApi();
     if (formKey.currentState!.validate()) {
       var uid = uuid.v1();
       NoteHive newNote = NoteHive()
         ..id = uid
         ..subject = subjectController.text
         ..relatedTo = relatedTo!
-        ..search = relatedId!
-        ..assignTo = assignId!
+        ..search = searchController.text
+        ..relatedId = relatedId!
+        ..assignTo = assignController.text
+        ..assignId = assignId!
         ..description = descriptionController.text;
 
       await notes!.add(newNote);
@@ -170,7 +171,6 @@ class _HomeState extends State<Home> {
       exportFunctions.postTasksToApi(tasksBox, Ids(assignId!, relatedId!));
     });
     print(assignId);
-    print(assignId);
     if(formKey.currentState!.validate()){
       var uid = uuid.v1();
       TaskHive newTask = TaskHive()
@@ -178,16 +178,18 @@ class _HomeState extends State<Home> {
           ..subject = subjectController.text
           ..status = status!
           ..type = relatedTo!
-          ..contact = relatedId!
+          ..relatedTo = searchController.text
+          ..relatedId = relatedId!
+          ..contact = assignId!
           ..startDate = startDateController.text
           ..dueDate = dueDateController.text
           ..priority = priority!
-          ..assignTo = assignId!
+          ..assignTo = assignController.text
+          ..assignId = assignId!
+          ..companyId = companyId!
           ..description = descriptionController.text;
-
-      await task!.add(newTask);
+      await tasks!.add(newTask);
       showSnackMessage(context, "Task Added Successfully");
-
       clearFields();
     }
     else {
@@ -198,7 +200,6 @@ class _HomeState extends State<Home> {
   void clearFields(){
     setState(() {
       subjectController.clear();
-      contactController.clear();
       startDateController.clear();
       dueDateController.clear();
       assignController.clear();
@@ -215,15 +216,38 @@ class _HomeState extends State<Home> {
   // Function to update an existing note
   void updateNote(NoteHive note) async {
     print(note.id);
-    otherFunctions.updateNoteAndDatabase(note);
+    otherFunctions.updateNoteInDatabase(note);
     note.subject = subjectController.text;
     note.relatedTo = relatedTo!;
     note.search = searchController.text;
+    note.relatedId = relatedId!;
+    note.assignId = assignId!;
     note.assignTo = assignController.text;
     note.description = descriptionController.text;
-
     await notes!.put(note.key, note);
     showSnackMessage(context, "Note Updated Successfully");
+    Navigator.pop(context);
+    clearFields();
+  }
+
+  // Function to update an existing note
+  void updateTask(TaskHive task) async {
+    print(task.id);
+    otherFunctions.updateTaskInDatabase(task, Ids(assignId!, relatedId!));
+    task.subject = subjectController.text;
+    task.status = status!;
+    task.type = relatedTo!;
+    task.contact = assignId!;
+    task.startDate = startDateController.text;
+    task.dueDate = dueDateController.text;
+    task.relatedTo = searchController.text;
+    task.relatedId = relatedId!;
+    task.assignTo =assignController.text;
+    task.assignId = assignController.text;
+    task.description = descriptionController.text;
+
+    await tasks!.put(task.key, task);
+    showSnackMessage(context, "Task Updated Successfully");
     Navigator.pop(context);
     clearFields();
   }
@@ -234,6 +258,8 @@ class _HomeState extends State<Home> {
       subjectController.text = note.subject ?? '';
       relatedTo = note.relatedTo ?? '';
       searchController.text = note.search ?? '';
+      relatedId = note.relatedId ?? "";
+      assignId = note.assignId ?? "";
       assignController.text = note.assignTo ?? '';
       descriptionController.text = note.description ?? '';
     }
@@ -419,7 +445,20 @@ class _HomeState extends State<Home> {
   }
 
   // Add Tasks Form
-  Future<void> showTaskDialog() async {
+  Future<void> showTaskDialog({TaskHive? task}) async {
+    if(task != null ){
+      subjectController.text = task.subject ?? "";
+      status = task.status ?? "";
+      relatedTo = task.type ?? "";
+      searchController.text = task.relatedTo ?? "";
+      relatedId = task.relatedId ?? "";
+      startDateController.text = task.startDate ?? "";
+      dueDateController.text = task.dueDate ?? "";
+      priority = task.priority ?? "";
+      assignController.text = task.assignTo ?? "";
+      descriptionController.text = task.description ?? "";
+    }
+    bool isEditMode = task != null;
     return showDialog(
       context: context,
       builder: (context) {
@@ -430,7 +469,9 @@ class _HomeState extends State<Home> {
                 // backgroundColor: Colors.transparent,
                 child: AlertDialog(
                   contentPadding: const EdgeInsets.symmetric(vertical: 20.0),
-                  title: const Center(child: Text('Add Task')),
+                  title: isEditMode
+                      ? const Center(child: Text('Edit Task'))
+                      : const Center(child: Text('Add Task')),
                   content: SingleChildScrollView(
                     child: Form(
                       key: formKey,
@@ -496,6 +537,7 @@ class _HomeState extends State<Home> {
                               "Lead",
                               "Customer",
                               "Contacts",
+                              ""
                               // "Project",
                             ].map((String value) {
                               return DropdownMenuItem<String>(
@@ -516,9 +558,9 @@ class _HomeState extends State<Home> {
                               const SizedBox(height: 10.0,),
                               CustomTextFormField(
                                   onTap: (){
-                                    searchLead(context, contactController);
+                                    searchLead(context, searchController);
                                   },
-                                  nameController: contactController,
+                                  nameController: searchController,
                                   hintText: "Search",
                                   labelText: "Search Name",
                                   keyboardType: TextInputType.none,
@@ -537,9 +579,9 @@ class _HomeState extends State<Home> {
                               const SizedBox(height: 10.0,),
                               CustomTextFormField(
                                   onTap: (){
-                                    searchCustomer(context, contactController);
+                                    searchCustomer(context, searchController);
                                   },
-                                  nameController: contactController,
+                                  nameController: searchController,
                                   hintText: "Search",
                                   labelText: "Search Name",
                                   keyboardType: TextInputType.none,
@@ -558,9 +600,9 @@ class _HomeState extends State<Home> {
                               const SizedBox(height: 10.0,),
                               CustomTextFormField(
                                   onTap: (){
-                                    searchContacts(context, contactController);
+                                    searchContacts(context, searchController);
                                   },
-                                  nameController: contactController,
+                                  nameController: searchController,
                                   hintText: "Search",
                                   labelText: "Search Name",
                                   keyboardType: TextInputType.none,
@@ -680,11 +722,17 @@ class _HomeState extends State<Home> {
                   ),
                   actions: [
                     TextButton(
-                      onPressed: (){
-                        addTask();
-                        Navigator.pop(context);
+                      onPressed: () {
+                        if (isEditMode) {
+                          updateTask(task);
+                        } else {
+                          addTask();
+                        }
                       },
-                      child: const Text('Add'),
+                      child: Text(isEditMode
+                          ? 'Update'
+                          : 'Add',
+                      ),
                     ),
                     TextButton(
                       onPressed: () {
@@ -720,6 +768,7 @@ class _HomeState extends State<Home> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Text("${firstName} ${lastName} ${role} ${assignId}"),
               SegmentedWidget(
                   onChanged: (val) {
                     setState(() {
@@ -908,20 +957,66 @@ class _HomeState extends State<Home> {
     );
   }
 
+  // Function to handle delete action
+  void deleteTask(TaskHive task, int index) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Task'),
+          content: const Text('Are you sure you want to delete this Task?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () async {
+                // Delete the Task from the database
+                try {
+                  await otherFunctions.deleteTaskFromDatabase(task.id);
+                } catch (e) {
+                  print('Error deleting note from database: $e');
+                  // Handle error if necessary
+                }
+
+                setState(() {
+                  tasks!.deleteAt(index);
+                });
+                Navigator.of(context).pop(); // Close dialog
+              },
+              child: const Text('Yes'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+              },
+              child: const Text('No'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildTasksWidget() {
-    if (task == null) {
+    if (tasks == null) {
       return const Center(
           child: CircularProgressIndicator());
-    } else if (task!.isEmpty) {
+    } else if (tasks!.isEmpty) {
       return const Center(
           child: Text('No Tasks Found'));
     } else {
       return ListView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        itemCount: task!.length,
+        itemCount: tasks!.length,
         itemBuilder: (context, index) {
-          return taskListTile(task!.getAt(index)!);
+          return TaskListTile(
+            obj: tasks!.getAt(index)!,
+            onEdit: (tasks) {
+              showTaskDialog(task: tasks);
+            },
+            onDelete: (tasks) {
+              deleteTask(tasks, index);
+            },
+          );
         },
       );
     }

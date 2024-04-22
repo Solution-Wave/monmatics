@@ -1,126 +1,192 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../utils/colors.dart';
+import '../../utils/messages.dart';
 import '../../utils/themes.dart';
 
-
 class OpportunityExtendedScreen extends StatelessWidget {
-  const OpportunityExtendedScreen({super.key});
-
+  const OpportunityExtendedScreen(this.object,{Key? key}) : super(key: key);
+  final  object;
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
           appBar: AppBar(
-            title: Text('Opportunity Details', style:  headerTextStyle ,),
+            title: Text('Opportunity Details',style:  headerTextStyle ,),
           ),
-          body: Container(
-            child: Padding(
-              padding:
-              const EdgeInsets.only(left: 12.0, right: 12.0, top: 15.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ListTile(
-                        visualDensity: VisualDensity(vertical: -2),
-                        leading: Text(
-                            'Name:',
-                            style:  titleStyle
-                                //.copyWith(color: Theme.of(context).brightness == Brightness.light ? customerViewColLight : null,)
-                        ),
-                        title: Text(
-                          'DemoName',
-                          style: normalStyle
-                              //.copyWith(color: Theme.of(context).brightness == Brightness.light ?customerViewColLight: null,),
-                        ),
-                      ),
-                      ListTile(
-                        visualDensity: VisualDensity(vertical: -2),
-                        leading: Text(
-                          'Company Name:',
-                          style: titleStyle
-                              //.copyWith(color: Theme.of(context).brightness == Brightness.light ? customerViewColLight : null,),
-                        ),
-                        title: Text(
-                          'CompanyXYZ',
-                          style: normalStyle
-                              //.copyWith(color: Theme.of(context).brightness == Brightness.light ?customerViewColLight: null,),
-                        ),
-                      ),
-                      ListTile(
-                        visualDensity: VisualDensity(vertical: -2),
-                        leading: Text(
-                          'Category:',
-                          style: titleStyle
-                              //.copyWith(color: Theme.of(context).brightness == Brightness.light ? customerViewColLight : null,),
-                        ),
-                        title: Text(
-                          'project',
-                          style: normalStyle
-                              //.copyWith(color: Theme.of(context).brightness == Brightness.light ?customerViewColLight: null,),
-                        ),
-                      ),
-                      ListTile(
-                        visualDensity: VisualDensity(vertical: -2),
-                        leading: Text(
-                          'Address:',
-                          style: titleStyle
-                              //.copyWith(color: Theme.of(context).brightness == Brightness.light ? customerViewColLight : null,),
-                        ),
-                        title: Text(
-                          'Lahore',
-                          style: normalStyle
-                              //.copyWith(color: Theme.of(context).brightness == Brightness.light ?customerViewColLight: null,),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 15.0),
-                        child: Column(
+          body: SingleChildScrollView(
+            child: Container(
+              decoration: ExpandedViewDecor,
+              margin: const EdgeInsets.all(20.0),
+              constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width,
+                  maxHeight: MediaQuery.of(context).size.height
+              ),
+              child: Padding(
+                padding:
+                const EdgeInsets.only(left: 12.0, right: 12.0, top: 15.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'Description:',
-                              style: titleStyle
-                                  //.copyWith(color: Theme.of(context).brightness == Brightness.light ? customerViewColLight : null,),
-                            ),
+                            Text('Id:', style: titleStyle),
                             Container(
-                              child: Text(
-                                'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-                                style: normalStyle
-                                    //.copyWith(color: Theme.of(context).brightness == Brightness.light ?customerViewColLight: null,),
-                              ),
-                            )
+                              width: MediaQuery.of(context).size.width*0.4,
+                              child: Text(object.id,
+                                  style: normalStyle),
+                            ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      IconButton(
-                        color: Theme.of(context).brightness == Brightness.light? Color(0xFF617A55): null,
-                        iconSize: 25.0,
-                        onPressed: () {},
-                        icon: Icon(Icons.phone),
-                      ),
-                      IconButton(
-                        color: Theme.of(context).brightness == Brightness.light? Color(0xFF617A55): null,
-                        iconSize: 25.0,
-                        onPressed: () {},
-                        icon: Icon(Icons.mail),
-                      ),
-                      IconButton(
-                        color: Theme.of(context).brightness == Brightness.light? Color(0xFF617A55): null,
-                        iconSize: 25.0,
-                        onPressed: () {},
-                        icon: Icon(Icons.location_on),
-                      ),
-                    ],
-                  )
-                ],
+                        const SizedBox(
+                          height: 10.0,
+                        ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Name:', style: titleStyle),
+                            Container(
+                              width: MediaQuery.of(context).size.width*0.4,
+                              child: Text(object.name,
+                                  style: normalStyle),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10.0,),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Lead:', style: titleStyle),
+                            Container(
+                              width: MediaQuery.of(context).size.width*0.4,
+                              child: Text(object.lead,
+                                  style: normalStyle),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10.0,),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Amount:', style: titleStyle),
+                            Container(
+                              width: MediaQuery.of(context).size.width*0.4,
+                              child: Text("${object.currency} ${object.amount}",
+                                  style: normalStyle),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10.0,),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Close Date:',style: titleStyle,),
+                            Container(
+                                width: MediaQuery.of(context).size.width*0.4,
+                                child: Text(object.closeDate, style: normalStyle,)),
+                          ],
+                        ),
+                        const SizedBox(height: 10.0,),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Type', style: titleStyle),
+                            Container(
+                              width: MediaQuery.of(context).size.width*0.4,
+                              child: Text(object.type,
+                                  style: normalStyle),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10.0,),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Sale Stage', style: titleStyle),
+                            Container(
+                              width: MediaQuery.of(context).size.width*0.4,
+                              child: Text(object.stage,
+                                  style: normalStyle),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10.0,),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Lead Source:', style: titleStyle),
+                            Container(
+                              width: MediaQuery.of(context).size.width*0.4,
+                              child: Text(object.source,
+                                  style: normalStyle),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10.0,),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Campaign', style: titleStyle),
+                            Container(
+                              width: MediaQuery.of(context).size.width*0.4,
+                              child: Text(object.campaign,
+                                  style: normalStyle),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10.0,),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Next Step', style: titleStyle),
+                            Container(
+                              width: MediaQuery.of(context).size.width*0.4,
+                              child: Text(object.nextStep,
+                                  style: normalStyle),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10.0,),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Assign To',style: titleStyle,),
+                            Container(
+                                width: MediaQuery.of(context).size.width*0.4,
+                                child: Text(object.assignTo, style: normalStyle,)),
+                          ],
+                        ),
+                        const SizedBox(height: 10.0,),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Description',style: titleStyle,),
+                            Container(
+                                width: MediaQuery.of(context).size.width*0.4,
+                                child: Text(object.description, style: normalStyle,)),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           )),

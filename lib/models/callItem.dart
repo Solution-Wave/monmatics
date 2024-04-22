@@ -42,6 +42,9 @@ import 'package:hive/hive.dart';
   @HiveField(12)
   late String description;
 
+  @HiveField(13)
+  late String assignId;
+
   CallHive({
     this.id = "",
     this.subject = "",
@@ -56,6 +59,7 @@ import 'package:hive/hive.dart';
     this.communicationType = "",
     this.assignTo = "",
     this.description = "",
+    this.assignId = "",
 });
 
   factory CallHive.fromJson(Map<String, dynamic> json){
@@ -75,6 +79,7 @@ import 'package:hive/hive.dart';
       communicationType: json['communication_type'] ?? "",
       assignTo: json['assign_to'] ?? "",
       description: json['description'] ?? "",
+      assignId: json['assign_to'] ?? "",
     );
   }
 

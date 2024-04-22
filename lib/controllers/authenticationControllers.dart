@@ -26,10 +26,10 @@ class AuthenticateController {
           prefs.setString(key, value.toString());
         });
         String? token = data['user']['api_token'];
-        int id = data['user']['id'];
+        // int id = data['user']['id'];
         if (token != null) {
           prefs.setString('token', token);
-          prefs.setString('id', id.toString());
+          // prefs.setString('id', id.toString());
         } else {
           throw Exception('Token not found in response data');
         }

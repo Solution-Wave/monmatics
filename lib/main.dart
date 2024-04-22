@@ -7,6 +7,7 @@ import 'hiveadapters/conatctAdapter.dart';
 import 'hiveadapters/customerAdapter.dart';
 import 'hiveadapters/leadAdapter.dart';
 import 'hiveadapters/notesAdapter.dart';
+import 'hiveadapters/oppAdapter.dart';
 import 'hiveadapters/taskAdapter.dart';
 import 'hiveadapters/userAdapter.dart';
 import 'splashScreen.dart';
@@ -29,6 +30,7 @@ void main()async {
   Hive.registerAdapter(ContactAdapter());
   Hive.registerAdapter(CallsAdapter());
   Hive.registerAdapter(UserAdapter());
+  Hive.registerAdapter(OpportunityAdapter());
   runApp(
   //   DevicePreview(
   //     enabled: !kReleaseMode,
@@ -109,3 +111,4 @@ class _MyAppState extends State<MyApp> {
 // Contact Hive Id 4
 // Call Hive Id 5
 // Users Hive Id 6
+// Opportunity Hive Id 7

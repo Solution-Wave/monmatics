@@ -38,6 +38,12 @@ class NoteHive extends HiveObject {
   @HiveField(5)
   late String description;
 
+  @HiveField(6)
+  late String relatedId;
+
+  @HiveField(7)
+  late String assignId;
+
   NoteHive({
     this.id = "",
     this.subject = "",
@@ -45,6 +51,8 @@ class NoteHive extends HiveObject {
     this.search = "",
     this.assignTo = "",
     this.description = "",
+    this.relatedId = "",
+    this.assignId = "",
 });
   // Factory constructor to deserialize JSON data into a ContactHive object
   factory NoteHive.fromJson(Map<String, dynamic> json) {
@@ -64,6 +72,8 @@ class NoteHive extends HiveObject {
       relatedTo: json['related_to_type'] ?? '',
       assignTo: json['assigned_to'] ?? '',
       description: json['description'] ?? '',
+      relatedId: json['related_id'] ?? '',
+      assignId: json['assigned_to'] ?? '',
     );
   }
 }

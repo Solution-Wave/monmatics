@@ -12,7 +12,10 @@ class NoteAdapter extends TypeAdapter<NoteHive> {
       ..relatedTo = reader.readString()
       ..search = reader.readString()
       ..assignTo = reader.readString()
-      ..description = reader.readString();
+      ..description = reader.readString()
+      ..id = reader.readString()
+      ..relatedId = reader.readString()
+      ..assignId = reader.readString();
   }
 
   @override
@@ -22,5 +25,8 @@ class NoteAdapter extends TypeAdapter<NoteHive> {
     writer.writeString(obj.search);
     writer.writeString(obj.assignTo);
     writer.writeString(obj.description);
+    writer.writeString(obj.id);
+    writer.writeString(obj.relatedId);
+    writer.writeString(obj.assignId);
   }
 }

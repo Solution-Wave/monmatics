@@ -11,6 +11,8 @@ import '../../models/userItem.dart';
 import '../../utils/urls.dart';
 
 class ImportFunctions{
+
+  // Get DataBase Info
   Future<Map<String, dynamic>?> getDatabaseInfo() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? databaseInfoJson = prefs.getString('database_info');

@@ -12,14 +12,14 @@ import '../../utils/messages.dart';
 import '../../utils/themes.dart';
 
 class AddCalls extends StatefulWidget {
-  const AddCalls({super.key});
+  final CallHive? existingCall;
+  const AddCalls({super.key, this.existingCall});
 
   @override
   State<AddCalls> createState() => _AddCallsState();
 }
 
 class _AddCallsState extends State<AddCalls> {
-
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   TextEditingController subjectController = TextEditingController();
@@ -32,7 +32,6 @@ class _AddCallsState extends State<AddCalls> {
   TextEditingController assignController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
 
-
   bool loading = false;
   String? selectedStatus;
   String? relatedTo;
@@ -43,89 +42,73 @@ class _AddCallsState extends State<AddCalls> {
   DateTime endDate = DateTime.now();
   var uuid = const Uuid();
 
-  // Start Date Pick Function
-  Future<void> _selectStartDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: startDate,
-      firstDate: DateTime(1900),
-      lastDate: DateTime(2500),
-    );
-    if (picked != null && picked != startDate) {
-      setState(() {
-        startDate = picked;
-        startDateController.text = "${picked.month.toString().padLeft(2, '0')}/${picked.day.toString().padLeft(2, '0')}/${picked.year}";
-      });
+  @override
+  void initState() {
+    super.initState();
+
+    // If an existing call is provided, initialize the form controllers with the existing call's data
+    if (widget.existingCall != null) {
+      subjectController.text = widget.existingCall!.subject;
+      selectedStatus = widget.existingCall!.status;
+      relatedTo = widget.existingCall!.relatedTo;
+      relatedId = widget.existingCall!.relatedId;
+      searchController.text = relatedId ?? '';
+      contactNameController.text = widget.existingCall!.contactName;
+      startDateController.text = widget.existingCall!.startDate;
+      startTimeController.text = widget.existingCall!.startTime;
+      endDateController.text = widget.existingCall!.endDate;
+      endTimeController.text = widget.existingCall!.endTime;
+      selectedCommunication = widget.existingCall!.communicationType;
+      assignController.text = widget.existingCall!.assignTo;
+      descriptionController.text = widget.existingCall!.description;
     }
   }
 
-  // End Date Pick Function
-  Future<void> _selectEndDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: endDate,
-      firstDate: DateTime(1900),
-      lastDate: DateTime(2500),
-    );
-    if (picked != null && picked != endDate) {
-      setState(() {
-        endDate = picked;
-        endDateController.text = "${picked.month.toString().padLeft(2, '0')}/${picked.day.toString().padLeft(2, '0')}/${picked.year}";
-      });
+  // Add or Update Call through Hive
+  void saveCall() async {
+    Box<CallHive> callBox = await Hive.openBox<CallHive>('calls');
+
+    if (widget.existingCall != null) {
+      // Update existing call
+      CallHive updatedCall = widget.existingCall!;
+      updatedCall.subject = subjectController.text;
+      updatedCall.status = selectedStatus!;
+      updatedCall.relatedTo = relatedTo!;
+      updatedCall.relatedId = relatedId!;
+      updatedCall.contactName = contactNameController.text;
+      updatedCall.startDate = startDateController.text;
+      updatedCall.startTime = startTimeController.text;
+      updatedCall.endDate = endDateController.text;
+      updatedCall.endTime = endTimeController.text;
+      updatedCall.communicationType = selectedCommunication!;
+      updatedCall.assignTo = assignController.text;
+      updatedCall.description = descriptionController.text;
+
+      await callBox.put(updatedCall.id, updatedCall);
+      showSnackMessage(context, 'Call updated successfully');
+    } else {
+      // Add new call
+      var newCallId = uuid.v1();
+      CallHive newCall = CallHive()
+        ..id = newCallId
+        ..subject = subjectController.text
+        ..status = selectedStatus!
+        ..relatedTo = relatedTo!
+        ..relatedId = searchController.text
+        ..contactName = contactNameController.text
+        ..startDate = startDateController.text
+        ..startTime = startTimeController.text
+        ..endDate = endDateController.text
+        ..endTime = endTimeController.text
+        ..communicationType = selectedCommunication!
+        ..assignTo = assignController.text
+        ..description = descriptionController.text;
+
+      await callBox.add(newCall);
+      showSnackMessage(context, 'Call added successfully');
     }
-  }
 
-  // Start Time Pick Function
-  Future<void> _selectStartTime(BuildContext context) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    );
-    if (picked != null) {
-      setState(() {
-        startTimeController.text = picked.format(context);
-        print(startTimeController.text);
-      });
-    }
-  }
-
-  // Start Time Pick Function
-  Future<void> _selectEndTime(BuildContext context) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    );
-    if (picked != null) {
-      setState(() {
-        endTimeController.text = picked.format(context);
-        print(endTimeController.text);
-      });
-    }
-  }
-
-
-  // Add Call Through Hive
-  void addCall() async{
-    Box? call = await Hive.openBox<CallHive>("calls");
-    var uid = uuid.v1();
-    CallHive newCall = CallHive()
-    ..id = uid
-    ..subject = subjectController.text
-    ..status = selectedStatus!
-    ..relatedTo = relatedTo!
-    ..relatedId = searchController.text
-    ..contactName = contactNameController.text
-    ..startDate = startDateController.text
-    ..startTime = startTimeController.text
-    ..endDate = endDateController.text
-    ..endTime = endTimeController.text
-    ..communicationType = selectedCommunication!
-    ..assignTo = assignController.text
-    ..description = descriptionController.text;
-
-    await call.add(newCall);
-    showSnackMessage(context, "Call Added Successfully");
-
+    // Reset form
     setState(() {
       subjectController.clear();
       selectedStatus = null;
@@ -140,16 +123,14 @@ class _AddCallsState extends State<AddCalls> {
       assignController.clear();
       descriptionController.clear();
     });
-
   }
-
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Calls Details', style: headerTextStyle),
+          title: Text('Call Details', style: headerTextStyle),
           centerTitle: true,
         ),
         body: SingleChildScrollView(
@@ -366,54 +347,6 @@ class _AddCallsState extends State<AddCalls> {
                           }
                         },
                       ),
-                      // const SizedBox(height: 15.0,),
-                      // CustomDropdownButtonFormField(
-                      //   value: startHour,
-                      //   hintText: "Select Hour",
-                      //   labelText: "Hours",
-                      //   prefixIcon: const Icon(CupertinoIcons.time),
-                      //   onChanged: (value) {
-                      //     setState(() {
-                      //       startHour = value!;
-                      //     });
-                      //   },
-                      //   items: List.generate(24, (index) {
-                      //     return DropdownMenuItem<String>(
-                      //       value: index.toString().padLeft(2, '0'),
-                      //       child: Text(index.toString().padLeft(2, '0')),
-                      //     );
-                      //   }),
-                      //   validator: (value) {
-                      //     if (value == null || value.isEmpty) {
-                      //       return 'Please Choose a Hour';
-                      //     }
-                      //     return null;
-                      //   },
-                      // ),
-                      // const SizedBox(height: 15.0,),
-                      // CustomDropdownButtonFormField(
-                      //   value: startMinute,
-                      //   hintText: "Select Minute",
-                      //   labelText: "Minutes",
-                      //   prefixIcon: const Icon(Icons.timelapse),
-                      //   onChanged: (value) {
-                      //     setState(() {
-                      //       startMinute = value!;
-                      //     });
-                      //   },
-                      //   items: List.generate(60, (index) {
-                      //     return DropdownMenuItem<String>(
-                      //       value: index.toString().padLeft(2, '0'),
-                      //       child: Text(index.toString().padLeft(2, '0')),
-                      //     );
-                      //   }),
-                      //   validator: (value) {
-                      //     if (value == null || value.isEmpty) {
-                      //       return 'Please Select Minutes';
-                      //     }
-                      //     return null;
-                      //   },
-                      // ),
                       const SizedBox(height: 10.0,),
                       CustomTextFormField(
                         labelText: "End Date",
@@ -449,54 +382,6 @@ class _AddCallsState extends State<AddCalls> {
                           }
                         },
                       ),
-                      // const SizedBox(height: 15.0,),
-                      // CustomDropdownButtonFormField(
-                      //   value: endHour,
-                      //   hintText: "Select Hour",
-                      //   labelText: "Hours",
-                      //   prefixIcon: const Icon(CupertinoIcons.time),
-                      //   onChanged: (value) {
-                      //     setState(() {
-                      //       endHour = value!;
-                      //     });
-                      //   },
-                      //   items: List.generate(24, (index) {
-                      //     return DropdownMenuItem<String>(
-                      //       value: index.toString().padLeft(2, '0'),
-                      //       child: Text(index.toString().padLeft(2, '0')),
-                      //     );
-                      //   }),
-                      //   validator: (value) {
-                      //     if (value == null || value.isEmpty) {
-                      //       return 'Please Choose a Hour';
-                      //     }
-                      //     return null;
-                      //   },
-                      // ),
-                      // const SizedBox(height: 15.0,),
-                      // CustomDropdownButtonFormField(
-                      //   value: endMinute,
-                      //   hintText: "Select Minute",
-                      //   labelText: "Minutes",
-                      //   prefixIcon: const Icon(Icons.timelapse),
-                      //   onChanged: (value) {
-                      //     setState(() {
-                      //       endMinute = value!;
-                      //     });
-                      //   },
-                      //   items: List.generate(60, (index) {
-                      //     return DropdownMenuItem<String>(
-                      //       value: index.toString().padLeft(2, '0'),
-                      //       child: Text(index.toString().padLeft(2, '0')),
-                      //     );
-                      //   }),
-                      //   validator: (value) {
-                      //     if (value == null || value.isEmpty) {
-                      //       return 'Please Select Minutes';
-                      //     }
-                      //     return null;
-                      //   },
-                      // ),
                       const SizedBox(height: 15.0,),
                       CustomDropdownButtonFormField(
                         value: selectedCommunication,
@@ -573,7 +458,7 @@ class _AddCallsState extends State<AddCalls> {
                               setState(() {
                                 loading = true;
                               });
-                              addCall();
+                              saveCall();
                               setState(() {
                                 loading = false;
                               });
@@ -597,7 +482,7 @@ class _AddCallsState extends State<AddCalls> {
                         child: loading ?
                         const SizedBox(height: 18,width: 18,
                           child: CircularProgressIndicator(color: Colors.white,),):
-                        const Text("Add Call"),
+                        Text(widget.existingCall != null ? 'Update Call' : 'Add Call'),
                       )
                     ],
                   ),
@@ -610,6 +495,66 @@ class _AddCallsState extends State<AddCalls> {
     );
   }
 
+
+  // Start Date Pick Function
+  Future<void> _selectStartDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: startDate,
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2500),
+    );
+    if (picked != null && picked != startDate) {
+      setState(() {
+        startDate = picked;
+        startDateController.text = "${picked.month.toString().padLeft(2, '0')}/${picked.day.toString().padLeft(2, '0')}/${picked.year}";
+      });
+    }
+  }
+
+  // End Date Pick Function
+  Future<void> _selectEndDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: endDate,
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2500),
+    );
+    if (picked != null && picked != endDate) {
+      setState(() {
+        endDate = picked;
+        endDateController.text = "${picked.month.toString().padLeft(2, '0')}/${picked.day.toString().padLeft(2, '0')}/${picked.year}";
+      });
+    }
+  }
+
+  // Start Time Pick Function
+  Future<void> _selectStartTime(BuildContext context) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        startTimeController.text = picked.format(context);
+        print(startTimeController.text);
+      });
+    }
+  }
+
+  // Start Time Pick Function
+  Future<void> _selectEndTime(BuildContext context) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        endTimeController.text = picked.format(context);
+        print(endTimeController.text);
+      });
+    }
+  }
   void searchCustomer(BuildContext context, TextEditingController textFieldController) async {
     try {
       if (!Hive.isBoxOpen('customers')) {

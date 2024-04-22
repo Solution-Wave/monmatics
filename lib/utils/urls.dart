@@ -7,16 +7,17 @@ String getContacts = '';
 String getLeads = '';
 String getNotes = '';
 String getCustomer = '';
-String saveTasksUrl = '';
+// String saveTasksUrl = '';
 String saveCallsUrl = '';
 String saveContacts = '';
 String saveLeads = '';
 String saveCustomers = '';
-String saveNotes = '';
+// String saveNotes = '';
 String getUsers = '';
 String deleteNotes = '';
-String updateNotes = '';
-String saveUpdate = "";
+// String updateNotes = '';
+String saveUpdateNotes = "";
+String saveUpdateTasks = "";
 
 void updateUrls(String newBaseUrl) {
   baseUrl = newBaseUrl;
@@ -28,14 +29,15 @@ void updateUrls(String newBaseUrl) {
   getLeads = '$baseUrl/get_leads';
   getNotes = '$baseUrl/get_notes';
   getCustomer = '$baseUrl/get_customers';
-  saveTasksUrl = '$baseUrl/save_tasks';
+  // saveTasksUrl = '$baseUrl/save_tasks';
   saveCallsUrl = '$baseUrl/save_calls';
   saveContacts = '$baseUrl/save_contacts';
   saveLeads = '$baseUrl/save_leads';
   saveCustomers = '$baseUrl/save_customers';
-  saveNotes = '$baseUrl/save_notes';
+  // saveNotes = '$baseUrl/save_notes';
   getUsers = '$baseUrl/get_users';
   deleteNotes = '$baseUrl/delete_notes';
-  updateNotes = '$baseUrl/update_notes';
-  saveUpdate = '$baseUrl/save-or-update_note';
+  // updateNotes = '$baseUrl/update_notes';
+  saveUpdateNotes = '$baseUrl/save-or-update_note';
+  saveUpdateTasks = '$baseUrl/save-or-update-task';
 }

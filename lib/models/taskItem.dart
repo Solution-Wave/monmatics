@@ -19,12 +19,12 @@ class Tasks {
 
   Tasks.fromJson(Map obj) {
     // print('json in item class: $json');
-    Subject = obj["Subject"] ?? '';
-    StDate = obj["StDate"] ?? '';
-    DueDate = obj["DueDate"] ?? '';
-    Status = obj["Status"] ?? '';
-    Priority = obj["Priority"] ?? '';
-    Description = obj["Description"] ?? '';
+    Subject = obj["subject"] ?? '';
+    StDate = obj["start_date"] ?? '';
+    DueDate = obj["due_date"] ?? '';
+    Status = obj["status"] ?? '';
+    Priority = obj["priority"] ?? '';
+    Description = obj["description"] ?? '';
   }
 }
 
@@ -62,6 +62,18 @@ class TaskHive extends HiveObject {
   @HiveField(9)
   late String description;
 
+  @HiveField(10)
+  late String relatedId;
+
+  @HiveField(11)
+  late String assignId;
+
+  @HiveField(12)
+  late String companyId;
+
+  @HiveField(13)
+  late String relatedTo;
+
   TaskHive({
     this.id = "",
     this.subject = "",
@@ -73,6 +85,10 @@ class TaskHive extends HiveObject {
     this.priority = "",
     this.assignTo = "",
     this.description = "",
+    this.relatedId = "",
+    this.assignId = "",
+    this.companyId = "",
+    this.relatedTo = "",
   });
 
   // Factory constructor to deserialize JSON data into a ContactHive object
@@ -86,10 +102,14 @@ class TaskHive extends HiveObject {
       startDate: json['start_date'] ?? "",
       dueDate: json['due_date'] ?? "",
       type: json['related_to_type'] ?? "",
+      relatedTo: json['related_to_type'],
       contact: json['contact_id'] ?? "",
       priority: json['priority'] ?? "",
-      assignTo: json['assign_ID'] ?? '',
+      assignTo: json['assignedId'] ?? '',
       description: json['description'] ?? '',
+      relatedId: json['related_id'] ?? "",
+      assignId: json['assigned_to'] ?? "",
+      companyId: json['companyId'] ?? "",
     );
   }
 }

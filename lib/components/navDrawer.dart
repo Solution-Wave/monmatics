@@ -10,7 +10,9 @@ import '../Functions/importFunctions.dart';
 import '../controllers/localdbController.dart';
 import '../functions/exportFunctions.dart';
 import '../models/noteItem.dart';
+import '../models/opportunityItem.dart';
 import '../models/taskItem.dart';
+import '../models/userItem.dart';
 import '../screens/calenderScreen.dart';
 import '../screens/calls/callsListView.dart';
 import '../screens/customer/customerListView.dart';
@@ -91,10 +93,14 @@ class _navigationdrawerState extends State<navigationdrawer> {
     final customersBox = await Hive.openBox<CustomerHive>('customers');
     final leadsBox = await Hive.openBox<LeadHive>('leads');
     final contactsBox = await Hive.openBox<ContactHive>('contacts');
+    final usersBox = await Hive.openBox<UsersHive>('users');
+    final opportunityBox = await Hive.openBox<OpportunityHive>('opportunity');
 
     await customersBox.clear();
     await leadsBox.clear();
     await contactsBox.clear();
+    await usersBox.clear();
+    await opportunityBox.clear();
   }
 
   ExportFunctions exportFunctions = ExportFunctions();
@@ -173,7 +179,7 @@ class _navigationdrawerState extends State<navigationdrawer> {
                   onTap: () {
                     Navigator.of(context, rootNavigator: true)
                     .push(MaterialPageRoute(builder: (context) =>
-                        OpportunityScreen())) ;
+                        const opporScreen())) ;
                   },
                 ),
                 ListTile(
