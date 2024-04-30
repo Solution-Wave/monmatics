@@ -39,7 +39,9 @@ class _HomeState extends State<Home> {
   String? status;
   String? priority;
   String? relatedId;
+  String? relatedName;
   String? assignId;
+  String? assignName;
   String? companyId;
 
   TextEditingController subjectController = TextEditingController();
@@ -110,17 +112,8 @@ class _HomeState extends State<Home> {
 
   @override
   void initState() {
-    functionCall();
     formKey = GlobalKey<FormState>();
     super.initState();
-    // importFunctions.fetchNotesFromApi();
-    // importFunctions.fetchTasksFromApi();
-    Hive.openBox<NoteHive>("notes").then((notesBox) {
-      exportFunctions.postNotesToApi(notesBox, Ids(assignId!, relatedId!));
-    });
-    Hive.openBox<TaskHive>("tasks").then((tasksBox) {
-      exportFunctions.postTasksToApi(tasksBox, Ids(assignId!, relatedId!));
-    });
     getNotesFromBox();
     getTasksFromBox();
   }
@@ -140,11 +133,11 @@ class _HomeState extends State<Home> {
   void addNote() async {
     print(assignId);
     print(relatedId);
-    Hive.openBox<NoteHive>("notes").then((notesBox) {
-      exportFunctions.postNotesToApi(notesBox, Ids(assignId!, relatedId!));
-    });
     // importFunctions.fetchNotesFromApi();
     if (formKey.currentState!.validate()) {
+      Hive.openBox<NoteHive>("notes").then((notesBox) {
+        exportFunctions.postNotesToApi(notesBox);
+      });
       var uid = uuid.v1();
       NoteHive newNote = NoteHive()
         ..id = uid
@@ -154,24 +147,25 @@ class _HomeState extends State<Home> {
         ..relatedId = relatedId!
         ..assignTo = assignController.text
         ..assignId = assignId!
-        ..description = descriptionController.text;
+        ..description = descriptionController.text
+      ..addedAt = DateTime.now();
 
       await notes!.add(newNote);
       showSnackMessage(context, "Note Added Successfully");
       Navigator.pop(context);
       clearFields();
     } else {
-      showSnackMessage(context, "Please Fill All Fields");
+      showSnackMessage(context, "Please Fill Required Fields");
     }
   }
 
   // Add Task Through Hive
   void addTask() async{
-    Hive.openBox<TaskHive>("tasks").then((tasksBox) {
-      exportFunctions.postTasksToApi(tasksBox, Ids(assignId!, relatedId!));
-    });
     print(assignId);
     if(formKey.currentState!.validate()){
+      Hive.openBox<TaskHive>("tasks").then((tasksBox) {
+        exportFunctions.postTasksToApi(tasksBox);
+      });
       var uid = uuid.v1();
       TaskHive newTask = TaskHive()
           ..id = uid
@@ -187,13 +181,15 @@ class _HomeState extends State<Home> {
           ..assignTo = assignController.text
           ..assignId = assignId!
           ..companyId = companyId!
-          ..description = descriptionController.text;
+          ..description = descriptionController.text
+        ..addedAt = DateTime.now();
       await tasks!.add(newTask);
+      Navigator.pop(context);
       showSnackMessage(context, "Task Added Successfully");
       clearFields();
     }
     else {
-      showSnackMessage(context, "Please Fill All Fields");
+      showSnackMessage(context, "Please Fill Required Fields");
     }
   }
 
@@ -210,6 +206,8 @@ class _HomeState extends State<Home> {
       priority = null;
       relatedId = null;
       assignId = null;
+      assignName = null;
+      relatedName = null;
     });
   }
 
@@ -224,6 +222,7 @@ class _HomeState extends State<Home> {
     note.assignId = assignId!;
     note.assignTo = assignController.text;
     note.description = descriptionController.text;
+    note.addedAt = DateTime.now();
     await notes!.put(note.key, note);
     showSnackMessage(context, "Note Updated Successfully");
     Navigator.pop(context);
@@ -233,7 +232,7 @@ class _HomeState extends State<Home> {
   // Function to update an existing note
   void updateTask(TaskHive task) async {
     print(task.id);
-    otherFunctions.updateTaskInDatabase(task, Ids(assignId!, relatedId!));
+    otherFunctions.updateTaskInDatabase(task);
     task.subject = subjectController.text;
     task.status = status!;
     task.type = relatedTo!;
@@ -243,24 +242,26 @@ class _HomeState extends State<Home> {
     task.relatedTo = searchController.text;
     task.relatedId = relatedId!;
     task.assignTo =assignController.text;
-    task.assignId = assignController.text;
+    task.assignId = assignId!;
     task.description = descriptionController.text;
-
+    task.addedAt = DateTime.now();
     await tasks!.put(task.key, task);
-    showSnackMessage(context, "Task Updated Successfully");
     Navigator.pop(context);
+    showSnackMessage(context, "Task Updated Successfully");
     clearFields();
   }
 
   // Add Notes Form
   Future<void> showNotesDialog({NoteHive? note}) async {
     if (note != null) {
+      await fetchAssignNames(note.assignId);
+      await fetchRelatedNames(note.relatedId);
       subjectController.text = note.subject ?? '';
       relatedTo = note.relatedTo ?? '';
-      searchController.text = note.search ?? '';
+      searchController.text = relatedName ?? '';
       relatedId = note.relatedId ?? "";
       assignId = note.assignId ?? "";
-      assignController.text = note.assignTo ?? '';
+      assignController.text = assignName ?? '';
       descriptionController.text = note.description ?? '';
     }
     bool isEditMode = note != null;
@@ -281,6 +282,7 @@ class _HomeState extends State<Home> {
                       key: formKey,
                       child: Column(
                         children: [
+                          const SizedBox(height: 10.0,),
                           CustomTextFormField(
                               nameController: subjectController,
                               hintText: "Subject",
@@ -320,7 +322,7 @@ class _HomeState extends State<Home> {
                             }).toList(),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please Choose an Option';
+                                return null;
                               }
                               return null;
                             },
@@ -340,7 +342,7 @@ class _HomeState extends State<Home> {
                                 prefixIcon: const Icon(Icons.search),
                                 validator: (value) {
                                   if (value.isEmpty) {
-                                    return "Please Enter a value";
+                                    return null;
                                   }
                                   else {
                                     return null;
@@ -365,7 +367,7 @@ class _HomeState extends State<Home> {
                                 prefixIcon: const Icon(Icons.search),
                                 validator: (value) {
                                   if (value.isEmpty) {
-                                    return "Please Enter a value";
+                                    return null;
                                   }
                                   else {
                                     return null;
@@ -394,7 +396,7 @@ class _HomeState extends State<Home> {
                           ),
                           const SizedBox(height: 20.0,),
                           CustomTextFormField(
-                            keyboardType: TextInputType.text,
+                            keyboardType: TextInputType.multiline,
                             labelText: "Description",
                             hintText: "Description",
                             minLines: 1,
@@ -402,7 +404,7 @@ class _HomeState extends State<Home> {
                             nameController: descriptionController,
                             validator: (value) {
                               if (value.isEmpty) {
-                                return "Please Enter Description";
+                                return null;
                               }
                               else {
                                 return null;
@@ -447,15 +449,18 @@ class _HomeState extends State<Home> {
   // Add Tasks Form
   Future<void> showTaskDialog({TaskHive? task}) async {
     if(task != null ){
+      await fetchRelatedNames(task.relatedId);
+      await fetchAssignNames(task.assignId);
+      print(relatedName);
       subjectController.text = task.subject ?? "";
       status = task.status ?? "";
       relatedTo = task.type ?? "";
-      searchController.text = task.relatedTo ?? "";
+      searchController.text = relatedName ?? "";
       relatedId = task.relatedId ?? "";
       startDateController.text = task.startDate ?? "";
       dueDateController.text = task.dueDate ?? "";
       priority = task.priority ?? "";
-      assignController.text = task.assignTo ?? "";
+      assignController.text = assignName ?? "";
       descriptionController.text = task.description ?? "";
     }
     bool isEditMode = task != null;
@@ -479,6 +484,7 @@ class _HomeState extends State<Home> {
                         // mainAxisSize: MainAxisSize.min,
                         // crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          const SizedBox(height: 10.0,),
                           CustomTextFormField(
                               nameController: subjectController,
                               hintText: "Subject",
@@ -516,7 +522,7 @@ class _HomeState extends State<Home> {
                             }).toList(),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please Choose an Option';
+                                return null;
                               }
                               return null;
                             },
@@ -537,7 +543,6 @@ class _HomeState extends State<Home> {
                               "Lead",
                               "Customer",
                               "Contacts",
-                              ""
                               // "Project",
                             ].map((String value) {
                               return DropdownMenuItem<String>(
@@ -548,7 +553,7 @@ class _HomeState extends State<Home> {
                             }).toList(),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please Choose an Option';
+                                return null;
                               }
                               return null;
                             },
@@ -566,7 +571,7 @@ class _HomeState extends State<Home> {
                                   keyboardType: TextInputType.none,
                                   validator: (value){
                                     if(value.isEmpty){
-                                      return "Please Enter a Value";
+                                      return null;
                                     }
                                     return null;
                                   },
@@ -587,7 +592,7 @@ class _HomeState extends State<Home> {
                                   keyboardType: TextInputType.none,
                                   validator: (value){
                                     if(value.isEmpty){
-                                      return "Please Enter a Value";
+                                      return null;
                                     }
                                     return null;
                                   },
@@ -608,7 +613,7 @@ class _HomeState extends State<Home> {
                                   keyboardType: TextInputType.none,
                                   validator: (value){
                                     if(value.isEmpty){
-                                      return "Please Enter a Value";
+                                      return null;
                                     }
                                     return null;
                                   },
@@ -676,7 +681,7 @@ class _HomeState extends State<Home> {
                             }).toList(),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please Choose an Option';
+                                return null;
                               }
                               return null;
                             },
@@ -700,7 +705,7 @@ class _HomeState extends State<Home> {
                           ),
                           const SizedBox(height: 10.0,),
                           CustomTextFormField(
-                            keyboardType: TextInputType.text,
+                            keyboardType: TextInputType.multiline,
                             labelText: "Description",
                             hintText: "Description",
                             minLines: 1,
@@ -708,7 +713,7 @@ class _HomeState extends State<Home> {
                             nameController: descriptionController,
                             validator: (value) {
                               if(value.isEmpty){
-                                return "Please Enter Description";
+                                return null;
                               }
                               else {
                                 return null;
@@ -749,6 +754,107 @@ class _HomeState extends State<Home> {
       },
     );
   }
+
+  Future<void> fetchRelatedNames(String? relatedId) async {
+    print("Fetching name for relatedId: $relatedId");
+    if (relatedId != null && relatedId.isNotEmpty) {
+      String? fetchedName;
+
+      try {
+        // Initialize variables for the Hive boxes
+        var leadBox = await Hive.openBox<LeadHive>('leads');
+        var customerBox = await Hive.openBox<CustomerHive>('customers');
+        var contactsBox = await Hive.openBox<ContactHive>('contacts');
+
+        // Check for a match in each box
+        bool matchFound = false;
+
+        // Check the Lead box
+        for (var lead in leadBox.values) {
+          if (lead.id == relatedId) {
+            fetchedName = lead.name;
+            matchFound = true;
+            print("Found lead with name: $fetchedName");
+            break;
+          }
+        }
+
+        // If no match was found in the Lead box, check the Customer box
+        if (!matchFound) {
+          for (var customer in customerBox.values) {
+            if (customer.id == relatedId) {
+              fetchedName = customer.name;
+              matchFound = true;
+              print("Found customer with name: $fetchedName");
+              break;
+            }
+          }
+        }
+
+        // If no match was found in the Lead or Customer box, check the Contacts box
+        if (!matchFound) {
+          for (var contact in contactsBox.values) {
+            if (contact.id == relatedId) {
+              String fullName = "${contact.fName} ${contact.lName}";
+              fetchedName = fullName;
+              matchFound = true;
+              print("Found contact with name: $fetchedName");
+              break;
+            }
+          }
+        }
+      } catch (e) {
+        print("Error fetching name: $e");
+        fetchedName = 'Error';
+      }
+
+      // Set the fetched name to the searchController
+      relatedName = fetchedName ?? '';
+      print("Set searchController.text to: ${searchController.text}");
+
+    } else {
+      // Handle case where relatedId is null or empty
+      print("relatedId is null or empty.");
+      searchController.text = ''; // Set to an empty string
+    }
+  }
+  Future<void> fetchAssignNames(String? assignId) async {
+    print("Fetching name for assignId: $assignId");
+    if (assignId != null && assignId.isNotEmpty) {
+      String? fetchedName;
+      try {
+        // Initialize variables for the Hive boxes
+        var userBox = await Hive.openBox<UsersHive>('users');
+        bool matchFound = false;
+
+        // Check the Name box
+        for (var name in userBox.values) {
+          if (name.id == assignId) {
+            String fullName = "${name.fName} ${name.lName}";
+            fetchedName = fullName;
+            matchFound = true;
+            print("Found User with name: $fetchedName");
+            break;
+          }
+        }
+      } catch (e) {
+        print("Error fetching name: $e");
+        fetchedName = 'Error';
+      }
+
+      // Set the fetched name to the searchController
+      assignName = fetchedName ?? '';
+      print("Set searchController.text to: ${assignController.text}");
+
+    } else {
+      // Handle case where relatedId is null or empty
+      print("assignId is null or empty.");
+      assignController.text = ''; // Set to an empty string
+    }
+  }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -847,7 +953,9 @@ class _HomeState extends State<Home> {
           itemBuilder: (BuildContext context) {
             return [
               PopupMenuItem(
-                onTap: () {
+                onTap: () async{
+                  await functionCall();
+                  print(assignId);
                   showNotesDialog();
                 },
                 child: Row(
@@ -867,7 +975,8 @@ class _HomeState extends State<Home> {
                 ),
               ),
               PopupMenuItem(
-                onTap: () {
+                onTap: () async{
+                  await functionCall();
                   showTaskDialog();
                 },
                 child: Row(
@@ -906,7 +1015,8 @@ class _HomeState extends State<Home> {
         itemBuilder: (context, index) {
           return NotesTile(
             obj: notes!.getAt(index)!,
-            onEdit: (notes) {
+            onEdit: (notes) async{
+              await functionCall();
               showNotesDialog(note: notes);
             },
             onDelete: (notes) {
@@ -1010,7 +1120,8 @@ class _HomeState extends State<Home> {
         itemBuilder: (context, index) {
           return TaskListTile(
             obj: tasks!.getAt(index)!,
-            onEdit: (tasks) {
+            onEdit: (tasks) async{
+              await functionCall();
               showTaskDialog(task: tasks);
             },
             onDelete: (tasks) {

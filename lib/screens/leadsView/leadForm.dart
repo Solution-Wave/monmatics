@@ -111,7 +111,7 @@ class _AddLeadState extends State<AddLead> {
                         prefixIcon: const Icon(Icons.mail),
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Your Email";
+                            return null;
                           }
                           else {
                             return null;
@@ -127,7 +127,7 @@ class _AddLeadState extends State<AddLead> {
                         prefixIcon: const Icon(Icons.phone),
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Your Phone";
+                            return null;
                           }
                           else {
                             return null;
@@ -161,7 +161,7 @@ class _AddLeadState extends State<AddLead> {
                         }).toList(),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please Choose a Category';
+                            return null;
                           }
                           return null;
                         },
@@ -189,7 +189,7 @@ class _AddLeadState extends State<AddLead> {
                         }).toList(),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please Choose Lead Source';
+                            return null;
                           }
                           return null;
                         },
@@ -219,7 +219,7 @@ class _AddLeadState extends State<AddLead> {
                         }).toList(),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please Choose Status';
+                            return null;
                           }
                           return null;
                         },
@@ -248,14 +248,14 @@ class _AddLeadState extends State<AddLead> {
                         }).toList(),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please Choose Type';
+                            return null;
                           }
                           return null;
                         },
                       ),
                       const SizedBox(height: 10.0,),
                       CustomTextFormField(
-                        keyboardType: TextInputType.text,
+                        keyboardType: TextInputType.multiline,
                         labelText: "Note",
                         hintText: "Note",
                         minLines: 1,
@@ -263,7 +263,7 @@ class _AddLeadState extends State<AddLead> {
                         nameController: noteController,
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter A Note";
+                            return null;
                           }
                           else {
                             return null;
@@ -282,7 +282,7 @@ class _AddLeadState extends State<AddLead> {
                         prefixIcon: const Icon(Icons.map),
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Your Address";
+                            return null;
                           }
                           else {
                             return null;
@@ -293,8 +293,6 @@ class _AddLeadState extends State<AddLead> {
                       CustomButton(
                         onPressed: () {
                           if(_formKey.currentState!.validate()){
-                            if(selectedCategory != null && selectedSource !=null
-                                && selectedStatus != null && selectedType != null){
                               print('Form is valid');
                               setState(() {
                                 loading = true;
@@ -303,20 +301,13 @@ class _AddLeadState extends State<AddLead> {
                               setState(() {
                                 loading = false;
                               });
-                            } else{
-                              print('Select Dropdown Values');
-                              setState(() {
-                                loading = false;
-                              });
-                              showSnackMessage(context, "Please Choose all Values");
-                            }
                           }
                           else {
                             print('Form is invalid');
                             setState(() {
                               loading = false;
                             });
-                            showSnackMessage(context, "Please Fill All the Fields");
+                            showSnackMessage(context, "Please Fill Required Fields");
                           }
                         },
                         padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 50.0),

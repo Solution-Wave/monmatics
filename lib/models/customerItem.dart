@@ -86,6 +86,12 @@ class CustomerHive extends HiveObject {
   @HiveField(13)
   late String id;
 
+  @HiveField(14)
+  late DateTime? addedAt;
+
+  @HiveField(14)
+  late String assignId;
+
   CustomerHive({
     this.id = "",
     this.name = "",
@@ -102,27 +108,30 @@ class CustomerHive extends HiveObject {
     this.margin = "",
     this.note = "",
     this.address = "",
+    this.addedAt,
+    this.assignId = "",
 });
 
-  factory CustomerHive.fromJson(Map<String, dynamic> json){
-    String id = json['id'] ?? "";
+  factory CustomerHive.fromJson(Map<String, dynamic> json) {
+    String id = json['id']?.toString() ?? "";
 
     return CustomerHive(
       id: id,
-      name: json['name'] ?? "",
-      email: json['email'] ?? "",
-      phone: json['phone'] ?? "",
-      category: json['category'] ?? "",
-      account: json['account'] ?? "",
-      accountCode: json['account_code'] ?? "",
-      limit: json['limit'] ?? "",
-      amount: json['amount'] ?? "",
-      taxNumber: json['tax_number'] ?? "",
-      status: json['status'] ?? "",
-      type: json['type'] ?? "",
-      margin: json['margin'] ?? "",
-      note: json['note'] ?? "",
-      address: json['address'] ?? "",
+      name: json['name']?.toString() ?? "",
+      email: json['email']?.toString() ?? "",
+      phone: json['phone']?.toString() ?? "",
+      category: json['category']?.toString() ?? "",
+      account: json['account']?.toString() ?? "",
+      accountCode: json['account_code']?.toString() ?? "",
+      limit: json['limit']?.toString() ?? "",
+      amount: json['amount']?.toString() ?? "",
+      taxNumber: json['tax_number']?.toString() ?? "",
+      status: json['status']?.toString() ?? "",
+      type: json['type']?.toString() ?? "",
+      margin: json['margin']?.toString() ?? "",
+      note: json['note']?.toString() ?? "",
+      address: json['address']?.toString() ?? "",
+      assignId: json['assigned_to']?.toString() ?? "",
     );
-}
+  }
 }

@@ -6,7 +6,7 @@ import '../../utils/themes.dart';
 
 class LeadsScreen extends StatelessWidget {
   const LeadsScreen(this.object,{Key? key}) : super(key: key);
- final  object;
+ final object;
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -20,7 +20,7 @@ class LeadsScreen extends StatelessWidget {
               margin: const EdgeInsets.all(20.0),
               constraints: BoxConstraints(
                   maxWidth: MediaQuery.of(context).size.width,
-                  maxHeight: MediaQuery.of(context).size.height
+                  // maxHeight: MediaQuery.of(context).size.height
               ),
               child: Padding(
                 padding:
@@ -159,6 +159,7 @@ class LeadsScreen extends StatelessWidget {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 30.0,),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
@@ -213,7 +214,8 @@ class LeadsScreen extends StatelessWidget {
                           icon: const Icon(Icons.location_on),
                         ),
                       ],
-                    )
+                    ),
+                    const SizedBox(height: 20.0,),
                   ],
                 ),
               ),

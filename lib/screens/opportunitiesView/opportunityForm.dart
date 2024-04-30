@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:icons_flutter/icons_flutter.dart';
+import '../../Functions/exportFunctions.dart';
+import '../../functions/otherFunctions.dart';
 import '../../models/leadItem.dart';
 import '../../models/opportunityItem.dart';
 import '../../models/userItem.dart';
@@ -40,7 +42,7 @@ class _AddOpportunityState extends State<AddOpportunity> {
 
   bool loading = false;
   String? assignId;
-  String? relatedId;
+  String? leadId;
 
   // Initialize date
   DateTime date = DateTime.now();
@@ -53,7 +55,7 @@ class _AddOpportunityState extends State<AddOpportunity> {
       OpportunityHive opportunity = widget.existingOpportunity!;
       // Pre-fill form fields with existing data
       nameController.text = opportunity.name;
-      leadController.text = opportunity.lead;
+      leadController.text = opportunity.leadName;
       amountController.text = opportunity.amount;
       dateController.text = opportunity.closeDate;
       nextStepController.text = opportunity.nextStep;
@@ -65,6 +67,7 @@ class _AddOpportunityState extends State<AddOpportunity> {
       selectedSource = opportunity.source;
       selectedCampaign = opportunity.campaign;
       selectedType = opportunity.type;
+      assignId = opportunity.assignId;
 
       // Parse date from the string format if available
       if (dateController.text.isNotEmpty) {
@@ -80,6 +83,9 @@ class _AddOpportunityState extends State<AddOpportunity> {
     }
   }
 
+  ExportFunctions exportFunctions = ExportFunctions();
+  OtherFunctions otherFunctions = OtherFunctions();
+
   void saveOpportunity() async {
     // Open the Hive box
     Box<OpportunityHive> opportunityBox = await Hive.openBox<OpportunityHive>("opportunity");
@@ -91,7 +97,7 @@ class _AddOpportunityState extends State<AddOpportunity> {
       newOpportunity = OpportunityHive()
         ..id = uid
     ..name = nameController.text
-    ..lead = leadController.text
+    ..leadName = leadController.text
     ..currency = selectedCurrency!
     ..amount = amountController.text
     ..closeDate = dateController.text
@@ -105,13 +111,15 @@ class _AddOpportunityState extends State<AddOpportunity> {
 
     // Add the new opportunity to the box
     await opportunityBox.add(newOpportunity);
+    exportFunctions.postOpportunityToApi();
     showSnackMessage(context, "Opportunity Added Successfully");
     } else {
     // Update existing opportunity
     OpportunityHive existingOpportunity = widget.existingOpportunity!;
     existingOpportunity
     ..name = nameController.text
-    ..lead = leadController.text
+    ..leadName = leadController.text
+      ..leadId = leadId!
     ..currency = selectedCurrency!
     ..amount = amountController.text
     ..closeDate = dateController.text
@@ -121,10 +129,12 @@ class _AddOpportunityState extends State<AddOpportunity> {
     ..campaign = selectedCampaign!
     ..nextStep = nextStepController.text
     ..assignTo = assignController.text
+      ..assignId = assignId!
     ..description = descriptionController.text;
 
     // Save the updated opportunity to the box
     await existingOpportunity.save();
+    otherFunctions.updateOpportunityInDatabase(existingOpportunity);
     showSnackMessage(context, "Opportunity Updated Successfully");
     }
 
@@ -186,7 +196,7 @@ class _AddOpportunityState extends State<AddOpportunity> {
                         },
                         labelText: "Lead",
                         hintText: "Lead",
-                        keyboardType: TextInputType.text,
+                        keyboardType: TextInputType.none,
                         nameController: leadController,
                         prefixIcon: const Icon(RpgAwesome.magnet),
                         validator: (value) {
@@ -364,7 +374,8 @@ class _AddOpportunityState extends State<AddOpportunity> {
                         },
                         items: <String>[
                           "Cash",
-                          "Whole Sale"
+                          "Whole Sale",
+                          ""
                         ].map((String value) {
                           return DropdownMenuItem<String>(
                             alignment: AlignmentDirectional.center,
@@ -400,7 +411,7 @@ class _AddOpportunityState extends State<AddOpportunity> {
                         onTap: (){
                           searchUsers(context, assignController);
                         },
-                        keyboardType: TextInputType.text,
+                        keyboardType: TextInputType.none,
                         labelText: "Assign To",
                         hintText: "User",
                         nameController: assignController,
@@ -416,7 +427,7 @@ class _AddOpportunityState extends State<AddOpportunity> {
                       ),
                       const SizedBox(height: 10.0,),
                       CustomTextFormField(
-                        keyboardType: TextInputType.text,
+                        keyboardType: TextInputType.multiline,
                         labelText: "Description",
                         hintText: "Description",
                         minLines: 1,
@@ -521,7 +532,7 @@ class _AddOpportunityState extends State<AddOpportunity> {
                 children: leads.map((lead) => ListTile(
                   title: Text('${lead['name']}'),
                   onTap: () {
-                    relatedId = lead['id'];
+                    leadId = lead['id'];
                     textFieldController.text = lead['name'];
                     Navigator.pop(context);
                   },

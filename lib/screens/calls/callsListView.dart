@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../controllers/crmControllers.dart';
+import '../../functions/otherFunctions.dart';
 import '../../models/callItem.dart';
+import '../../searchScreens/callsSearch.dart';
 import '../../utils/colors.dart';
 import '../../utils/themes.dart';
+import 'callsScreen.dart';
 import 'callsForm.dart';
 
 
@@ -23,11 +25,6 @@ class _CallsScreenState extends State<CallsScreen> {
 
    bool loading = false;
 
-
-  Future getToken()async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    token = prefs.getString('token');
-  }
    Future<bool> getCallsRecord() async {
      call = await Hive.openBox<CallHive>('calls');
      setState(() {
@@ -53,11 +50,46 @@ class _CallsScreenState extends State<CallsScreen> {
     delegate: SearchCalls(),
   );
   }
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-  }
+   OtherFunctions otherFunctions = OtherFunctions();
+   // Function to handle delete action
+   void deleteCall(CallHive calls, int index) async {
+     showDialog(
+       context: context,
+       builder: (BuildContext context) {
+         return AlertDialog(
+           title: const Text('Delete Call'),
+           content: const Text('Are you sure you want to delete this Call?'),
+           actions: <Widget>[
+             TextButton(
+               onPressed: () async {
+                 // Delete the note from the database
+                 try {
+                   await otherFunctions.deleteCallFromDatabase(calls.id);
+                 } catch (e) {
+                   print('Error deleting Call from database: $e');
+                   // Handle error if necessary
+                 }
+
+                 // Delete the note from the UI
+                 setState(() {
+                   call!.deleteAt(index);
+                 });
+                 Navigator.of(context).pop(); // Close dialog
+               },
+               child: const Text('Yes'),
+             ),
+             TextButton(
+               onPressed: () {
+                 Navigator.of(context).pop(); // Close dialog
+               },
+               child: const Text('No'),
+             ),
+           ],
+         );
+       },
+     );
+   }
+
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
@@ -87,11 +119,17 @@ class _CallsScreenState extends State<CallsScreen> {
                       shrinkWrap: true,
                       itemCount: call!.length,
                       itemBuilder: (BuildContext, index) {
-                        return CallsListTile(obj:call!.get(index));
+                        return CallsListTile(
+                            obj:call!.get(index),
+                          onDelete: (call) {
+                            deleteCall(call, index);
+                          },
+                        );
                       },
                     );
-                  } else
-                    return Center(child: Text('No Data Found'));
+                  } else {
+                    return const Center(child: Text('No Data Found'));
+                  }
                 } else {
                   return Center(
                     child: CircularProgressIndicator(
@@ -114,9 +152,9 @@ class _CallsScreenState extends State<CallsScreen> {
           backgroundColor: Theme.of(context).brightness == Brightness.light
               ? popupmenuButtonCol
               : null,
-          onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const AddCalls(
+          onPressed: () async{
 
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const AddCalls(
             )));
           },
           child: const Icon(Icons.add,
@@ -127,208 +165,3 @@ class _CallsScreenState extends State<CallsScreen> {
   }
 }
 
-class CallsListTile extends StatefulWidget {
-  const CallsListTile({required this.obj,super.key});
-  final  obj;
-
-  @override
-  State<CallsListTile> createState() => _CallsListTileState();
-}
-
-class _CallsListTileState extends State<CallsListTile> {
-
-  void navigateToEditScreen(BuildContext context, CallHive obj) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AddCalls(existingCall: obj),
-      ),
-    );
-  }
-  bool _isExpanded=false;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 10.0),
-      child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          iconColor: primaryColor,
-          expandedAlignment: Alignment.centerRight,
-          expandedCrossAxisAlignment: CrossAxisAlignment.start,
-          shape: RoundedRectangleBorder(
-            side: BorderSide(
-              color: primaryColor,
-            ),
-            borderRadius: BorderRadius.circular(12.0),
-          ),
-          collapsedShape: RoundedRectangleBorder(
-            side: BorderSide(
-              color: primaryColor,
-            ),
-            borderRadius: BorderRadius.circular(12.0),
-          ) ,
-          title: Row(
-            children: [
-              Expanded(
-                flex: 1,
-                child: Text(widget.obj.subject, style: listViewTextStyle ,),
-              ),
-              Row(
-                children: [
-                  const Icon(Icons.av_timer),
-                  Text(widget.obj.startDate, style: listViewTextStyle ,),
-                ],
-              ),
-              IconButton(
-                  onPressed: () => navigateToEditScreen(context, widget.obj),
-                  icon: const Icon(Icons.edit, color: Colors.blueAccent,)
-              ),
-              IconButton(
-                  onPressed: (){
-
-                  },
-                  icon: const Icon(Icons.delete, color: Colors.red)
-              ),
-            ],
-          ),
-          childrenPadding: const EdgeInsets.only(
-            top: 8.0,
-            bottom: 8.0,
-            left: 15.0,
-            right: 15.0 ,
-          ),
-          trailing: Icon(
-              _isExpanded?
-              Icons.arrow_drop_up :
-              Icons.arrow_drop_down
-          ),
-          onExpansionChanged: (bool val){
-            setState(() {
-              _isExpanded = val;
-            });
-          },
-          children: [
-            Row(
-              children: [
-                //Title's column
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Name:', style: titleStyle,),
-                    const SizedBox(height: 10.0,),
-                    Text('Date:',style: titleStyle,),
-                    const SizedBox(height: 10.0,),
-                    Text('Time:',style: titleStyle,),
-                    const SizedBox(height: 10.0,),
-                    Text('Related To:',style: titleStyle,),
-                    const SizedBox(height: 10.0,),
-                    Text('Status:',style: titleStyle,),
-                    const SizedBox(height: 10.0,),
-                    Text('Description:',style: titleStyle,),
-
-                  ],
-                ),
-                const SizedBox(width: 15.0,),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // callsData[index].ContactName
-                    Text(widget.obj.contactName, style: normalStyle,),
-                    const SizedBox(height: 10.0,),
-                    Text(widget.obj.startDate, style: normalStyle,),
-                    const SizedBox(height: 10.0,),
-                    Text(widget.obj.startTime, style: normalStyle,),
-                    const SizedBox(height: 10.0,),
-                    Text(widget.obj.relatedTo, style: normalStyle,),
-                    const SizedBox(height: 10.0,),
-                    Text(widget.obj.status, style: normalStyle,),
-                    const SizedBox(height: 10.0,),
-                    Container(
-                      width: MediaQuery.of(context).size.width*0.6,
-                        child: Text(widget.obj.description,style: normalStyle,)),
-                  ],
-                )
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-
-class SearchCalls extends SearchDelegate{
-  @override
-  List<Widget>? buildActions(BuildContext context) => [
-    IconButton(
-      icon: Icon(Icons.clear),
-      onPressed: () {
-        query.isEmpty ? close(context, null) : query = '';
-      },
-    )
-  ];
-  @override
-  Widget? buildLeading(BuildContext context) => IconButton(
-      icon: Icon(Icons.arrow_back), onPressed: () => close(context, null));
-
-  List getResults(String query) {
-    List results = [];
-    int i = 0;
-    //List tempList = model.data!;
-    int len = callsData.length;
-
-    for (i; i < len; i++) {
-      if (callsData[i].subject.toLowerCase().contains(query.toLowerCase())
-          || callsData[i].status.toLowerCase().contains(query.toLowerCase())
-          || callsData[i].startDate.contains(query)
-      ) {
-        results.add(callsData[i]);
-      }
-    }
-    return results;
-  }
-
-  List getSuggestions(String query) {
-    List suggestions = [];
-    int i = 0;
-    //List tempList = model.data!;
-    int len = callsData.length;
-
-    for (i; i < len; i++) {
-      if (callsData[i].subject.toLowerCase().contains(query.toLowerCase())
-          || callsData[i].status.toLowerCase().contains(query.toLowerCase())
-          || callsData[i].startDate.contains(query)
-      ) {
-        suggestions.add(callsData[i]);
-      }
-    }
-    return suggestions;
-  }
-
-  @override
-  Widget buildResults(BuildContext context) {
-    List results = query.isEmpty ? [] : getSuggestions(query);
-    return ListView.builder(
-        itemCount: results.length,
-        itemBuilder:(context, index){
-          return CallsListTile(obj:results[index]);
-        }
-    );
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-
-    List suggestions = query.isEmpty ? [] : getSuggestions(query);
-    return ListView.builder(
-        itemCount: suggestions.length,
-        itemBuilder:(context, index){
-          return CallsListTile(obj:suggestions[index]);
-        }
-    );
-  }
-
-}

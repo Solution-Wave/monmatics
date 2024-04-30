@@ -24,7 +24,8 @@ class CustomerView extends StatelessWidget {
               margin: const EdgeInsets.all(20.0),
               constraints: BoxConstraints(
                   maxWidth: MediaQuery.of(context).size.width,
-                  maxHeight: MediaQuery.of(context).size.height),
+                  // maxHeight: MediaQuery.of(context).size.height,
+              ),
               child: Padding(
                 padding:
                     const EdgeInsets.only(left: 12.0, right: 12.0, top: 15.0),
@@ -309,6 +310,7 @@ class CustomerView extends StatelessWidget {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 20.0,),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
@@ -367,7 +369,8 @@ class CustomerView extends StatelessWidget {
                           icon: const Icon(Icons.location_on),
                         ),
                       ],
-                    )
+                    ),
+                    const SizedBox(height: 20.0,),
                   ],
                 ),
               ),

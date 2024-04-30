@@ -1,22 +1,20 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:monmatics/models/customerItem.dart';
-import 'package:monmatics/models/leadItem.dart';
+import 'package:monmatics/functions/otherFunctions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
-import '../../Functions/exportFunctions.dart';
-import '../../functions/searchFunctions.dart';
+import '../../functions/exportFunctions.dart';
 import '../../models/contactItem.dart';
+import '../../models/customerItem.dart';
+import '../../models/leadItem.dart';
 import '../../models/userItem.dart';
 import '../../utils/customWidgets.dart';
 import '../../utils/messages.dart';
 import '../../utils/themes.dart';
-import '../../utils/urls.dart';
 
 class AddContact extends StatefulWidget {
-  const AddContact({super.key});
+  final ContactHive? existingContact;
+  const AddContact({super.key, this.existingContact});
 
   @override
   State<AddContact> createState() => _AddContactState();
@@ -25,26 +23,44 @@ class AddContact extends StatefulWidget {
 class _AddContactState extends State<AddContact> {
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  String? userId;
-
+  String? assignId;
   Future<void> getSharedData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      userId = prefs.getString('id');
       assignId = prefs.getString('id');
     });
   }
 
 
-  void FunctionCall()async{
+  void functionCall()async{
     await getSharedData();
   }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    FunctionCall();
+    functionCall();
+
+    if(widget.existingContact != null){
+      firstnameController.text = widget.existingContact!.fName;
+      lastnameController.text = widget.existingContact!.lName;
+      titleController.text = widget.existingContact!.title;
+      selectedType = widget.existingContact!.type;
+      relatedTo = widget.existingContact!.relatedTo;
+      relatedId = widget.existingContact!.search;
+      searchController.text = widget.existingContact!.search ?? '';
+      assignController.text = widget.existingContact!.assignTo ?? '';
+      assignId = widget.existingContact!.assignId ?? '';
+      phoneController.text = widget.existingContact!.phone;
+      emailController.text = widget.existingContact!.email;
+      officePhoneController.text = widget.existingContact!.officePhone;
+      addressController.text = widget.existingContact!.address;
+      cityController.text = widget.existingContact!.city;
+      stateController.text = widget.existingContact!.state;
+      postalCodeController.text = widget.existingContact!.postalCode;
+      countryController.text = widget.existingContact!.country;
+      descriptionController.text = widget.existingContact!.description;
+    }
   }
 
   TextEditingController firstnameController = TextEditingController();
@@ -66,59 +82,163 @@ class _AddContactState extends State<AddContact> {
   String? selectedType;
   String? relatedTo;
   String? relatedId;
-  String? assignId;
   var uuid = const Uuid();
 
   ExportFunctions exportFunctions = ExportFunctions();
+  OtherFunctions otherFunctions = OtherFunctions();
+
 
 
   // Add Contact through Hive
-  void addContact() async{
-    exportFunctions.postContactsToApi();
-    var uid = uuid.v1();
-    Box? contact = await Hive.openBox<ContactHive>("contacts");
-    ContactHive newContact = ContactHive()
-    ..id = uid
-    ..type = selectedType!
-    ..fName = firstnameController.text
-    ..lName = lastnameController.text
-    ..title = titleController.text
-    ..relatedTo = relatedTo!
-    ..search = relatedId!
-    ..assignTo = assignId!
-    ..phone = phoneController.text
-    ..email = emailController.text
-    ..officePhone = officePhoneController.text
-    ..address = addressController.text
-    ..city = cityController.text
-    ..state = stateController.text
-    ..postalCode = postalCodeController.text
-    ..country = countryController.text
-    ..description = descriptionController.text;
-    await contact.add(newContact);
-    showSnackMessage(context, "Contact Added Successfully");
+  // void addContact() async {
+  //   try {
+  //     // Generate a new unique ID for the contact
+  //     var uid = uuid.v1();
+  //
+  //     // Open the Hive box for storing contacts
+  //     Box<ContactHive> contactBox = await Hive.openBox<ContactHive>("contacts");
+  //
+  //     // Create a new ContactHive object with the provided data
+  //     ContactHive newContact = ContactHive()
+  //       ..id = uid
+  //       ..type = selectedType ?? '' // Ensure selectedType is not null
+  //       ..fName = firstnameController.text.trim()
+  //       ..lName = lastnameController.text.trim()
+  //       ..title = titleController.text.trim()
+  //       ..relatedTo = relatedTo ?? '' // Ensure relatedTo is not null
+  //       ..search = relatedId ?? '' // Ensure relatedId is not null
+  //       ..assignTo = assignId ?? '' // Ensure assignId is not null
+  //       ..phone = phoneController.text.trim()
+  //       ..email = emailController.text.trim()
+  //       ..officePhone = officePhoneController.text.trim()
+  //       ..address = addressController.text.trim()
+  //       ..city = cityController.text.trim()
+  //       ..state = stateController.text.trim()
+  //       ..postalCode = postalCodeController.text.trim()
+  //       ..country = countryController.text.trim()
+  //       ..description = descriptionController.text.trim()
+  //       ..addedAt = DateTime.now();
+  //
+  //     // Add the new contact to the Hive database
+  //     await contactBox.add(newContact);
+  //
+  //     // Post the new contact data to the API
+  //     await exportFunctions.postContactsToApi();
+  //
+  //     // Show a success message
+  //     showSnackMessage(context, "Contact Added Successfully");
+  //
+  //     // Clear the form fields after successful addition
+  //     setState(() {
+  //       selectedType = null;
+  //       firstnameController.clear();
+  //       lastnameController.clear();
+  //       titleController.clear();
+  //       relatedTo = null;
+  //       relatedId = null;
+  //       assignId = null;
+  //       searchController.clear();
+  //       assignController.clear();
+  //       phoneController.clear();
+  //       emailController.clear();
+  //       officePhoneController.clear();
+  //       addressController.clear();
+  //       cityController.clear();
+  //       stateController.clear();
+  //       postalCodeController.clear();
+  //       countryController.clear();
+  //       descriptionController.clear();
+  //     });
+  //   } catch (e) {
+  //     // Handle any errors that occur during the process
+  //     showSnackMessage(context, "Failed to add contact: $e");
+  //   }
+  // }
 
-    setState(() {
-      selectedType = null;
-      firstnameController.clear();
-      lastnameController.clear();
-      titleController.clear();
-      relatedTo = null;
-      searchController.clear();
-      assignController.clear();
-      phoneController.clear();
-      emailController.clear();
-      officePhoneController.clear();
-      addressController.clear();
-      cityController.clear();
-      stateController.clear();
-      postalCodeController.clear();
-      countryController.clear();
-      descriptionController.clear();
-    });
+  void saveContact() async {
+    try {
+      // Open the Hive box
+      Box<ContactHive> contactBox = await Hive.openBox<ContactHive>('contacts');
+      if (widget.existingContact != null) {
+        // Update existing call
+        ContactHive updatedContact = widget.existingContact!;
+        // Update existing contact
+        updatedContact.fName = firstnameController.text;
+        updatedContact.lName = lastnameController.text;
+        updatedContact.title = titleController.text;
+        updatedContact.type = selectedType ?? updatedContact.type;
+        updatedContact.relatedTo = searchController.text;
+        updatedContact.search = relatedId ?? updatedContact.search;
+        updatedContact.assignTo = assignController.text;
+        updatedContact.assignId = assignId ?? updatedContact.assignId;
+        updatedContact.phone = phoneController.text;
+        updatedContact.email = emailController.text;
+        updatedContact.officePhone = officePhoneController.text;
+        updatedContact.address = addressController.text;
+        updatedContact.city = cityController.text;
+        updatedContact.state = stateController.text;
+        updatedContact.postalCode = postalCodeController.text;
+        updatedContact.country = countryController.text;
+        updatedContact.description = descriptionController.text;
+
+        await contactBox.put(updatedContact.key, updatedContact);
+        otherFunctions.updateContactInDatabase(updatedContact);
+        showSnackMessage(context, 'Contact updated successfully');
+      } else {
+        // Add new contact
+        var newContactId = uuid.v1();
+        ContactHive newContact = ContactHive()
+          ..id = newContactId
+          ..fName = firstnameController.text
+          ..lName = lastnameController.text
+          ..title = titleController.text
+          ..type = selectedType!
+          ..relatedTo = searchController.text
+          ..search = relatedId!
+          ..assignTo = assignController.text
+          ..assignId = assignId!
+          ..phone = phoneController.text
+          ..email = emailController.text
+          ..officePhone = officePhoneController.text
+          ..address = addressController.text
+          ..city = cityController.text
+          ..state = stateController.text
+          ..postalCode = postalCodeController.text
+          ..country = countryController.text
+          ..description = descriptionController.text;
+
+        await contactBox.add(newContact);
+        exportFunctions.postContactsToApi();
+        showSnackMessage(context, 'Contact added successfully');
+      }
+
+      // Reset form fields
+      setState(() {
+        firstnameController.clear();
+        lastnameController.clear();
+        titleController.clear();
+        selectedType = null;
+        relatedTo = null;
+        searchController.clear();
+        relatedId = null;
+        assignController.clear();
+        assignId = null;
+        phoneController.clear();
+        emailController.clear();
+        officePhoneController.clear();
+        addressController.clear();
+        cityController.clear();
+        stateController.clear();
+        postalCodeController.clear();
+        countryController.clear();
+        descriptionController.clear();
+      });
+
+    } catch (e) {
+      // Handle any errors that may occur during saving/updating contacts
+      showSnackMessage(context, 'Error: $e');
+    }
   }
-
-
 
 
   @override
@@ -164,7 +284,7 @@ class _AddContactState extends State<AddContact> {
                         }).toList(),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please Choose Type';
+                            return null;
                           }
                           return null;
                         },
@@ -194,7 +314,7 @@ class _AddContactState extends State<AddContact> {
                         prefixIcon: const Icon(Icons.person),
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Your Last Name";
+                            return null;
                           }
                           else {
                             return null;
@@ -210,7 +330,7 @@ class _AddContactState extends State<AddContact> {
                         prefixIcon: const Icon(Icons.title),
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Title";
+                            return null;
                           }
                           else {
                             return null;
@@ -241,7 +361,7 @@ class _AddContactState extends State<AddContact> {
                         }).toList(),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please Choose an Option';
+                            return null;
                           }
                           return null;
                         },
@@ -261,7 +381,7 @@ class _AddContactState extends State<AddContact> {
                             prefixIcon: const Icon(Icons.search),
                             validator: (value) {
                               if(value.isEmpty){
-                                return "Please Enter a value";
+                                return null;
                               }
                               else {
                                 return null;
@@ -340,7 +460,7 @@ class _AddContactState extends State<AddContact> {
                         prefixIcon: const Icon(Icons.mail),
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Your Email";
+                            return null;
                           }
                           else {
                             return null;
@@ -356,7 +476,7 @@ class _AddContactState extends State<AddContact> {
                         prefixIcon: const Icon(Icons.phone_android),
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Your Office Phone Number";
+                            return null;
                           }
                           else {
                             return null;
@@ -375,7 +495,7 @@ class _AddContactState extends State<AddContact> {
                         prefixIcon: const Icon(Icons.pin_drop),
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Your Address";
+                            return null;
                           }
                           else {
                             return null;
@@ -390,7 +510,7 @@ class _AddContactState extends State<AddContact> {
                         nameController: cityController,
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Your City Name";
+                            return null;
                           }
                           else {
                             return null;
@@ -406,7 +526,7 @@ class _AddContactState extends State<AddContact> {
                         nameController: stateController,
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Your State";
+                            return null;
                           }
                           else {
                             return null;
@@ -422,7 +542,7 @@ class _AddContactState extends State<AddContact> {
                         nameController: postalCodeController,
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Your Postal Code";
+                            return null;
                           }
                           else {
                             return null;
@@ -438,7 +558,7 @@ class _AddContactState extends State<AddContact> {
                         nameController: countryController,
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Your Country";
+                            return null;
                           }
                           else {
                             return null;
@@ -448,7 +568,7 @@ class _AddContactState extends State<AddContact> {
                       ),
                       const SizedBox(height: 10.0,),
                       CustomTextFormField(
-                        keyboardType: TextInputType.text,
+                        keyboardType: TextInputType.multiline,
                         labelText: "Description",
                         hintText: "Description",
                         minLines: 1,
@@ -456,7 +576,7 @@ class _AddContactState extends State<AddContact> {
                         nameController: descriptionController,
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Description";
+                            return null;
                           }
                           else {
                             return null;
@@ -468,36 +588,28 @@ class _AddContactState extends State<AddContact> {
                       CustomButton(
                         onPressed: () {
                           if(_formKey.currentState!.validate()){
-                            if(relatedTo != null && selectedType != null){
                               print('Form is valid');
                               setState(() {
                                 loading = true;
                               });
-                              addContact();
+                              saveContact();
                               setState(() {
                                 loading = false;
                               });
-                            } else{
-                              print('Select Dropdown Values');
-                              setState(() {
-                                loading = false;
-                              });
-                              showSnackMessage(context, "Please Choose all Values");
-                            }
                           }
                           else {
                             print('Form is invalid');
                             setState(() {
                               loading = false;
                             });
-                            showSnackMessage(context, "Please Fill All the Fields");
+                            showSnackMessage(context, "Please Fill Required Fields");
                           }
                         },
                         padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 50.0),
                         child: loading ?
                         const SizedBox(height: 18,width: 18,
                           child: CircularProgressIndicator(color: Colors.white,),):
-                        const Text("Add Contact"),
+                        Text(widget.existingContact != null ? 'Update Contact' : 'Add Contact'),
                       )
                     ],
                   ),

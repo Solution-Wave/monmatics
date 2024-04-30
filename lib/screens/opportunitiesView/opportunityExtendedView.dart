@@ -1,12 +1,66 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
-import '../../utils/colors.dart';
-import '../../utils/messages.dart';
+import 'package:hive/hive.dart';
+import '../../models/userItem.dart';
 import '../../utils/themes.dart';
 
-class OpportunityExtendedScreen extends StatelessWidget {
+class OpportunityExtendedScreen extends StatefulWidget {
   const OpportunityExtendedScreen(this.object,{Key? key}) : super(key: key);
   final  object;
+
+  @override
+  State<OpportunityExtendedScreen> createState() => _OpportunityExtendedScreenState();
+}
+
+class _OpportunityExtendedScreenState extends State<OpportunityExtendedScreen> {
+
+
+  String assignName = "";
+
+  Future<void> fetchAssignNames(String? assignId) async {
+    print("Fetching name for assignId: $assignId");
+    if (assignId != null && assignId.isNotEmpty) {
+      String? fetchedName;
+      try {
+        // Initialize variables for the Hive boxes
+        var userBox = await Hive.openBox<UsersHive>('users');
+        bool matchFound = false;
+
+        // Check the Name box
+        for (var name in userBox.values) {
+          if (name.id == assignId) {
+            String fullName = "${name.fName} ${name.lName}";
+            fetchedName = fullName;
+            matchFound = true;
+            print("Found User with name: $fetchedName");
+            break;
+          }
+        }
+      } catch (e) {
+        print("Error fetching name: $e");
+        fetchedName = 'Error';
+      }
+
+      // Set the fetched name to the searchController
+      setState(() {
+        assignName = fetchedName ?? '';
+      });
+    } else {
+      // Handle case where relatedId is null or empty
+      print("assignId is null or empty.");
+    }
+  }
+
+  void fetchNames() async {
+    fetchAssignNames(widget.object.assignId);
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    fetchNames();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -20,7 +74,7 @@ class OpportunityExtendedScreen extends StatelessWidget {
               margin: const EdgeInsets.all(20.0),
               constraints: BoxConstraints(
                   maxWidth: MediaQuery.of(context).size.width,
-                  maxHeight: MediaQuery.of(context).size.height
+                  // maxHeight: MediaQuery.of(context).size.height,
               ),
               child: Padding(
                 padding:
@@ -39,7 +93,7 @@ class OpportunityExtendedScreen extends StatelessWidget {
                             Text('Id:', style: titleStyle),
                             Container(
                               width: MediaQuery.of(context).size.width*0.4,
-                              child: Text(object.id,
+                              child: Text(widget.object.id,
                                   style: normalStyle),
                             ),
                           ],
@@ -54,20 +108,7 @@ class OpportunityExtendedScreen extends StatelessWidget {
                             Text('Name:', style: titleStyle),
                             Container(
                               width: MediaQuery.of(context).size.width*0.4,
-                              child: Text(object.name,
-                                  style: normalStyle),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10.0,),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('Lead:', style: titleStyle),
-                            Container(
-                              width: MediaQuery.of(context).size.width*0.4,
-                              child: Text(object.lead,
+                              child: Text(widget.object.name,
                                   style: normalStyle),
                             ),
                           ],
@@ -80,7 +121,7 @@ class OpportunityExtendedScreen extends StatelessWidget {
                             Text('Amount:', style: titleStyle),
                             Container(
                               width: MediaQuery.of(context).size.width*0.4,
-                              child: Text("${object.currency} ${object.amount}",
+                              child: Text("${widget.object.currency} ${widget.object.amount}",
                                   style: normalStyle),
                             ),
                           ],
@@ -93,7 +134,7 @@ class OpportunityExtendedScreen extends StatelessWidget {
                             Text('Close Date:',style: titleStyle,),
                             Container(
                                 width: MediaQuery.of(context).size.width*0.4,
-                                child: Text(object.closeDate, style: normalStyle,)),
+                                child: Text(widget.object.closeDate, style: normalStyle,)),
                           ],
                         ),
                         const SizedBox(height: 10.0,),
@@ -104,7 +145,7 @@ class OpportunityExtendedScreen extends StatelessWidget {
                             Text('Type', style: titleStyle),
                             Container(
                               width: MediaQuery.of(context).size.width*0.4,
-                              child: Text(object.type,
+                              child: Text(widget.object.type,
                                   style: normalStyle),
                             ),
                           ],
@@ -117,7 +158,7 @@ class OpportunityExtendedScreen extends StatelessWidget {
                             Text('Sale Stage', style: titleStyle),
                             Container(
                               width: MediaQuery.of(context).size.width*0.4,
-                              child: Text(object.stage,
+                              child: Text(widget.object.stage,
                                   style: normalStyle),
                             ),
                           ],
@@ -130,7 +171,7 @@ class OpportunityExtendedScreen extends StatelessWidget {
                             Text('Lead Source:', style: titleStyle),
                             Container(
                               width: MediaQuery.of(context).size.width*0.4,
-                              child: Text(object.source,
+                              child: Text(widget.object.source,
                                   style: normalStyle),
                             ),
                           ],
@@ -143,7 +184,7 @@ class OpportunityExtendedScreen extends StatelessWidget {
                             Text('Campaign', style: titleStyle),
                             Container(
                               width: MediaQuery.of(context).size.width*0.4,
-                              child: Text(object.campaign,
+                              child: Text(widget.object.campaign,
                                   style: normalStyle),
                             ),
                           ],
@@ -156,7 +197,7 @@ class OpportunityExtendedScreen extends StatelessWidget {
                             Text('Next Step', style: titleStyle),
                             Container(
                               width: MediaQuery.of(context).size.width*0.4,
-                              child: Text(object.nextStep,
+                              child: Text(widget.object.nextStep,
                                   style: normalStyle),
                             ),
                           ],
@@ -169,7 +210,7 @@ class OpportunityExtendedScreen extends StatelessWidget {
                             Text('Assign To',style: titleStyle,),
                             Container(
                                 width: MediaQuery.of(context).size.width*0.4,
-                                child: Text(object.assignTo, style: normalStyle,)),
+                                child: Text(assignName, style: normalStyle,)),
                           ],
                         ),
                         const SizedBox(height: 10.0,),
@@ -180,9 +221,10 @@ class OpportunityExtendedScreen extends StatelessWidget {
                             Text('Description',style: titleStyle,),
                             Container(
                                 width: MediaQuery.of(context).size.width*0.4,
-                                child: Text(object.description, style: normalStyle,)),
+                                child: Text(widget.object.description, style: normalStyle,)),
                           ],
                         ),
+                        const SizedBox(height: 20.0,),
                       ],
                     ),
                   ],

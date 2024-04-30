@@ -1,10 +1,16 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:monmatics/Functions/exportFunctions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../Functions/exportFunctions.dart';
+import '../models/callItem.dart';
+import '../models/contactItem.dart';
+import '../models/customerItem.dart';
+import '../models/leadItem.dart';
 import '../models/noteItem.dart';
+import '../models/opportunityItem.dart';
 import '../models/taskItem.dart';
+import '../models/userItem.dart';
 import '../screens/loginScreen.dart';
 import '../utils/colors.dart';
 import '../utils/messages.dart';
@@ -15,6 +21,31 @@ String? assignId;
 String? relatedId;
 
 ExportFunctions exportFunctions = ExportFunctions();
+
+Future<void> clearHiveData()async{
+  final customersBox = await Hive.openBox<CustomerHive>('customers');
+  final leadsBox = await Hive.openBox<LeadHive>('leads');
+  final contactsBox = await Hive.openBox<ContactHive>('contacts');
+  final usersBox = await Hive.openBox<UsersHive>('users');
+  final opportunityBox = await Hive.openBox<OpportunityHive>('opportunity');
+  final callBox = await Hive.openBox<CallHive>('calls');
+
+  await customersBox.clear();
+  await leadsBox.clear();
+  await contactsBox.clear();
+  await usersBox.clear();
+  await opportunityBox.clear();
+  await callBox.clear();
+  await clearHomeHiveData();
+}
+
+Future<void> clearHomeHiveData()async{
+  final tasksBox = await Hive.openBox<TaskHive>('tasks');
+  final notesBox = await Hive.openBox<NoteHive>('notes');
+
+  await tasksBox.clear();
+  await notesBox.clear();
+}
 
 logOut(BuildContext context) async {
   return showDialog(
@@ -88,12 +119,21 @@ logOut(BuildContext context) async {
                 : TextButton(
               onPressed: () async {
                 if(_isChecked){
-                  Hive.openBox<NoteHive>("notes").then((notesBox) {
-                    exportFunctions.postNotesToApi(notesBox, Ids(assignId!, relatedId!));
-                  });
+                  exportFunctions.postCustomerToApi();
+                  exportFunctions.postContactsToApi();
                   Hive.openBox<TaskHive>("tasks").then((tasksBox) {
-                    exportFunctions.postTasksToApi(tasksBox, Ids(assignId!, relatedId!));
+                    exportFunctions.postTasksToApi(tasksBox);
                   });
+                  Hive.openBox<NoteHive>("notes").then((notesBox) {
+                    exportFunctions.postNotesToApi(notesBox);
+                  });
+                  exportFunctions.postLeadToApi();
+                  exportFunctions.postCallsToApi();
+                  exportFunctions.postOpportunityToApi();
+                  await clearHiveData();
+                } else{
+                  print('Not Exported');
+                  clearHiveData();
                 }
                 setState(() {
                   logOutLoader = true;

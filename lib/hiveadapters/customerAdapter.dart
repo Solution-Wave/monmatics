@@ -7,26 +7,32 @@ class CustomerAdapter extends TypeAdapter<CustomerHive> {
 
   @override
   CustomerHive read(BinaryReader reader) {
-    return CustomerHive()
-      ..id = reader.readString()
-      ..name = reader.readString()
-      ..email = reader.readString()
-      ..phone = reader.readString()
-      ..category = reader.readString()
-      ..account = reader.readString()
-      ..accountCode = reader.readString()
-      ..limit = reader.readString()
-      ..amount = reader.readString()
-      ..taxNumber = reader.readString()
-      ..status = reader.readString()
-      ..type = reader.readString()
-      ..margin = reader.readString()
-      ..note = reader.readString()
-      ..address = reader.readString();
+    // Initialize a new instance of CustomerHive
+    CustomerHive customer = CustomerHive();
+
+    // Read each field in the same order as they are written
+    customer.id = reader.readString();
+    customer.name = reader.readString();
+    customer.email = reader.readString();
+    customer.phone = reader.readString();
+    customer.category = reader.readString();
+    customer.account = reader.readString();
+    customer.accountCode = reader.readString();
+    customer.limit = reader.readString();
+    customer.amount = reader.readString();
+    customer.taxNumber = reader.readString();
+    customer.status = reader.readString();
+    customer.type = reader.readString();
+    customer.margin = reader.readString();
+    customer.note = reader.readString();
+    customer.address = reader.readString();
+
+    return customer;
   }
 
   @override
   void write(BinaryWriter writer, CustomerHive obj) {
+    // Write each field in the same order as they are read
     writer.writeString(obj.id);
     writer.writeString(obj.name);
     writer.writeString(obj.email);

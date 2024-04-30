@@ -53,8 +53,13 @@ class _LoginScreenState extends State<LoginScreen> {
       passwordController.clear();
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext)=>  App()));
       importFunctions.fetchUsersFromApi();
-      importFunctions.fetchNotesFromApi();
       importFunctions.fetchTasksFromApi();
+      importFunctions.fetchContactsFromApi();
+      importFunctions.fetchCustomersFromApi();
+      importFunctions.fetchLeadsFromApi();
+      importFunctions.fetchNotesFromApi();
+      importFunctions.fetchCallsFromApi();
+      importFunctions.fetchOpportunitiesFromApi();
       showSnackMessage(context, message);
 
     }

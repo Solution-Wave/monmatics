@@ -127,7 +127,7 @@ class _AddCustomerState extends State<AddCustomer> {
                         prefixIcon: const Icon(Icons.mail),
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Your Email";
+                            return null;
                           }
                           else {
                             return null;
@@ -143,7 +143,7 @@ class _AddCustomerState extends State<AddCustomer> {
                         prefixIcon: const Icon(Icons.phone),
                         validator: (value) {
                         if(value.isEmpty){
-                          return "Please Enter Your Phone";
+                          return null;
                         }
                         else {
                           return null;
@@ -177,7 +177,7 @@ class _AddCustomerState extends State<AddCustomer> {
                         }).toList(),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please Choose a Category';
+                            return null;
                           }
                           return null;
                         },
@@ -209,7 +209,7 @@ class _AddCustomerState extends State<AddCustomer> {
                         }).toList(),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please Choose a Main Account';
+                            return null;
                           }
                           return null;
                         },
@@ -222,7 +222,7 @@ class _AddCustomerState extends State<AddCustomer> {
                         nameController: codeController,
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Your Account Code";
+                            return null;
                           }
                           else {
                             return null;
@@ -254,7 +254,7 @@ class _AddCustomerState extends State<AddCustomer> {
                         }).toList(),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please Choose a Credit Limit';
+                            return null;
                           }
                           return null;
                         },
@@ -267,7 +267,7 @@ class _AddCustomerState extends State<AddCustomer> {
                         nameController: amountController,
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Credit Amount";
+                            return null;
                           }
                           else {
                             return null;
@@ -283,7 +283,7 @@ class _AddCustomerState extends State<AddCustomer> {
                         nameController: taxController,
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Tax Number";
+                            return null;
                           }
                           else {
                             return null;
@@ -316,7 +316,7 @@ class _AddCustomerState extends State<AddCustomer> {
                         }).toList(),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please Choose Status';
+                            return null;
                           }
                           return null;
                         },
@@ -345,20 +345,20 @@ class _AddCustomerState extends State<AddCustomer> {
                         }).toList(),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please Choose Type';
+                            return null;
                           }
                           return null;
                         },
                       ),
                       const SizedBox(height: 10.0,),
                       CustomTextFormField(
-                        keyboardType: TextInputType.text,
+                        keyboardType: TextInputType.number,
                         labelText: "Margin %",
                         hintText: "Margin %",
                         nameController: marginController,
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Margin %";
+                            return null;
                           }
                           else {
                             return null;
@@ -368,7 +368,7 @@ class _AddCustomerState extends State<AddCustomer> {
                       ),
                       const SizedBox(height: 10.0,),
                       CustomTextFormField(
-                        keyboardType: TextInputType.text,
+                        keyboardType: TextInputType.multiline,
                         labelText: "Note",
                         hintText: "Note",
                         minLines: 1,
@@ -376,7 +376,7 @@ class _AddCustomerState extends State<AddCustomer> {
                         nameController: noteController,
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter A Note";
+                            return null;
                           }
                           else {
                             return null;
@@ -395,7 +395,7 @@ class _AddCustomerState extends State<AddCustomer> {
                         prefixIcon: const Icon(Icons.map),
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Your Address";
+                            return null;
                           }
                           else {
                             return null;
@@ -406,9 +406,6 @@ class _AddCustomerState extends State<AddCustomer> {
                       CustomButton(
                        onPressed: () {
                          if(_formKey.currentState!.validate()){
-                           if(selectedCategory != null && selectedAccount !=null
-                               && selectedLimit !=null && selectedStatus != null
-                              && selectedType != null){
                              print('Form is valid');
                              setState(() {
                                loading = true;
@@ -417,20 +414,13 @@ class _AddCustomerState extends State<AddCustomer> {
                              setState(() {
                                loading = false;
                              });
-                           } else{
-                             print('Select Dropdown Values');
-                             setState(() {
-                               loading = false;
-                             });
-                             showSnackMessage(context, "Please Choose all Values");
-                           }
                          }
                          else {
                            print('Form is invalid');
                            setState(() {
                              loading = false;
                            });
-                           showSnackMessage(context, "Please Fill All the Fields");
+                           showSnackMessage(context, "Please Fill Required Fields");
                          }
                        },
                         padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 50.0),

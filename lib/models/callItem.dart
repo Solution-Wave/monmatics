@@ -45,6 +45,15 @@ import 'package:hive/hive.dart';
   @HiveField(13)
   late String assignId;
 
+  @HiveField(14)
+  late String relatedType;
+
+  @HiveField(15)
+  late String contactId;
+
+  @HiveField(16)
+  late DateTime? addedAt;
+
   CallHive({
     this.id = "",
     this.subject = "",
@@ -60,26 +69,30 @@ import 'package:hive/hive.dart';
     this.assignTo = "",
     this.description = "",
     this.assignId = "",
+    this.relatedType = "",
+    this.contactId = "",
+    this.addedAt,
 });
 
   factory CallHive.fromJson(Map<String, dynamic> json){
-    String id = json['id'] ?? "";
+    String id = json['id']?.toString() ?? "";
 
     return CallHive(
       id: id,
       subject: json['subject'] ?? "",
       status: json['status'] ?? "",
-      relatedTo: json['related_to_type'] ?? "",
-      relatedId: json['related_id'] ?? "",
-      contactName: json['contact_name'] ?? "",
+      relatedType: json['related_to_type'] ?? "",
+      relatedId: json['related_id']?.toString() ?? "",
+      // contactName: json['contact_name'] ?? "",
       startDate: json['start_date'] ?? "",
-      startTime: json['start_time'] ?? "",
+      // startTime: json['start_time'] ?? "",
       endDate: json['end_date'] ?? "",
-      endTime: json['end_time'] ?? "",
+      // endTime: json['end_time'] ?? "",
       communicationType: json['communication_type'] ?? "",
-      assignTo: json['assign_to'] ?? "",
+      assignTo: json['assigned_to']?.toString() ?? "",
       description: json['description'] ?? "",
-      assignId: json['assign_to'] ?? "",
+      assignId: json['assigned_to']?.toString() ?? "",
+      contactId: json['contact_id']?.toString() ?? "",
     );
   }
 

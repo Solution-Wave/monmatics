@@ -9,6 +9,8 @@ import '../../models/noteItem.dart';
 import '../../models/taskItem.dart';
 import '../../models/userItem.dart';
 import '../../utils/urls.dart';
+import '../models/callItem.dart';
+import '../models/opportunityItem.dart';
 
 class ImportFunctions{
 
@@ -30,7 +32,8 @@ class ImportFunctions{
   // Leads Fetch Function
   Future<void> fetchLeadsFromApi() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('token');
+    String id = prefs.getString('id') ?? '';
+    String idQueryParam = id.isNotEmpty ? 'id=$id&' : '';
     // Make an HTTP GET request to fetch leads from the API
     Map<String, dynamic>? databaseInfo = await getDatabaseInfo();
     String databaseInfoQuery = '';
@@ -38,7 +41,7 @@ class ImportFunctions{
       databaseInfoQuery += '&$key=$value';
     });
     String apiUrl = getLeads;
-    String finalUrl = '$apiUrl?_token=$token$databaseInfoQuery';
+    String finalUrl = '$apiUrl?$idQueryParam$databaseInfoQuery';
     final response = await http.get(Uri.parse(finalUrl));
     print(finalUrl);
 
@@ -66,7 +69,8 @@ class ImportFunctions{
   // Customer Fetch Function
   Future<void> fetchCustomersFromApi() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('token');
+    String id = prefs.getString('id') ?? '';
+    String idQueryParam = id.isNotEmpty ? 'userId=$id&' : '';
     // Make an HTTP GET request to fetch customers from the API
     Map<String, dynamic>? databaseInfo = await getDatabaseInfo();
     String databaseInfoQuery = '';
@@ -74,7 +78,7 @@ class ImportFunctions{
       databaseInfoQuery += '&$key=$value';
     });
     String apiUrl = getCustomer;
-    String finalUrl = '$apiUrl?$databaseInfoQuery';
+    String finalUrl = '$apiUrl?$idQueryParam$databaseInfoQuery';
     final response = await http.get(Uri.parse(finalUrl));
     print(finalUrl);
 
@@ -102,7 +106,9 @@ class ImportFunctions{
   // Contacts Fetch Function
   Future<void> fetchContactsFromApi() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('token');
+    // String? token = prefs.getString('token');
+    String id = prefs.getString('id') ?? '';
+    String idQueryParam = id.isNotEmpty ? 'userId=$id&' : '';
     // Make an HTTP GET request to fetch contacts from the API
     Map<String, dynamic>? databaseInfo = await getDatabaseInfo();
     String databaseInfoQuery = '';
@@ -110,7 +116,7 @@ class ImportFunctions{
       databaseInfoQuery += '&$key=$value';
     });
     String apiUrl = getContacts;
-    String finalUrl = '$apiUrl?_token=$token$databaseInfoQuery';
+    String finalUrl = '$apiUrl?$idQueryParam$databaseInfoQuery';
     final response = await http.get(Uri.parse(finalUrl));
     print(finalUrl);
 
@@ -140,7 +146,7 @@ class ImportFunctions{
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String id = prefs.getString('id') ?? '';
-      String idQueryParam = id.isNotEmpty ? 'id=$id&' : '';
+      String idQueryParam = id.isNotEmpty ? 'userId=$id&' : '';
 
       // Make an HTTP GET request to fetch Notes from the API
       Map<String, dynamic> databaseInfo = (await getDatabaseInfo()) ?? {};
@@ -199,7 +205,6 @@ class ImportFunctions{
         // If the request is successful, parse the JSON response
         final dynamic responseData = jsonDecode(response.body);
         final List<dynamic> notesJson = responseData['data'] ?? [];
-        print(notesJson);
 
         // Open the Notes Hive box
         final notesBox = await Hive.openBox<NoteHive>('notes');
@@ -260,4 +265,91 @@ class ImportFunctions{
       throw Exception('Failed to fetch Users from the API');
     }
   }
+
+  // Calls Fetch Function
+  Future<void> fetchCallsFromApi() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    // String? token = prefs.getString('token');
+    String id = prefs.getString('id') ?? '';
+    String idQueryParam = id.isNotEmpty ? 'userId=$id&' : '';
+    // Make an HTTP GET request to fetch contacts from the API
+    Map<String, dynamic>? databaseInfo = await getDatabaseInfo();
+    String databaseInfoQuery = '';
+    databaseInfo!.forEach((key, value) {
+      databaseInfoQuery += '&$key=$value';
+    });
+    String apiUrl = getCallsUrl;
+    String finalUrl = '$apiUrl?$idQueryParam$databaseInfoQuery';
+    final response = await http.get(Uri.parse(finalUrl));
+    print(finalUrl);
+
+    if (response.statusCode == 200) {
+      // If the request is successful, parse the JSON response
+      final List<dynamic> callsJson = jsonDecode(response.body)['data'];
+
+      // Open the contacts Hive box
+      final callsBox = await Hive.openBox<CallHive>('calls');
+
+      // Clear existing contacts before adding new ones
+      await callsBox.clear();
+
+      // Add each contact to the Hive box
+      for (final callJson in callsJson) {
+        final call = CallHive.fromJson(callJson);
+        await callsBox.add(call);
+      }
+    } else {
+      // If the request fails, handle the error
+      throw Exception('Failed to fetch Calls from the API');
+    }
+  }
+
+  // Opportunity Fetch Function
+  Future<void> fetchOpportunitiesFromApi() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    // String? token = prefs.getString('token');
+    String id = prefs.getString('id') ?? '';
+    String idQueryParam = id.isNotEmpty ? 'userId=$id&' : '';
+    // Make an HTTP GET request to fetch opportunities from the API
+    Map<String, dynamic>? databaseInfo = await getDatabaseInfo();
+    String databaseInfoQuery = '';
+    databaseInfo!.forEach((key, value) {
+      databaseInfoQuery += '&$key=$value';
+    });
+    String apiUrl = getOpportunities;
+    String finalUrl = '$apiUrl?$idQueryParam$databaseInfoQuery';
+    print(finalUrl);
+
+    final response = await http.get(Uri.parse(finalUrl));
+
+    if (response.statusCode == 200) {
+      // Parse the JSON response
+      final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+
+      // Check if 'message' key exists and is not null
+      if (jsonResponse.containsKey('message') && jsonResponse['message'] != null) {
+        final List<dynamic> opportunitiesJson = jsonResponse['message'];
+
+        // Open the opportunities Hive box
+        final opportunitiesBox = await Hive.openBox<OpportunityHive>('opportunity');
+
+        // Clear existing opportunities before adding new ones
+        await opportunitiesBox.clear();
+
+        // Add each opportunity to the Hive box
+        for (final opportunityJson in opportunitiesJson) {
+          final opportunity = OpportunityHive.fromJson(opportunityJson);
+          await opportunitiesBox.add(opportunity);
+        }
+      } else {
+        // Handle the case where 'message' is missing or null
+        print('No data found in the API response');
+      }
+    } else {
+      // Handle the case where the API request fails
+      print('API request failed: ${response.body}');
+      throw Exception('Failed to fetch opportunities from the API');
+    }
+  }
+
 }

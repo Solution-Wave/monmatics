@@ -1,8 +1,7 @@
-
 import 'package:hive/hive.dart';
 
 @HiveType(typeId: 7)
-class OpportunityHive extends HiveObject{
+class OpportunityHive extends HiveObject {
 
   @HiveField(0)
   late String id;
@@ -11,7 +10,7 @@ class OpportunityHive extends HiveObject{
   late String name;
 
   @HiveField(2)
-  late String lead;
+  late String leadName;
 
   @HiveField(3)
   late String currency;
@@ -42,4 +41,55 @@ class OpportunityHive extends HiveObject{
 
   @HiveField(12)
   late String description;
+
+  @HiveField(13)
+  DateTime? addedAt;
+
+  @HiveField(14)
+  late String leadId;
+
+  @HiveField(15)
+  late String assignId;
+
+  OpportunityHive({
+    this.id = "",
+    this.name = "",
+    this.leadName = "",
+    this.currency = "",
+    this.amount = "",
+    this.closeDate = "",
+    this.type = "",
+    this.stage = "",
+    this.source = "",
+    this.campaign = "",
+    this.nextStep = "",
+    this.assignTo = "",
+    this.description = "",
+    this.addedAt,
+    this.leadId = "",
+    this.assignId = "",
+  });
+
+  // Factory constructor to deserialize JSON data into an OpportunityHive object
+  factory OpportunityHive.fromJson(Map<String, dynamic> json) {
+    // Convert integer values to string where necessary
+    return OpportunityHive(
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      leadName: json['cust_id'] as String? ?? '',
+      currency: json['cur_name'] as String? ?? '',
+      amount: json['amount'].toString(),
+      closeDate: json['close_date'] as String? ?? '',
+      type: json['lead_type'] as String? ?? '',
+      stage: json['sale_stage'] as String? ?? '',
+      source: json['lead_source'] as String? ?? '',
+      campaign: json['campaign_id']?.toString() ?? '',
+      nextStep: json['next_step'] as String? ?? '',
+      assignTo: json['assigned_to']?.toString() ?? '',
+      description: json['description'] as String? ?? '',
+      addedAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
+      leadId: json['cust_id'] as String? ?? '',
+      assignId: json['assigned_to']?.toString() ?? '',
+    );
+  }
 }

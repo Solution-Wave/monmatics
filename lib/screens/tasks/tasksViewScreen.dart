@@ -1,5 +1,7 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../models/taskItem.dart';
+import '../../utils/themes.dart';
 import 'taskexpandedview.dart';
 
 
@@ -23,41 +25,59 @@ class _TaskListTileState extends State<TaskListTile> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: (){
+      onTap: () {
         Navigator.of(context, rootNavigator: true)
-            .push(MaterialPageRoute(builder: (BuildContext)=>
-            TaskExpandedView(widget.obj)));
+            .push(MaterialPageRoute(
+            builder: (context) => TaskExpandedView(widget.obj)));
       },
       child: Card(
-        // color: Theme.of(context).brightness == Brightness.dark
-        //     ? null
-        //     : secondPrimary,
-          child:  Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(widget.obj.subject),
-                Text(widget.obj.status),
-                Container(
-                  child: IconButton(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.obj.subject,
+                      style: listViewTextStyle,
+                      maxLines: 1,
+                      softWrap: false,
+                    ),
+                    Text(
+                      widget.obj.status,
+                      style: const TextStyle(
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      maxLines: 1,
+                      softWrap: false,
+                    ),
+                  ],
+                ),
+              ),
+              Row(
+                children: [
+                  IconButton(
                     color: Colors.blueAccent,
-                  onPressed: (){
-                    widget.onEdit(widget.obj);
-                  },
-                  icon: const Icon(Icons.edit)
+                    onPressed: () {
+                      widget.onEdit(widget.obj);
+                    },
+                    icon: const Icon(Icons.edit),
                   ),
-                ),
-                IconButton(
-                  onPressed: () {
-                    widget.onDelete(widget.obj);
-                  },
-                  icon: const Icon(Icons.delete),
-                  color: Colors.red,
-                ),
-              ],
-            ),
+                  IconButton(
+                    onPressed: () {
+                      widget.onDelete(widget.obj);
+                    },
+                    icon: const Icon(Icons.delete),
+                    color: Colors.red,
+                  ),
+                ],
+              ),
+            ],
           ),
+        ),
       ),
     );
   }

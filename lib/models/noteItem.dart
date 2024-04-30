@@ -44,6 +44,9 @@ class NoteHive extends HiveObject {
   @HiveField(7)
   late String assignId;
 
+  @HiveField(8)
+  late DateTime? addedAt;
+
   NoteHive({
     this.id = "",
     this.subject = "",
@@ -53,6 +56,7 @@ class NoteHive extends HiveObject {
     this.description = "",
     this.relatedId = "",
     this.assignId = "",
+    this.addedAt,
 });
   // Factory constructor to deserialize JSON data into a ContactHive object
   factory NoteHive.fromJson(Map<String, dynamic> json) {

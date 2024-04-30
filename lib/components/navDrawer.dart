@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../Functions/importFunctions.dart';
 import '../controllers/localdbController.dart';
 import '../functions/exportFunctions.dart';
+import '../models/callItem.dart';
 import '../models/noteItem.dart';
 import '../models/opportunityItem.dart';
 import '../models/taskItem.dart';
@@ -23,7 +24,6 @@ import '../utils/colors.dart';
 import '../utils/constants.dart';
 import 'logout.dart';
 import 'package:icons_flutter/icons_flutter.dart';
-
 
 class navigationdrawer extends StatefulWidget {
     navigationdrawer({Key? key}) : super(key: key);
@@ -95,12 +95,14 @@ class _navigationdrawerState extends State<navigationdrawer> {
     final contactsBox = await Hive.openBox<ContactHive>('contacts');
     final usersBox = await Hive.openBox<UsersHive>('users');
     final opportunityBox = await Hive.openBox<OpportunityHive>('opportunity');
+    final callBox = await Hive.openBox<CallHive>('calls');
 
     await customersBox.clear();
     await leadsBox.clear();
     await contactsBox.clear();
     await usersBox.clear();
     await opportunityBox.clear();
+    await callBox.clear();
   }
 
   ExportFunctions exportFunctions = ExportFunctions();
@@ -203,12 +205,14 @@ class _navigationdrawerState extends State<navigationdrawer> {
                           exportFunctions.postCustomerToApi();
                           exportFunctions.postContactsToApi();
                           Hive.openBox<TaskHive>("tasks").then((tasksBox) {
-                            exportFunctions.postTasksToApi(tasksBox, Ids(assignId!, relatedId!));
+                            exportFunctions.postTasksToApi(tasksBox);
                           });
                           Hive.openBox<NoteHive>("notes").then((notesBox) {
-                            exportFunctions.postNotesToApi(notesBox, Ids(assignId!, relatedId!));
+                            exportFunctions.postNotesToApi(notesBox);
                           });
                           exportFunctions.postLeadToApi();
+                          exportFunctions.postCallsToApi();
+                          exportFunctions.postOpportunityToApi();
                           showSnackMessage(context, "Data Uploaded Successfully.");
                           Navigator.pushAndRemoveUntil(context,
                               MaterialPageRoute(builder: (context) =>
@@ -241,6 +245,8 @@ class _navigationdrawerState extends State<navigationdrawer> {
                         importFunctions.fetchCustomersFromApi();
                         importFunctions.fetchLeadsFromApi();
                         importFunctions.fetchNotesFromApi();
+                        importFunctions.fetchCallsFromApi();
+                        importFunctions.fetchOpportunitiesFromApi();
                         print('Data Fetched successfully.');
                         Navigator.pushAndRemoveUntil(context,
                             MaterialPageRoute(builder: (
@@ -292,7 +298,6 @@ class _navigationdrawerState extends State<navigationdrawer> {
                   onTap: () async{
                     if(await isConnected()){
                       logOut(context);
-                      clearHomeHiveData();
                     } else {
                       showSnackMessage(
                           context, "No Internet Connection. Please check your connection and try again.");
@@ -341,9 +346,6 @@ Widget DrawerHeader(BuildContext context, String name , String role) {
                     fontWeight: FontWeight.w200,  color: Theme
                         .of(context).brightness == Brightness.light? drawerTextCol: null),
                 ),
-                //Text('user_email@gmail.com', style: TextStyle( fontSize: 10.0,
-                // fontWeight: FontWeight.w200,  color: Theme
-                // .of(context).brightness == Brightness.light? drawerTextCol: null),),
               ],
             )
           ],

@@ -41,7 +41,7 @@ class _splashScreenState extends State<splashScreen> {
     } else
       {
         await loadSelectedUrl();
-        Timer(const Duration(seconds: 2),
+        Timer(const Duration(milliseconds: 2500),
                 ()=>Navigator.pushReplacement(context,
                     MaterialPageRoute(builder:
                         (context) =>

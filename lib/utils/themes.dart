@@ -10,27 +10,29 @@ AppBarTheme monmaticsAppBar = AppBarTheme(
     iconTheme: IconThemeData(
         color: primaryColor
     ),
-    titleTextStyle: TextStyle(
+    titleTextStyle: const TextStyle(
       fontSize: 18.0,
       color: Colors.white,
+        overflow: TextOverflow.ellipsis
     )
 );
 
 
 InputDecoration formTextBoxStyle = InputDecoration(
-  contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-  errorStyle: TextStyle(height: 0.0, fontSize: 7),
-  hintStyle: TextStyle(
+  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+  errorStyle: const TextStyle(height: 0.0, fontSize: 7),
+  hintStyle: const TextStyle(
     fontSize: 15,
     fontStyle: FontStyle.italic,
-    color: Color(0xFF90A17D)
+    color: Color(0xFF90A17D),
+      overflow: TextOverflow.ellipsis
   ),
   hoverColor: Colors.grey[350],
   focusColor: Colors.grey[350],
   filled: true,
   fillColor: Colors.grey[200],
-  constraints: BoxConstraints(maxHeight: 60.0),
-  border: OutlineInputBorder(
+  constraints: const BoxConstraints(maxHeight: 60.0),
+  border: const OutlineInputBorder(
     borderRadius: BorderRadius.all(Radius.circular(15.0)),
     borderSide:
     BorderSide(style: BorderStyle.none, width: 0.0),
@@ -40,11 +42,12 @@ InputDecoration formTextBoxStyle = InputDecoration(
  TextStyle titleStyle  = TextStyle(
 fontSize: 16.0,
 fontWeight: FontWeight.w700,
+     overflow: TextOverflow.ellipsis,
 color: primaryColor
 );
-TextStyle normalStyle = TextStyle(
+TextStyle normalStyle = const TextStyle(
 fontSize: 16.0,
-
+overflow: TextOverflow.ellipsis
 );
 
 TextStyle headerTextStyle  = TextStyle(
@@ -53,9 +56,10 @@ TextStyle headerTextStyle  = TextStyle(
     color: primaryColor
 );
 
-TextStyle listViewTextStyle = TextStyle(
+TextStyle listViewTextStyle = const TextStyle(
     fontSize: 15,
-    fontWeight: FontWeight.w400);
+    overflow: TextOverflow.ellipsis,
+    fontWeight: FontWeight.bold);
 
 BoxDecoration ExpandedViewDecor = BoxDecoration(
   borderRadius: BorderRadius.circular(20.0),

@@ -53,7 +53,7 @@ class SearchContacts extends SearchDelegate{
     return ListView.builder(
         itemCount: results.length,
         itemBuilder:(context, index){
-          return contactTileFormat(results[index]);
+          return ContactTileFormat(results[index]);
         }
     );
   }
@@ -65,7 +65,7 @@ class SearchContacts extends SearchDelegate{
     return ListView.builder(
         itemCount: suggestions.length,
         itemBuilder:(context, index){
-          return contactTileFormat(suggestions[index]);
+          return ContactTileFormat(suggestions[index]);
         }
     );
   }

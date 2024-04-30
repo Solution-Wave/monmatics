@@ -1,34 +1,42 @@
 import 'package:hive/hive.dart';
 import '../models/contactItem.dart';
 
-class ContactAdapter extends TypeAdapter<ContactHive>{
+class ContactAdapter extends TypeAdapter<ContactHive> {
   @override
   final int typeId = 4;
 
   @override
-  ContactHive read(BinaryReader reader){
-    return ContactHive()
-        ..id = reader.readString()
-        ..type = reader.readString()
-        ..fName = reader.readString()
-        ..lName = reader.readString()
-        ..title = reader.readString()
-        ..relatedTo = reader.readString()
-        ..search = reader.readString()
-        ..assignTo = reader.readString()
-        ..phone = reader.readString()
-        ..email = reader.readString()
-        ..officePhone = reader.readString()
-        ..address = reader.readString()
-        ..city = reader.readString()
-        ..state = reader.readString()
-        ..postalCode = reader.readString()
-        ..country = reader.readString()
-        ..description = reader.readString();
+  ContactHive read(BinaryReader reader) {
+    ContactHive contact = ContactHive();
+
+    // Read each field in the same order as they are written
+    contact.id = reader.readString();
+    contact.type = reader.readString();
+    contact.fName = reader.readString();
+    contact.lName = reader.readString();
+    contact.title = reader.readString();
+    contact.relatedTo = reader.readString();
+    contact.search = reader.readString();
+    contact.assignTo = reader.readString();
+    contact.phone = reader.readString();
+    contact.email = reader.readString();
+    contact.officePhone = reader.readString();
+    contact.address = reader.readString();
+    contact.city = reader.readString();
+    contact.state = reader.readString();
+    contact.postalCode = reader.readString();
+    contact.country = reader.readString();
+    contact.description = reader.readString();
+
+    // Add read for addedAt field
+    // contact.addedAt = DateTime.fromMillisecondsSinceEpoch(reader.readInt());
+
+    return contact;
   }
 
   @override
-  void write(BinaryWriter writer, ContactHive obj){
+  void write(BinaryWriter writer, ContactHive obj) {
+    // Write each field in the same order as they are read
     writer.writeString(obj.id);
     writer.writeString(obj.type);
     writer.writeString(obj.fName);
@@ -46,5 +54,8 @@ class ContactAdapter extends TypeAdapter<ContactHive>{
     writer.writeString(obj.postalCode);
     writer.writeString(obj.country);
     writer.writeString(obj.description);
+
+    // Add write for addedAt field
+    // writer.writeInt(obj.addedAt!.millisecondsSinceEpoch);
   }
 }

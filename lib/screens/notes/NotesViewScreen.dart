@@ -49,7 +49,7 @@ class _NotesTileState extends State<NotesTile> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(widget.obj.subject, style: listViewTextStyle),
-              Text(widget.obj.relatedTo, style: listViewTextStyle),
+              Text(widget.obj.relatedTo),
             ],
           ),
           childrenPadding: const EdgeInsets.only(

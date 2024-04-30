@@ -1,43 +1,5 @@
 import 'package:hive/hive.dart';
 
-// class Lead {
-//   String? Name;
-//   String? Category;
-//   String? Note;
-//   String? PhoneNo;
-//   String? Email;
-//   String? Address;
-//   String? location;
-//
-//   Lead(
-//       {this.Name,
-//       this.Category,
-//       this.Address,
-//       this.Email,
-//       this.location,
-//       this.Note,
-//       this.PhoneNo});
-//
-//   Lead.fromJson(Map<String, dynamic> json) {
-//     String temp = json["name"];
-//     int? ind;
-//     for (int i = 0; i < temp.length; i++) {
-//       if (temp[i] == '(') ind = i;
-//     }
-//     // temp.substring(0,ind)
-//     json["name"] == null ? Name = '' : Name = temp.substring(0, ind);
-//
-//     json["category"] == null ? Category = '' : Category = json["category"];
-//
-//     json["address"] == null ? Address = '' : Address = json["address"];
-//     json["email"] == null ? Email = '' : Email = json["email"];
-//     json["location"] == null ? location = '' : location = json["location"];
-//     json["note"] == null ? Note = '' : Note = json["note"];
-//     json["phone"] == null ? PhoneNo = '' : PhoneNo = json["phone"];
-//   }
-// }
-
-
 // Hive
 @HiveType(typeId : 3)
 class LeadHive extends HiveObject{
@@ -71,6 +33,9 @@ class LeadHive extends HiveObject{
   @HiveField(9)
   late String address;
 
+  @HiveField(10)
+  late DateTime? addedAt;
+
   LeadHive({
     this.id  = "",
     this.name  = "",
@@ -82,13 +47,12 @@ class LeadHive extends HiveObject{
     this.type  = "",
     this.note  = "",
     this.address  = "",
+    this.addedAt,
 });
 
   factory LeadHive.fromJson(Map<String, dynamic> json){
-    String id = json['id'] ?? "";
-
     return LeadHive(
-      id: id,
+      id: json['id'] ?? "",
       name: json['name'] ?? "",
       email: json['email'] ?? "",
       phone: json['phone'] ?? "",

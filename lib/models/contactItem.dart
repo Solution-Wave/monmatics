@@ -81,6 +81,12 @@ class ContactHive extends HiveObject {
   @HiveField(16)
   late String description;
 
+  @HiveField(17)
+  late DateTime? addedAt;
+
+  @HiveField(18)
+  late String assignId;
+
 
   // Constructor
   ContactHive({
@@ -101,6 +107,8 @@ class ContactHive extends HiveObject {
     this.postalCode = '',
     this.country = '',
     this.description = '',
+    this.assignId = '',
+    this.addedAt,
   });
 
   // Factory constructor to deserialize JSON data into a ContactHive object
@@ -115,6 +123,7 @@ class ContactHive extends HiveObject {
     // }
 
     return ContactHive(
+      id: json['id'] ?? "",
       type: json['type'] ?? '',
       fName: json['first_name'] ?? '',
       lName: json['last_name'] ?? '',
@@ -125,6 +134,7 @@ class ContactHive extends HiveObject {
       email: email,
       officePhone: json['office_phone'] ?? '',
       country: json['country'] ?? '',
+      assignId: json['assigned_to'] ?? "",
     );
   }
 

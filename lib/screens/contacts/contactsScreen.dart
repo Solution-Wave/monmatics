@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:monmatics/models/contactItem.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../Functions/importFunctions.dart';
 import '../../components/navDrawer.dart';
+import '../../models/contactItem.dart';
 import '../../searchScreens/contactsSearch.dart';
 import '../../utils/colors.dart';
 import '../../utils/messages.dart';
@@ -23,13 +23,13 @@ class _contactScreenState extends State<contactScreen>
   Box? contactsBox;
 
 
-
-
   Future<bool> GetContacts() async {
     contactsBox = await Hive.openBox<ContactHive>('contacts');
     setState(() {});
     return Future.value(true);
   }
+
+
   Future<bool> getList(){
     contactList.clear();
     List tempList = contactsBox!.values.toList();
@@ -57,8 +57,6 @@ class _contactScreenState extends State<contactScreen>
     super.initState();
     // importFunctions.fetchContactsFromApi();
   }
-
-
 
   Widget build(BuildContext context) {
     return  Scaffold(
@@ -88,7 +86,7 @@ class _contactScreenState extends State<contactScreen>
                 return ListView.builder(
                   itemCount: contactsBox!.length,
                   itemBuilder: (BuildContext, index) {
-                    return contactTileFormat(contactsBox!.get(index));
+                    return ContactTileFormat(contactsBox!.get(index));
                   },
                 );
               } else {
@@ -116,18 +114,32 @@ class _contactScreenState extends State<contactScreen>
   }
 }
 
-class contactTileFormat extends StatelessWidget {
-  const contactTileFormat(
+class ContactTileFormat extends StatefulWidget {
+  const ContactTileFormat(
       this.obj, {
         Key? key,
       }) : super(key: key);
 
-  final obj;
+  final ContactHive obj;
+
+  @override
+  State<ContactTileFormat> createState() => _ContactTileFormatState();
+}
+
+class _ContactTileFormatState extends State<ContactTileFormat> {
+  void navigateToEditScreen(BuildContext context, ContactHive obj) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddContact(existingContact: obj),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     // Add null check to handle null objects
-    if (obj == null) {
+    if (widget.obj == null) {
       return SizedBox(); // Return an empty widget if obj is null
     }
 
@@ -144,7 +156,7 @@ class contactTileFormat extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "${obj.fName} ${obj.lName}" ?? "",
+                      "${widget.obj.fName} ${widget.obj.lName}" ?? "",
                       style: TextStyle(
                         fontSize: 15.0,
                         fontWeight: FontWeight.bold,
@@ -154,11 +166,11 @@ class contactTileFormat extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      obj.phone ?? '',
+                      widget.obj.phone ?? '',
                       style: const TextStyle(fontWeight: FontWeight.w300),
                     ),
                     Text(
-                      obj.email ?? '',
+                      widget.obj.email ?? '',
                       style: const TextStyle(fontWeight: FontWeight.w300),
                     )
                   ],
@@ -168,8 +180,8 @@ class contactTileFormat extends StatelessWidget {
                     IconButton(
                       iconSize: 20.0,
                       onPressed: () async {
-                        Uri phoneno = Uri.parse('tel:${obj.phone}');
-                        if (obj.phone == null || obj.phone.isEmpty) {
+                        Uri phoneno = Uri.parse('tel:${widget.obj.phone}');
+                        if (widget.obj.phone == null || widget.obj.phone.isEmpty) {
                           showSnackMessage(context, 'Phone number not provided');
                         } else {
                           try {
@@ -184,27 +196,7 @@ class contactTileFormat extends StatelessWidget {
                     IconButton(
                       iconSize: 20.0,
                       onPressed: () async {
-                        Uri mail = Uri(
-                          scheme: 'mailto',
-                          path: obj.email,
-                          query: 'subject=emails&body=',
-                        );
-                        if (obj.email == null || obj.email.isEmpty) {
-                          showSnackMessage(context, 'Email not provided');
-                        } else {
-                          try {
-                            await launchUrl(mail);
-                          } catch (_e) {
-                            print(_e);
-                          }
-                        }
-                      },
-                      icon: const Icon(Icons.mail),
-                    ),
-                    IconButton(
-                      iconSize: 20.0,
-                      onPressed: () async {
-                        String phoneNumber = obj.phone ?? '';
+                        String phoneNumber = widget.obj.phone ?? '';
                         String message = "Hello, this is a test message.";
                         String url = "https://wa.me/+92$phoneNumber/?text=${Uri.parse(message)}";
                         if (await canLaunch(url)) {
@@ -214,6 +206,11 @@ class contactTileFormat extends StatelessWidget {
                         }
                       },
                       icon: const Icon(Icons.phone_android_sharp),
+                    ),
+                    IconButton(
+                      iconSize: 20.0,
+                      onPressed: ()=> navigateToEditScreen(context, widget.obj),
+                      icon: const Icon(Icons.edit),
                     ),
                   ],
                 )

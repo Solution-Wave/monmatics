@@ -5,7 +5,6 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:uuid/uuid.dart';
 import '../functions/exportFunctions.dart';
 import '../functions/importFunctions.dart';
-import '../functions/searchFunctions.dart';
 import '../components/navDrawer.dart';
 import '../controllers/crmControllers.dart';
 import '../functions/otherFunctions.dart';
@@ -34,17 +33,17 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
   final _initialCalendarDate = DateTime(2000);
   final _lastCalendarDate = DateTime(2050);
   DateTime? selectedCalendarDate;
-
   CalendarFormat calendarFormatVal = CalendarFormat.month;
   Box? tasks;
   TasksCont tasksController = TasksCont();
   List TaskList = [];
   String? token;
-  Map<DateTime, List<Tasks>>? mySelectedEvents;
-    ValueNotifier<List<Tasks>>? _selectedEvents;
+  Map<DateTime, List<TaskHive>>? mySelectedEvents;
+  final ValueNotifier<List<TaskHive>> _selectedEvents =  ValueNotifier<List<TaskHive>>([]);
   bool loading = false;
   String? relatedId;
   String? assignId;
+  String? companyId;
 
   Future<void> getSharedData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -56,6 +55,8 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
 
   Future<void> functionCall() async {
     await getSharedData();
+    Map<String, dynamic>? databaseInfo = await importFunctions.getDatabaseInfo();
+    companyId = databaseInfo!['company_id'] ?? '';
   }
 
   @override
@@ -64,13 +65,46 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
     selectedCalendarDate = _focusedCalendarDate;
     mySelectedEvents = {};
     getTasksFromBox();
-
   }
 
-  List<Tasks> _listOfDayEvents(DateTime dateTime) {
+  List<TaskHive> _listOfDayEvents(DateTime dateTime) {
+    // Convert the selected date to DateTime format (year, month, day)
     DateTime formattedDate = DateTime(dateTime.year, dateTime.month, dateTime.day);
-    return mySelectedEvents?[formattedDate] ?? [];
+
+    // Initialize an empty list to store tasks for the selected date
+    List<TaskHive> dayEvents = [];
+
+    // Check if tasks are not null before accessing them
+    if (tasks != null) {
+      // Loop through the tasks in the box
+      for (int i = 0; i < tasks!.length; i++) {
+        TaskHive? task = tasks!.getAt(i);
+
+        // Check if the task is not null
+        if (task != null) {
+          // Convert task start date to DateTime format
+          DateTime? taskStartDate;
+          if (task.startDate.isNotEmpty) {
+            taskStartDate = DateTime.parse(task.dueDate);
+          }
+
+          // Compare the task start date with the selected date
+          if (taskStartDate != null &&
+              taskStartDate.year == formattedDate.year &&
+              taskStartDate.month == formattedDate.month &&
+              taskStartDate.day == formattedDate.day) {
+
+            // Add the task to the list if it matches the selected date
+            dayEvents.add(task);
+          }
+        }
+      }
+    }
+
+    // Return the list of tasks for the selected date
+    return dayEvents;
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -127,7 +161,7 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                           topLeft: Radius.circular(10),
                           topRight: Radius.circular(10))),
                   formatButtonTextStyle:
-                      TextStyle(color: calendarHeaderTextColor, fontSize: 16.0),
+                  TextStyle(color: calendarHeaderTextColor, fontSize: 16.0),
                   formatButtonDecoration: BoxDecoration(
                     color: primaryColor,
                     borderRadius: const BorderRadius.all(
@@ -165,12 +199,12 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                   return (isSameDay(
                       selectedCalendarDate!, currentSelectedDate));
                 },
-                onDaySelected: (selectedDay, focusedDay) {
+                onDaySelected: (DateTime selectedDay, DateTime focusedDay) {
                   if (!isSameDay(selectedCalendarDate, selectedDay)) {
                     setState(() {
-                      selectedCalendarDate = selectedDay.toLocal();
-                      _selectedEvents = ValueNotifier(_listOfDayEvents(selectedCalendarDate!));
+                      selectedCalendarDate = selectedDay;
                       _focusedCalendarDate = focusedDay;
+                      _selectedEvents.value = _listOfDayEvents(selectedCalendarDate!);
                     });
                   }
                 },
@@ -192,29 +226,34 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
 
 
   Widget _buildTasksWidget() {
-    if (tasks == null) {
-      return const Center(
-          child: CircularProgressIndicator());
-    } else if (tasks!.isEmpty) {
-      return const Center(
-          child: Text('No Tasks Found'));
-    } else {
-      return ListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: tasks!.length,
-        itemBuilder: (context, index) {
-          return TaskListTile(obj: tasks!.getAt(index)!,
-            onEdit: (tasks) {
-            showTaskDialog(task: tasks);
-          },
-            onDelete: (tasks){
-            deleteTask(tasks, index);
+    return ValueListenableBuilder<List<TaskHive>>(
+      valueListenable: _selectedEvents,
+      builder: (context, tasksForSelectedDate, child) {
+        if (tasksForSelectedDate.isEmpty) {
+          return const Center(
+            child: Text('No Tasks Found'),
+          );
+        } else {
+          return ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: tasksForSelectedDate.length,
+            itemBuilder: (context, index) {
+              TaskHive task = tasksForSelectedDate[index];
+              return TaskListTile(
+                obj: task,
+                onEdit: (task) {
+                  showTaskDialog(task: task);
+                },
+                onDelete: (task) {
+                  deleteTask(task, index);
+                },
+              );
             },
           );
-        },
-      );
-    }
+        }
+      },
+    );
   }
 
   String? role;
@@ -230,7 +269,6 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
   TextEditingController assignController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
 
-  SearchFunctions searFunctions = SearchFunctions();
   ExportFunctions exportFunctions = ExportFunctions();
   ImportFunctions importFunctions = ImportFunctions();
 
@@ -250,9 +288,7 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
     if (picked != null && picked != startDate) {
       setState(() {
         startDate = picked;
-        startDateController.text =
-        "${picked.month.toString().padLeft(2, '0')}/${picked.day.toString()
-            .padLeft(2, '0')}/${picked.year}";
+        startDateController.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
       });
     }
   }
@@ -267,25 +303,27 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
     if (picked != null && picked != endDate) {
       setState(() {
         endDate = picked;
-        dueDateController.text = "${picked.month.toString()
-            .padLeft(2, '0')}/${picked.day.toString().padLeft(2, '0')}/${picked.year}";
+        dueDateController.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
       });
     }
   }
 
 
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
   // Add Tasks Form
   Future<void> showTaskDialog({TaskHive? task}) async {
     if(task != null ){
-      subjectController.text = task.subject;
-      status = task.status;
-      relatedTo = task.type;
-      startDateController.text = task.startDate;
-      dueDateController.text = task.dueDate;
-      priority = task.priority;
-      assignController.text = task.assignTo;
-      descriptionController.text = task.description;
+      subjectController.text = task.subject ?? "";
+      status = task.status ?? "";
+      relatedTo = task.type ?? "";
+      searchController.text = task.relatedTo ?? "";
+      relatedId = task.relatedId ?? "";
+      startDateController.text = task.startDate ?? "";
+      dueDateController.text = task.dueDate ?? "";
+      priority = task.priority ?? "";
+      assignController.text = task.assignTo ?? "";
+      descriptionController.text = task.description ?? "";
     }
     bool isEditMode = task != null;
     return showDialog(
@@ -386,9 +424,9 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                               const SizedBox(height: 10.0,),
                               CustomTextFormField(
                                   onTap: (){
-                                    searchLead(context, contactController);
+                                    searchLead(context, searchController);
                                   },
-                                  nameController: contactController,
+                                  nameController: searchController,
                                   hintText: "Search",
                                   labelText: "Search Name",
                                   keyboardType: TextInputType.none,
@@ -407,9 +445,9 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                               const SizedBox(height: 10.0,),
                               CustomTextFormField(
                                   onTap: (){
-                                    searchCustomer(context, contactController);
+                                    searchCustomer(context, searchController);
                                   },
-                                  nameController: contactController,
+                                  nameController: searchController,
                                   hintText: "Search",
                                   labelText: "Search Name",
                                   keyboardType: TextInputType.none,
@@ -428,9 +466,9 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                               const SizedBox(height: 10.0,),
                               CustomTextFormField(
                                   onTap: (){
-                                    searchContacts(context, contactController);
+                                    searchContacts(context, searchController);
                                   },
-                                  nameController: contactController,
+                                  nameController: searchController,
                                   hintText: "Search",
                                   labelText: "Search Name",
                                   keyboardType: TextInputType.none,
@@ -528,7 +566,7 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                           ),
                           const SizedBox(height: 10.0,),
                           CustomTextFormField(
-                            keyboardType: TextInputType.text,
+                            keyboardType: TextInputType.multiline,
                             labelText: "Description",
                             hintText: "Description",
                             minLines: 1,
@@ -618,6 +656,10 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
 
   // Add Task Through Hive
   void addTask() async{
+    Hive.openBox<TaskHive>("tasks").then((tasksBox) {
+      exportFunctions.postTasksToApi(tasksBox);
+    });
+    print(assignId);
     if(formKey.currentState!.validate()){
       var uid = uuid.v1();
       TaskHive newTask = TaskHive()
@@ -625,16 +667,19 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
         ..subject = subjectController.text
         ..status = status!
         ..type = relatedTo!
-        ..contact = contactController.text
+        ..relatedTo = searchController.text
+        ..relatedId = relatedId!
+        ..contact = assignId!
         ..startDate = startDateController.text
         ..dueDate = dueDateController.text
         ..priority = priority!
         ..assignTo = assignController.text
-        ..description = descriptionController.text;
-
+        ..assignId = assignId!
+        ..companyId = companyId!
+        ..description = descriptionController.text
+        ..addedAt = DateTime.now();
       await tasks!.add(newTask);
       showSnackMessage(context, "Task Added Successfully");
-
       clearFields();
     }
     else {
@@ -661,15 +706,21 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
   // Function to update an existing note
   void updateTask(TaskHive task) async {
     print(task.id);
-    otherFunctions.updateTaskInDatabase(task, Ids(assignId!, relatedId!));
+    otherFunctions.updateTaskInDatabase(task);
     task.subject = subjectController.text;
+    task.status = status!;
     task.type = relatedTo!;
-    task.type = searchController.text;
-    task.assignTo = assignController.text;
+    task.contact = assignId!;
+    task.startDate = startDateController.text;
+    task.dueDate = dueDateController.text;
+    task.relatedTo = searchController.text;
+    task.relatedId = relatedId!;
+    task.assignTo =assignController.text;
+    task.assignId = assignId!;
     task.description = descriptionController.text;
-
+    task.addedAt = DateTime.now();
     await tasks!.put(task.key, task);
-    showSnackMessage(context, "Note Updated Successfully");
+    showSnackMessage(context, "Task Updated Successfully");
     Navigator.pop(context);
     clearFields();
   }

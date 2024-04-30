@@ -149,31 +149,37 @@ class OpportunityListTile extends StatelessWidget {
           border: Border.all(color: primaryColor),
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15.0),
+          padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                obj.name,
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Text(
-                obj.lead,
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-              ),
-              Text(
-                obj.closeDate,
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-              ),
-              Container(
-                child: IconButton(
-                  onPressed: () => navigateToEditScreen(context, obj),
-                  icon: const Icon(Icons.edit, color: Colors.blueAccent),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      obj.name,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      obj.stage,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                    Text(
+                      obj.closeDate,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ],
                 ),
+              ),
+              IconButton(
+                onPressed: () => navigateToEditScreen(context, obj),
+                icon: const Icon(Icons.edit, color: Colors.blueAccent),
               ),
             ],
           ),

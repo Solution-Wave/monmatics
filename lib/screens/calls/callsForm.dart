@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:monmatics/models/contactItem.dart';
-import 'package:monmatics/models/customerItem.dart';
-import 'package:monmatics/models/leadItem.dart';
 import 'package:uuid/uuid.dart';
-import '../../functions/searchFunctions.dart';
+import '../../functions/exportFunctions.dart';
+import '../../functions/otherFunctions.dart';
 import '../../models/callItem.dart';
+import '../../models/contactItem.dart';
+import '../../models/customerItem.dart';
+import '../../models/leadItem.dart';
 import '../../models/userItem.dart';
 import '../../utils/customWidgets.dart';
 import '../../utils/messages.dart';
@@ -41,89 +42,251 @@ class _AddCallsState extends State<AddCalls> {
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
   var uuid = const Uuid();
+  String? contactId;
+
+  ExportFunctions exportFunctions = ExportFunctions();
+  OtherFunctions otherFunctions = OtherFunctions();
+
+  String relatedName = "";
+  String assignName = "";
+  String contactName = "";
+  Future<void> fetchRelatedNames(String? relatedId) async {
+    print("Fetching name for relatedId: $relatedId");
+    if (relatedId != null && relatedId.isNotEmpty) {
+      String? fetchedName;
+
+      try {
+        // Initialize variables for the Hive boxes
+        var leadBox = await Hive.openBox<LeadHive>('leads');
+        var customerBox = await Hive.openBox<CustomerHive>('customers');
+        var contactsBox = await Hive.openBox<ContactHive>('contacts');
+
+        // Check for a match in each box
+        bool matchFound = false;
+
+        // Check the Lead box
+        for (var lead in leadBox.values) {
+          if (lead.id == relatedId) {
+            fetchedName = lead.name;
+            matchFound = true;
+            print("Found lead with name: $fetchedName");
+            break;
+          }
+        }
+
+        // If no match was found in the Lead box, check the Customer box
+        if (!matchFound) {
+          for (var customer in customerBox.values) {
+            if (customer.id == relatedId) {
+              fetchedName = customer.name;
+              matchFound = true;
+              print("Found customer with name: $fetchedName");
+              break;
+            }
+          }
+        }
+
+        // If no match was found in the Lead or Customer box, check the Contacts box
+        if (!matchFound) {
+          for (var contact in contactsBox.values) {
+            if (contact.id == relatedId) {
+              String fullName = "${contact.fName} ${contact.lName}";
+              fetchedName = fullName;
+              matchFound = true;
+              print("Found contact with name: $fetchedName");
+              break;
+            }
+          }
+        }
+      } catch (e) {
+        print("Error fetching name: $e");
+        fetchedName = 'Error';
+      }
+
+      // Set the fetched name to the searchController
+      relatedName = fetchedName ?? '';
+      searchController.text = relatedName;
+      print("Set searchController.text to: ${searchController.text}");
+
+    } else {
+      // Handle case where relatedId is null or empty
+      print("relatedId is null or empty.");
+      searchController.text = ''; // Set to an empty string
+    }
+  }
+  Future<void> fetchAssignNames(String? assignId) async {
+    print("Fetching name for assignId: $assignId");
+    if (assignId != null && assignId.isNotEmpty) {
+      String? fetchedName;
+      try {
+        // Initialize variables for the Hive boxes
+        var userBox = await Hive.openBox<UsersHive>('users');
+        bool matchFound = false;
+
+        // Check the Name box
+        for (var name in userBox.values) {
+          if (name.id == assignId) {
+            String fullName = "${name.fName} ${name.lName}";
+            fetchedName = fullName;
+            matchFound = true;
+            print("Found User with name: $fetchedName");
+            break;
+          }
+        }
+      } catch (e) {
+        print("Error fetching name: $e");
+        fetchedName = 'Error';
+      }
+        assignName = fetchedName ?? '';
+      assignController.text = assignName;
+    } else {
+      // Handle case where relatedId is null or empty
+      print("assignId is null or empty.");
+      assignController.text = ''; // Set to an empty string
+    }
+  }
+  Future<void> fetchContactNames(String? contactId) async {
+    print("Fetching name for contactId: $contactId");
+    if (contactId != null && contactId.isNotEmpty) {
+      String? fetchedName;
+      try {
+        // Initialize variables for the Hive boxes
+        var contactBox = await Hive.openBox<ContactHive>('contacts');
+        bool matchFound = false;
+
+        // Check the Name box
+        for (var contact in contactBox.values) {
+          if (contact.id == contactId) {
+            String fullName = "${contact.fName} ${contact.lName}";
+            fetchedName = fullName;
+            matchFound = true;
+            print("Found contact with name: $fetchedName");
+            break;
+          }
+        }
+      } catch (e) {
+        print("Error fetching name: $e");
+        fetchedName = 'Error';
+      }
+
+      // Set the fetched name to the searchController
+      contactName = fetchedName ?? '';
+      contactNameController.text = contactName;
+      print("Set contactNameController.text to: ${contactNameController.text}");
+
+    } else {
+      // Handle case where relatedId is null or empty
+      print("contactId is null or empty.");
+      contactNameController.text = ''; // Set to an empty string
+    }
+  }
+
+  void fetchNames() async{
+  await fetchAssignNames(widget.existingCall!.assignId);
+  await fetchRelatedNames(relatedId);
+  await fetchContactNames(widget.existingCall!.contactId);
+}
 
   @override
   void initState() {
     super.initState();
-
     // If an existing call is provided, initialize the form controllers with the existing call's data
     if (widget.existingCall != null) {
+      fetchNames();
+      contactId = widget.existingCall!.contactId;
       subjectController.text = widget.existingCall!.subject;
       selectedStatus = widget.existingCall!.status;
-      relatedTo = widget.existingCall!.relatedTo;
+      relatedTo = widget.existingCall!.relatedType;
       relatedId = widget.existingCall!.relatedId;
-      searchController.text = relatedId ?? '';
-      contactNameController.text = widget.existingCall!.contactName;
+      searchController.text = relatedName ?? widget.existingCall!.relatedTo ?? "";
+      contactNameController.text = contactName ?? widget.existingCall!.contactName ?? "";
       startDateController.text = widget.existingCall!.startDate;
       startTimeController.text = widget.existingCall!.startTime;
       endDateController.text = widget.existingCall!.endDate;
       endTimeController.text = widget.existingCall!.endTime;
       selectedCommunication = widget.existingCall!.communicationType;
-      assignController.text = widget.existingCall!.assignTo;
+      assignController.text = assignName ?? widget.existingCall!.assignTo ?? "";
       descriptionController.text = widget.existingCall!.description;
     }
   }
 
   // Add or Update Call through Hive
   void saveCall() async {
-    Box<CallHive> callBox = await Hive.openBox<CallHive>('calls');
+    try {
+      // Open the Hive box
+      Box<CallHive> callBox = await Hive.openBox<CallHive>('calls');
+      if (widget.existingCall != null) {
+        // Update existing call
+        CallHive updatedCall = widget.existingCall!;
+        updatedCall.subject = subjectController.text;
+        updatedCall.status = selectedStatus!;
+        updatedCall.relatedType = relatedTo!;
+        updatedCall.relatedTo = searchController.text;
+        updatedCall.relatedId = relatedId!;
+        updatedCall.contactName = contactNameController.text;
+        updatedCall.contactId = contactId!;
+        updatedCall.startDate = startDateController.text;
+        updatedCall.startTime = startTimeController.text;
+        updatedCall.endDate = endDateController.text;
+        updatedCall.endTime = endTimeController.text;
+        updatedCall.communicationType = selectedCommunication!;
+        updatedCall.assignTo = assignController.text;
+        updatedCall.assignId = assignId!;
+        updatedCall.description = descriptionController.text;
 
-    if (widget.existingCall != null) {
-      // Update existing call
-      CallHive updatedCall = widget.existingCall!;
-      updatedCall.subject = subjectController.text;
-      updatedCall.status = selectedStatus!;
-      updatedCall.relatedTo = relatedTo!;
-      updatedCall.relatedId = relatedId!;
-      updatedCall.contactName = contactNameController.text;
-      updatedCall.startDate = startDateController.text;
-      updatedCall.startTime = startTimeController.text;
-      updatedCall.endDate = endDateController.text;
-      updatedCall.endTime = endTimeController.text;
-      updatedCall.communicationType = selectedCommunication!;
-      updatedCall.assignTo = assignController.text;
-      updatedCall.description = descriptionController.text;
+        await callBox.put(updatedCall.key, updatedCall);
+        otherFunctions.updateCallInDatabase(updatedCall);
+        showSnackMessage(context, 'Call updated successfully');
+      } else {
+        // Add new call
+        var newCallId = uuid.v1();
+        CallHive newCall = CallHive()
+          ..id = newCallId
+          ..subject = subjectController.text
+          ..status = selectedStatus!
+          ..relatedTo = searchController.text
+          ..relatedType = relatedTo!
+          ..relatedId = relatedId!
+          ..contactName = contactNameController.text
+          ..contactId = contactId!
+          ..startDate = startDateController.text
+          ..startTime = startTimeController.text
+          ..endDate = endDateController.text
+          ..endTime = endTimeController.text
+          ..communicationType = selectedCommunication!
+          ..assignTo = assignController.text
+          ..assignId = assignId!
+          ..description = descriptionController.text;
+        await callBox.add(newCall);
+        exportFunctions.postCallsToApi();
+        showSnackMessage(context, 'Call added successfully');
+      }
 
-      await callBox.put(updatedCall.id, updatedCall);
-      showSnackMessage(context, 'Call updated successfully');
-    } else {
-      // Add new call
-      var newCallId = uuid.v1();
-      CallHive newCall = CallHive()
-        ..id = newCallId
-        ..subject = subjectController.text
-        ..status = selectedStatus!
-        ..relatedTo = relatedTo!
-        ..relatedId = searchController.text
-        ..contactName = contactNameController.text
-        ..startDate = startDateController.text
-        ..startTime = startTimeController.text
-        ..endDate = endDateController.text
-        ..endTime = endTimeController.text
-        ..communicationType = selectedCommunication!
-        ..assignTo = assignController.text
-        ..description = descriptionController.text;
+      // Reset form
+      setState(() {
+        subjectController.clear();
+        selectedStatus = null;
+        relatedTo = null;
+        relatedName = "";
+        assignName = "";
+        contactName = '';
+        searchController.clear();
+        contactNameController.clear();
+        startDateController.clear();
+        startTimeController.clear();
+        endDateController.clear();
+        endTimeController.clear();
+        selectedCommunication = null;
+        assignController.clear();
+        descriptionController.clear();
+      });
 
-      await callBox.add(newCall);
-      showSnackMessage(context, 'Call added successfully');
+    } catch (e) {
+      // Handle any errors that may occur during saving/updating calls
+      showSnackMessage(context, 'Error: $e');
     }
-
-    // Reset form
-    setState(() {
-      subjectController.clear();
-      selectedStatus = null;
-      relatedTo = null;
-      searchController.clear();
-      contactNameController.clear();
-      startDateController.clear();
-      startTimeController.clear();
-      endDateController.clear();
-      endTimeController.clear();
-      selectedCommunication = null;
-      assignController.clear();
-      descriptionController.clear();
-    });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -182,7 +345,7 @@ class _AddCallsState extends State<AddCalls> {
                         }).toList(),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please Choose Status';
+                            return null;
                           }
                           return null;
                         },
@@ -212,7 +375,7 @@ class _AddCallsState extends State<AddCalls> {
                         }).toList(),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please Choose an Option';
+                            return null;
                           }
                           return null;
                         },
@@ -232,7 +395,7 @@ class _AddCallsState extends State<AddCalls> {
                             prefixIcon: const Icon(Icons.search),
                             validator: (value) {
                               if(value.isEmpty){
-                                return "Please Enter a value";
+                                return null;
                               }
                               else {
                                 return null;
@@ -257,7 +420,7 @@ class _AddCallsState extends State<AddCalls> {
                             prefixIcon: const Icon(Icons.search),
                             validator: (value) {
                               if(value.isEmpty){
-                                return "Please Enter a value";
+                                return null;
                               }
                               else {
                                 return null;
@@ -282,7 +445,7 @@ class _AddCallsState extends State<AddCalls> {
                             prefixIcon: const Icon(Icons.search),
                             validator: (value) {
                               if(value.isEmpty){
-                                return "Please Enter a value";
+                                return null;
                               }
                               else {
                                 return null;
@@ -304,7 +467,7 @@ class _AddCallsState extends State<AddCalls> {
                         prefixIcon: const Icon(Icons.person),
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Your Contact Name";
+                            return null;
                           }
                           else {
                             return null;
@@ -322,7 +485,7 @@ class _AddCallsState extends State<AddCalls> {
                         prefixIcon: const Icon(Icons.calendar_month),
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Start Date";
+                            return null;
                           }
                           else {
                             return null;
@@ -340,7 +503,7 @@ class _AddCallsState extends State<AddCalls> {
                         prefixIcon: const Icon(Icons.access_time),
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Start Time";
+                            return null;
                           }
                           else {
                             return null;
@@ -357,7 +520,7 @@ class _AddCallsState extends State<AddCalls> {
                         prefixIcon: const Icon(Icons.calendar_month),
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter End Date";
+                            return null;
                           }
                           else {
                             return null;
@@ -375,7 +538,7 @@ class _AddCallsState extends State<AddCalls> {
                         prefixIcon: const Icon(Icons.access_time),
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter End Time";
+                            return null;
                           }
                           else {
                             return null;
@@ -395,7 +558,7 @@ class _AddCallsState extends State<AddCalls> {
                           });
                         },
                         items: <String>[
-                          "Open",
+                          "phone call",
                           "Close",
                         ].map((String value) {
                           return DropdownMenuItem<String>(
@@ -406,7 +569,7 @@ class _AddCallsState extends State<AddCalls> {
                         }).toList(),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please Choose Communication Type';
+                            return null;
                           }
                           return null;
                         },
@@ -423,7 +586,7 @@ class _AddCallsState extends State<AddCalls> {
                         nameController: assignController,
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Value";
+                            return null;
                           }
                           else {
                             return null;
@@ -433,7 +596,7 @@ class _AddCallsState extends State<AddCalls> {
                       ),
                       const SizedBox(height: 10.0,),
                       CustomTextFormField(
-                        keyboardType: TextInputType.text,
+                        keyboardType: TextInputType.multiline,
                         labelText: "Description",
                         hintText: "Description",
                         minLines: 1,
@@ -441,7 +604,7 @@ class _AddCallsState extends State<AddCalls> {
                         nameController: descriptionController,
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Description";
+                            return null;
                           }
                           else {
                             return null;
@@ -453,7 +616,6 @@ class _AddCallsState extends State<AddCalls> {
                       CustomButton(
                         onPressed: () {
                           if(_formKey.currentState!.validate()){
-                            if(selectedStatus != null && relatedTo != null && selectedCommunication != null){
                               print('Form is valid');
                               setState(() {
                                 loading = true;
@@ -462,20 +624,13 @@ class _AddCallsState extends State<AddCalls> {
                               setState(() {
                                 loading = false;
                               });
-                            } else{
-                              print('Select Dropdown Values');
-                              setState(() {
-                                loading = false;
-                              });
-                              showSnackMessage(context, "Please Choose all Values");
-                            }
                           }
                           else {
                             print('Form is invalid');
                             setState(() {
                               loading = false;
                             });
-                            showSnackMessage(context, "Please Fill All the Fields");
+                            showSnackMessage(context, "Please Fill Required Fields");
                           }
                         },
                         padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 50.0),
@@ -496,7 +651,6 @@ class _AddCallsState extends State<AddCalls> {
   }
 
 
-  // Start Date Pick Function
   Future<void> _selectStartDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -507,12 +661,11 @@ class _AddCallsState extends State<AddCalls> {
     if (picked != null && picked != startDate) {
       setState(() {
         startDate = picked;
-        startDateController.text = "${picked.month.toString().padLeft(2, '0')}/${picked.day.toString().padLeft(2, '0')}/${picked.year}";
+        startDateController.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
       });
     }
   }
 
-  // End Date Pick Function
   Future<void> _selectEndDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -523,7 +676,7 @@ class _AddCallsState extends State<AddCalls> {
     if (picked != null && picked != endDate) {
       setState(() {
         endDate = picked;
-        endDateController.text = "${picked.month.toString().padLeft(2, '0')}/${picked.day.toString().padLeft(2, '0')}/${picked.year}";
+        endDateController.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
       });
     }
   }
@@ -555,6 +708,7 @@ class _AddCallsState extends State<AddCalls> {
       });
     }
   }
+
   void searchCustomer(BuildContext context, TextEditingController textFieldController) async {
     try {
       if (!Hive.isBoxOpen('customers')) {
@@ -641,11 +795,13 @@ class _AddCallsState extends State<AddCalls> {
 
       // Get the box
       Box contactBox = Hive.box<ContactHive>('contacts');
-      List<String> customerNames = [];
-      for (var contact in contactBox.values) {
-        customerNames.add(
-            '${contact.fName} ''${contact.lName}');
-      }
+      List<Map<String, dynamic>> contactNames = contactBox.values.map((contact) {
+        return {
+          'id': contact.id,
+          'firstName': contact.fName,
+          'lastName': contact.lName,
+        };
+      }).toList();
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -653,20 +809,25 @@ class _AddCallsState extends State<AddCalls> {
             title: const Center(child: Text('Contacts List')),
             content: SingleChildScrollView(
               child: Column(
-                children: customerNames.map((id) => ListTile(
-                  title: Text(id),
-                  onTap: () {
-                    textFieldController.text = id;
-                    Navigator.pop(context);
-                  },
-                )).toList(),
+                children: contactNames.map((contact) {
+                  String displayName = '${contact['firstName']} ${contact['lastName']}';
+                  return ListTile(
+                    title: Text(displayName),
+                    onTap: () {
+                      contactId = contact['id'];
+                      textFieldController.text = displayName;
+                      Navigator.pop(context);
+                      print(contactId);
+                    },
+                  );
+                }).toList(),
               ),
             ),
           );
         },
       );
     } catch (e) {
-      print('Error fetching customer names: $e');
+      print('Error fetching Contact names: $e');
       // Handle error appropriately
     }
   }
