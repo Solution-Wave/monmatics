@@ -132,6 +132,14 @@ class CustomerListTile extends StatelessWidget {
   }) : super(key: key);
 
   final CustomerHive obj;
+  void navigateToEditScreen(BuildContext context, CustomerHive obj) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddCustomer(existingCustomer: obj),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -160,6 +168,7 @@ class CustomerListTile extends StatelessWidget {
                 ),
               ),
               IconButton(
+                tooltip: "Call",
                 iconSize: 20.0,
                 onPressed: () async {
                   Uri phoneno = Uri.parse('tel:${obj.phone}');
@@ -176,26 +185,7 @@ class CustomerListTile extends StatelessWidget {
                 icon: const Icon(Icons.phone),
               ),
               IconButton(
-                iconSize: 20.0,
-                onPressed: () async {
-                  Uri mail = Uri(
-                    scheme: 'mailto',
-                    path: obj.email,
-                    query: 'subject=emails&body=',
-                  );
-                  if (obj.email.isEmpty) {
-                    showSnackMessage(context, 'Email not provided');
-                  } else {
-                    try {
-                      await launchUrl(mail);
-                    } catch (_e) {
-                      print(_e);
-                    }
-                  }
-                },
-                icon: const Icon(Icons.mail),
-              ),
-              IconButton(
+                tooltip: "WhatsApp",
                 iconSize: 20.0,
                 onPressed: () async {
                   String phoneNumber = obj.phone;
@@ -208,7 +198,11 @@ class CustomerListTile extends StatelessWidget {
                   }
                 },
                 icon: const Icon(Icons.phone_android_sharp),
-              )
+              ),
+              IconButton(
+                onPressed: () => navigateToEditScreen(context, obj),
+                icon: const Icon(Icons.edit, color: Colors.blueAccent),
+              ),
             ],
           ),
         ),

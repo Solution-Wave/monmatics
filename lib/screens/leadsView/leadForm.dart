@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../../Functions/exportFunctions.dart';
+import '../../functions/otherFunctions.dart';
 import '../../models/leadItem.dart';
 import '../../utils/customWidgets.dart';
 import '../../utils/messages.dart';
 import '../../utils/themes.dart';
 
 class AddLead extends StatefulWidget {
-  const AddLead({super.key});
+  final LeadHive? existingLead;
+  const AddLead({super.key, this.existingLead});
 
   @override
   State<AddLead> createState() => _AddLeadState();
@@ -23,10 +26,6 @@ class _AddLeadState extends State<AddLead> {
   TextEditingController phoneController = TextEditingController();
   TextEditingController addressController = TextEditingController();
   TextEditingController noteController = TextEditingController();
-  TextEditingController codeController = TextEditingController();
-  TextEditingController amountController = TextEditingController();
-  TextEditingController taxController = TextEditingController();
-  TextEditingController marginController = TextEditingController();
 
   bool loading = false;
   String? selectedCategory;
@@ -34,38 +33,79 @@ class _AddLeadState extends State<AddLead> {
   String? selectedStatus;
   String? selectedType;
   var uuid = const Uuid();
+
   ExportFunctions exportFunctions = ExportFunctions();
+  OtherFunctions otherFunctions = OtherFunctions();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    if(widget.existingLead != null){
+      nameController.text = widget.existingLead!.name;
+      emailController.text = widget.existingLead!.email;
+      phoneController.text = widget.existingLead!.phone;
+      addressController.text = widget.existingLead!.address;
+      noteController.text = widget.existingLead!.note;
+      selectedCategory = widget.existingLead!.category;
+      selectedSource = widget.existingLead!.leadSource;
+      selectedStatus = widget.existingLead!.status;
+      selectedType = widget.existingLead!.type;
+    }
+  }
 
   // Add Lead Through Hive
-  void addLead() async{
-    exportFunctions.postLeadToApi();
-    var uid = uuid.v1();
-    Box? lead = await Hive.openBox<LeadHive>("leads");
-    LeadHive newLead = LeadHive()
-    ..id = uid
-    ..name = nameController.text
-    ..email = emailController.text
-    ..phone = phoneController.text
-    ..category = selectedCategory!
-    ..leadSource = selectedSource!
-    ..status = selectedStatus!
-    ..type = selectedType!
-    ..note = noteController.text
-    ..address = addressController.text;
+  void saveLead() async{
+    try{
+      Box<LeadHive> leadBox = await Hive.openBox<LeadHive>("leads");
+      if(widget.existingLead != null){
+        LeadHive updateLead = widget.existingLead!;
+        updateLead.name = nameController.text;
+        updateLead.email = emailController.text;
+        updateLead.phone = phoneController.text;
+        updateLead.category = selectedCategory!;
+        updateLead.leadSource = selectedSource!;
+        updateLead.status = selectedStatus!;
+        updateLead.type = selectedType!;
+        updateLead.note = noteController.text;
+        updateLead.address = addressController.text;
 
-    await lead.add(newLead);
-    showSnackMessage(context, "Lead Added Successfully");
-    setState(() {
-      nameController.clear();
-      emailController.clear();
-      phoneController.clear();
-      selectedCategory = null;
-      selectedSource = null;
-      selectedStatus = null;
-      selectedType = null;
-      noteController.clear();
-      addressController.clear();
-    });
+        await leadBox.put(updateLead.key, updateLead);
+        otherFunctions.updateLeadInDatabase(updateLead);
+        showSnackMessage(context, "Lead Updated Successfully");
+
+      } else {
+        var uid = uuid.v1();
+        LeadHive newLead = LeadHive()
+          ..id = uid
+          ..name = nameController.text
+          ..email = emailController.text
+          ..phone = phoneController.text
+          ..category = selectedCategory!
+          ..leadSource = selectedSource!
+          ..status = selectedStatus!
+          ..type = selectedType!
+          ..note = noteController.text
+          ..address = addressController.text;
+
+        await leadBox.add(newLead);
+        exportFunctions.postLeadToApi();
+        showSnackMessage(context, "Lead Added Successfully");
+      }
+      setState(() {
+        nameController.clear();
+        emailController.clear();
+        phoneController.clear();
+        selectedCategory = null;
+        selectedSource = null;
+        selectedStatus = null;
+        selectedType = null;
+        noteController.clear();
+        addressController.clear();
+      });
+    } catch (e){
+      print("Error: $e");
+    }
   }
 
 
@@ -297,7 +337,7 @@ class _AddLeadState extends State<AddLead> {
                               setState(() {
                                 loading = true;
                               });
-                              addLead();
+                              saveLead();
                               setState(() {
                                 loading = false;
                               });
@@ -314,7 +354,7 @@ class _AddLeadState extends State<AddLead> {
                         child: loading ?
                         const SizedBox(height: 18,width: 18,
                           child: CircularProgressIndicator(color: Colors.white,),):
-                        const Text("Add Lead"),
+                        Text(widget.existingLead != null ? "Update Lead" : "Add Lead"),
                       )
                     ],
                   ),

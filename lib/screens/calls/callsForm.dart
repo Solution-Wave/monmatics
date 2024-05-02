@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../../functions/exportFunctions.dart';
 import '../../functions/otherFunctions.dart';
@@ -187,9 +188,21 @@ class _AddCallsState extends State<AddCalls> {
   await fetchContactNames(widget.existingCall!.contactId);
 }
 
+  Future<void> getSharedData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      assignId = prefs.getString('id');
+    });
+  }
+
+  void functionCall() async {
+    await getSharedData();
+  }
+
   @override
   void initState() {
     super.initState();
+    functionCall();
     // If an existing call is provided, initialize the form controllers with the existing call's data
     if (widget.existingCall != null) {
       fetchNames();

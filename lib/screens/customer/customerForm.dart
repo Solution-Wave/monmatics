@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import '../../Functions/exportFunctions.dart';
-import '../../functions/searchFunctions.dart';
+import '../../functions/otherFunctions.dart';
 import '../../models/customerItem.dart';
 import '../../utils/customWidgets.dart';
 import '../../utils/messages.dart';
@@ -10,7 +10,8 @@ import 'package:uuid/uuid.dart';
 
 
 class AddCustomer extends StatefulWidget {
-  const AddCustomer({super.key});
+  final CustomerHive? existingCustomer;
+  const AddCustomer({super.key, this.existingCustomer});
 
   @override
   State<AddCustomer> createState() => _AddCustomerState();
@@ -40,32 +41,79 @@ class _AddCustomerState extends State<AddCustomer> {
 
   ExportFunctions exportFunctions = ExportFunctions();
 
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    if(widget.existingCustomer != null){
+      nameController.text = widget.existingCustomer!.name;
+      phoneController.text = widget.existingCustomer!.phone;
+      emailController.text = widget.existingCustomer!.email;
+      addressController.text = widget.existingCustomer!.address;
+      noteController.text= widget.existingCustomer!.note;
+      codeController.text = widget.existingCustomer!.accountCode;
+      amountController.text = widget.existingCustomer!.amount;
+      taxController.text = widget.existingCustomer!.taxNumber;
+      marginController.text = widget.existingCustomer!.margin;
+      selectedCategory = widget.existingCustomer!.category;
+      selectedAccount = widget.existingCustomer!.account;
+      selectedLimit = widget.existingCustomer!.limit;
+      selectedStatus = widget.existingCustomer!.status;
+      selectedType = widget.existingCustomer!.type;
+    }
+  }
+
+  OtherFunctions otherFunctions = OtherFunctions();
 
   // Add Customer Through Hive
-  void addCustomer()async{
-    exportFunctions.postCustomerToApi();
-    var uid = uuid.v1();
-    Box? customer = await Hive.openBox<CustomerHive>('customers');
-    CustomerHive newCustomer = CustomerHive()
-    ..id = uid
-    ..name = nameController.text
-    ..email = emailController.text
-    ..phone = phoneController.text
-    ..category = selectedCategory!
-    ..account = selectedAccount!
-    ..accountCode = codeController.text
-    ..limit = selectedLimit!
-    ..amount = amountController.text
-    ..taxNumber = taxController.text
-    ..status = selectedStatus!
-    ..type = selectedType!
-    ..margin = marginController.text
-    ..note = noteController.text
-    ..address = addressController.text;
+  void saveCustomer()async{
+    try{
+      Box<CustomerHive> customerBox = await Hive.openBox<CustomerHive>("customers");
+      if(widget.existingCustomer != null){
+        CustomerHive updateCustomer = widget.existingCustomer!;
+        updateCustomer.name = nameController.text;
+        updateCustomer.email = emailController.text;
+        updateCustomer.phone = phoneController.text;
+        updateCustomer.category = selectedCategory!;
+        updateCustomer.account = selectedAccount!;
+        updateCustomer.accountCode = codeController.text;
+        updateCustomer.limit = selectedLimit!;
+        updateCustomer.amount = amountController.text;
+        updateCustomer.taxNumber = taxController.text;
+        updateCustomer.status = selectedStatus!;
+        updateCustomer.type = selectedType!;
+        updateCustomer.margin = marginController.text;
+        updateCustomer.note = noteController.text;
+        updateCustomer.address = addressController.text;
 
-    await customer.add(newCustomer);
-    showSnackMessage(context, "Customer Added Successfully");
-    setState(() {
+        await customerBox.put(updateCustomer.key, updateCustomer);
+        otherFunctions.updateCustomerInDatabase(updateCustomer);
+        showSnackMessage(context, "Customer Updated Successfully");
+      } else {
+      var uid = uuid.v1();
+      // Box? customer = await Hive.openBox<CustomerHive>('customers');
+      CustomerHive newCustomer = CustomerHive()
+      ..id = uid
+      ..name = nameController.text
+      ..email = emailController.text
+      ..phone = phoneController.text
+      ..category = selectedCategory!
+      ..account = selectedAccount!
+      ..accountCode = codeController.text
+      ..limit = selectedLimit!
+      ..amount = amountController.text
+      ..taxNumber = taxController.text
+      ..status = selectedStatus!
+      ..type = selectedType!
+      ..margin = marginController.text
+      ..note = noteController.text
+      ..address = addressController.text;
+
+      await customerBox.add(newCustomer);
+      showSnackMessage(context, "Customer Added Successfully");
+      exportFunctions.postCustomerToApi();
+      }
+      setState(() {
       nameController.clear();
       emailController.clear();
       phoneController.clear();
@@ -80,7 +128,10 @@ class _AddCustomerState extends State<AddCustomer> {
       selectedLimit = null;
       selectedAccount = null;
       selectedCategory = null;
-    });
+      });
+    } catch (e) {
+      print("Error: $e");
+    }
 
   }
 
@@ -410,7 +461,7 @@ class _AddCustomerState extends State<AddCustomer> {
                              setState(() {
                                loading = true;
                              });
-                             addCustomer();
+                             saveCustomer();
                              setState(() {
                                loading = false;
                              });
@@ -427,7 +478,7 @@ class _AddCustomerState extends State<AddCustomer> {
                         child: loading ?
                         const SizedBox(height: 18,width: 18,
                           child: CircularProgressIndicator(color: Colors.white,),):
-                        const Text("Add Customer"),
+                         Text(widget.existingCustomer != null ? "Update Customer" : "Add Customer"),
                      )
                     ],
                   ),

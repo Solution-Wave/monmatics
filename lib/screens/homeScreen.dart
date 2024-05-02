@@ -39,9 +39,9 @@ class _HomeState extends State<Home> {
   String? status;
   String? priority;
   String? relatedId;
-  String? relatedName;
+  String relatedName = "";
   String? assignId;
-  String? assignName;
+  String assignName = "";
   String? companyId;
 
   TextEditingController subjectController = TextEditingController();
@@ -206,8 +206,8 @@ class _HomeState extends State<Home> {
       priority = null;
       relatedId = null;
       assignId = null;
-      assignName = null;
-      relatedName = null;
+      assignName = "";
+      relatedName = "";
     });
   }
 

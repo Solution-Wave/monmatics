@@ -140,6 +140,15 @@ class LeadListTile extends StatelessWidget {
 
   var obj;
 
+   void navigateToEditScreen(BuildContext context, LeadHive obj) {
+     Navigator.push(
+       context,
+       MaterialPageRoute(
+         builder: (context) => AddLead(existingLead: obj),
+       ),
+     );
+   }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -203,29 +212,6 @@ class LeadListTile extends StatelessWidget {
                     },
                     icon: const Icon(Icons.phone)),
                 IconButton(
-                    padding: const EdgeInsets.all(2.0),
-                    iconSize: 20.0,
-                    onPressed: ()async{
-                      String email = obj.email;
-                      Uri mail = Uri(
-                        scheme: 'mailto',
-                        path: email,
-                        query: 'subject=emails&body=',);
-                      if(email=='')
-                      {
-                        showSnackMessage(context,'Email not provided');
-                      }
-                      else
-                      {
-                        try {
-                          await launchUrl(mail);
-                        } catch (_e) {
-                          showSnackMessage(context, 'Something went wrong');
-                        }
-                      }
-                    },
-                    icon: const Icon(Icons.mail)),
-                IconButton(
                   iconSize: 20.0,
                   onPressed: () async {
                     String phoneNumber = obj.phone;
@@ -238,6 +224,10 @@ class LeadListTile extends StatelessWidget {
                     }
                   },
                   icon: const Icon(Icons.phone_android_sharp),
+                ),
+                IconButton(
+                  onPressed: () => navigateToEditScreen(context, obj),
+                  icon: const Icon(Icons.edit, color: Colors.blueAccent),
                 ),
               ],
             ),

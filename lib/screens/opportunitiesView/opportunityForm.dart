@@ -3,6 +3,8 @@ import 'package:hive/hive.dart';
 import 'package:icons_flutter/icons_flutter.dart';
 import '../../Functions/exportFunctions.dart';
 import '../../functions/otherFunctions.dart';
+import '../../models/contactItem.dart';
+import '../../models/customerItem.dart';
 import '../../models/leadItem.dart';
 import '../../models/opportunityItem.dart';
 import '../../models/userItem.dart';
@@ -47,19 +49,124 @@ class _AddOpportunityState extends State<AddOpportunity> {
   // Initialize date
   DateTime date = DateTime.now();
 
+  String relatedName = "";
+  String assignName = "";
+  String contactName = "";
+  Future<void> fetchRelatedNames(String? relatedId) async {
+    print("Fetching name for relatedId: $relatedId");
+    if (relatedId != null && relatedId.isNotEmpty) {
+      String? fetchedName;
+
+      try {
+        // Initialize variables for the Hive boxes
+        var leadBox = await Hive.openBox<LeadHive>('leads');
+        var customerBox = await Hive.openBox<CustomerHive>('customers');
+        var contactsBox = await Hive.openBox<ContactHive>('contacts');
+
+        // Check for a match in each box
+        bool matchFound = false;
+
+        // Check the Lead box
+        for (var lead in leadBox.values) {
+          if (lead.id == relatedId) {
+            fetchedName = lead.name;
+            matchFound = true;
+            print("Found lead with name: $fetchedName");
+            break;
+          }
+        }
+
+        // If no match was found in the Lead box, check the Customer box
+        if (!matchFound) {
+          for (var customer in customerBox.values) {
+            if (customer.id == relatedId) {
+              fetchedName = customer.name;
+              matchFound = true;
+              print("Found customer with name: $fetchedName");
+              break;
+            }
+          }
+        }
+
+        // If no match was found in the Lead or Customer box, check the Contacts box
+        if (!matchFound) {
+          for (var contact in contactsBox.values) {
+            if (contact.id == relatedId) {
+              String fullName = "${contact.fName} ${contact.lName}";
+              fetchedName = fullName;
+              matchFound = true;
+              print("Found contact with name: $fetchedName");
+              break;
+            }
+          }
+        }
+      } catch (e) {
+        print("Error fetching name: $e");
+        fetchedName = 'Error';
+      }
+
+      // Set the fetched name to the leadController
+      relatedName = fetchedName ?? '';
+      leadController.text = relatedName;
+      print("Set leadController.text to: ${leadController.text}");
+
+    } else {
+      // Handle case where relatedId is null or empty
+      print("relatedId is null or empty.");
+      leadController.text = ''; // Set to an empty string
+    }
+  }
+  Future<void> fetchAssignNames(String? assignId) async {
+    print("Fetching name for assignId: $assignId");
+    if (assignId != null && assignId.isNotEmpty) {
+      String? fetchedName;
+      try {
+        // Initialize variables for the Hive boxes
+        var userBox = await Hive.openBox<UsersHive>('users');
+        bool matchFound = false;
+
+        // Check the Name box
+        for (var name in userBox.values) {
+          if (name.id == assignId) {
+            String fullName = "${name.fName} ${name.lName}";
+            fetchedName = fullName;
+            matchFound = true;
+            print("Found User with name: $fetchedName");
+            break;
+          }
+        }
+      } catch (e) {
+        print("Error fetching name: $e");
+        fetchedName = 'Error';
+      }
+      assignName = fetchedName ?? '';
+      assignController.text = assignName;
+    } else {
+      // Handle case where relatedId is null or empty
+      print("assignId is null or empty.");
+      assignController.text = ''; // Set to an empty string
+    }
+  }
+
+  void fetchNames() async{
+    await fetchAssignNames(widget.existingOpportunity!.assignId);
+    await fetchRelatedNames(widget.existingOpportunity!.leadId);
+  }
+
   // Load existing data if provided
   @override
   void initState() {
     super.initState();
     if (widget.existingOpportunity != null) {
       OpportunityHive opportunity = widget.existingOpportunity!;
+      fetchNames();
       // Pre-fill form fields with existing data
       nameController.text = opportunity.name;
-      leadController.text = opportunity.leadName;
+      leadController.text = relatedName;
       amountController.text = opportunity.amount;
       dateController.text = opportunity.closeDate;
       nextStepController.text = opportunity.nextStep;
-      assignController.text = opportunity.assignTo;
+      assignController.text = assignName;
       descriptionController.text = opportunity.description;
 
       selectedCurrency = opportunity.currency;

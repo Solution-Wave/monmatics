@@ -41,19 +41,20 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
   Map<DateTime, List<TaskHive>>? mySelectedEvents;
   final ValueNotifier<List<TaskHive>> _selectedEvents =  ValueNotifier<List<TaskHive>>([]);
   bool loading = false;
-  String? relatedId;
-  String? assignId;
+  String relatedId = "";
+  String assignId = "";
   String? companyId;
+  String assignName = "";
+  String relatedName = "";
 
   Future<void> getSharedData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      role= prefs.getString('role');
-      assignId = prefs.getString('id');
+      assignId = prefs.getString('id')!;
     });
   }
 
-  Future<void> functionCall() async {
+  void functionCall() async {
     await getSharedData();
     Map<String, dynamic>? databaseInfo = await importFunctions.getDatabaseInfo();
     companyId = databaseInfo!['company_id'] ?? '';
@@ -65,6 +66,105 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
     selectedCalendarDate = _focusedCalendarDate;
     mySelectedEvents = {};
     getTasksFromBox();
+    functionCall();
+  }
+
+  Future<void> fetchRelatedNames(String? relatedId) async {
+    print("Fetching name for relatedId: $relatedId");
+    if (relatedId != null && relatedId.isNotEmpty) {
+      String? fetchedName;
+
+      try {
+        // Initialize variables for the Hive boxes
+        var leadBox = await Hive.openBox<LeadHive>('leads');
+        var customerBox = await Hive.openBox<CustomerHive>('customers');
+        var contactsBox = await Hive.openBox<ContactHive>('contacts');
+
+        // Check for a match in each box
+        bool matchFound = false;
+
+        // Check the Lead box
+        for (var lead in leadBox.values) {
+          if (lead.id == relatedId) {
+            fetchedName = lead.name;
+            matchFound = true;
+            print("Found lead with name: $fetchedName");
+            break;
+          }
+        }
+
+        // If no match was found in the Lead box, check the Customer box
+        if (!matchFound) {
+          for (var customer in customerBox.values) {
+            if (customer.id == relatedId) {
+              fetchedName = customer.name;
+              matchFound = true;
+              print("Found customer with name: $fetchedName");
+              break;
+            }
+          }
+        }
+
+        // If no match was found in the Lead or Customer box, check the Contacts box
+        if (!matchFound) {
+          for (var contact in contactsBox.values) {
+            if (contact.id == relatedId) {
+              String fullName = "${contact.fName} ${contact.lName}";
+              fetchedName = fullName;
+              matchFound = true;
+              print("Found contact with name: $fetchedName");
+              break;
+            }
+          }
+        }
+      } catch (e) {
+        print("Error fetching name: $e");
+        fetchedName = 'Error';
+      }
+
+      // Set the fetched name to the searchController
+      relatedName = fetchedName ?? '';
+      print("Set searchController.text to: ${searchController.text}");
+
+    } else {
+      // Handle case where relatedId is null or empty
+      print("relatedId is null or empty.");
+      searchController.text = ''; // Set to an empty string
+    }
+  }
+  Future<void> fetchAssignNames(String? assignId) async {
+    print("Fetching name for assignId: $assignId");
+    if (assignId != null && assignId.isNotEmpty) {
+      String? fetchedName;
+      try {
+        // Initialize variables for the Hive boxes
+        var userBox = await Hive.openBox<UsersHive>('users');
+        bool matchFound = false;
+
+        // Check the Name box
+        for (var name in userBox.values) {
+          if (name.id == assignId) {
+            String fullName = "${name.fName} ${name.lName}";
+            fetchedName = fullName;
+            matchFound = true;
+            print("Found User with name: $fetchedName");
+            break;
+          }
+        }
+      } catch (e) {
+        print("Error fetching name: $e");
+        fetchedName = 'Error';
+      }
+
+      // Set the fetched name to the searchController
+      assignName = fetchedName ?? '';
+      print("Set searchController.text to: ${assignController.text}");
+
+    } else {
+      // Handle case where relatedId is null or empty
+      print("assignId is null or empty.");
+      assignController.text = ''; // Set to an empty string
+    }
   }
 
   List<TaskHive> _listOfDayEvents(DateTime dateTime) {
@@ -85,7 +185,7 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
           // Convert task start date to DateTime format
           DateTime? taskStartDate;
           if (task.startDate.isNotEmpty) {
-            taskStartDate = DateTime.parse(task.dueDate);
+            taskStartDate = DateTime.parse(task.startDate);
           }
 
           // Compare the task start date with the selected date
@@ -256,7 +356,6 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
     );
   }
 
-  String? role;
   String? relatedTo;
   String? status;
   String? priority;
@@ -314,15 +413,18 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
   // Add Tasks Form
   Future<void> showTaskDialog({TaskHive? task}) async {
     if(task != null ){
+      await fetchRelatedNames(task.relatedId);
+      await fetchAssignNames(task.assignId);
+      print(relatedName);
       subjectController.text = task.subject ?? "";
       status = task.status ?? "";
       relatedTo = task.type ?? "";
-      searchController.text = task.relatedTo ?? "";
+      searchController.text = relatedName ?? "";
       relatedId = task.relatedId ?? "";
       startDateController.text = task.startDate ?? "";
       dueDateController.text = task.dueDate ?? "";
       priority = task.priority ?? "";
-      assignController.text = task.assignTo ?? "";
+      assignController.text = assignName ?? "";
       descriptionController.text = task.description ?? "";
     }
     bool isEditMode = task != null;
@@ -346,6 +448,7 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                         // mainAxisSize: MainAxisSize.min,
                         // crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          const SizedBox(height: 10.0,),
                           CustomTextFormField(
                               nameController: subjectController,
                               hintText: "Subject",
@@ -383,7 +486,7 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                             }).toList(),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please Choose an Option';
+                                return null;
                               }
                               return null;
                             },
@@ -414,7 +517,7 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                             }).toList(),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please Choose an Option';
+                                return null;
                               }
                               return null;
                             },
@@ -432,7 +535,7 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                                   keyboardType: TextInputType.none,
                                   validator: (value){
                                     if(value.isEmpty){
-                                      return "Please Enter a Value";
+                                      return null;
                                     }
                                     return null;
                                   },
@@ -453,7 +556,7 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                                   keyboardType: TextInputType.none,
                                   validator: (value){
                                     if(value.isEmpty){
-                                      return "Please Enter a Value";
+                                      return null;
                                     }
                                     return null;
                                   },
@@ -474,7 +577,7 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                                   keyboardType: TextInputType.none,
                                   validator: (value){
                                     if(value.isEmpty){
-                                      return "Please Enter a Value";
+                                      return null;
                                     }
                                     return null;
                                   },
@@ -542,7 +645,7 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                             }).toList(),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please Choose an Option';
+                                return null;
                               }
                               return null;
                             },
@@ -574,7 +677,7 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                             nameController: descriptionController,
                             validator: (value) {
                               if(value.isEmpty){
-                                return "Please Enter Description";
+                                return null;
                               }
                               else {
                                 return null;
@@ -589,10 +692,12 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                   actions: [
                     TextButton(
                       onPressed: () {
-                        if (isEditMode) {
-                          updateTask(task);
-                        } else {
-                          addTask();
+                        if(formKey.currentState!.validate()){
+                          if (isEditMode) {
+                            updateTask(task);
+                          } else {
+                            addTask();
+                          }
                         }
                       },
                       child: Text(isEditMode
@@ -668,13 +773,13 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
         ..status = status!
         ..type = relatedTo!
         ..relatedTo = searchController.text
-        ..relatedId = relatedId!
-        ..contact = assignId!
+        ..relatedId = relatedId
+        ..contact = assignId
         ..startDate = startDateController.text
         ..dueDate = dueDateController.text
         ..priority = priority!
         ..assignTo = assignController.text
-        ..assignId = assignId!
+        ..assignId = assignId
         ..companyId = companyId!
         ..description = descriptionController.text
         ..addedAt = DateTime.now();
@@ -683,7 +788,7 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
       clearFields();
     }
     else {
-      showSnackMessage(context, "Please Fill All Fields");
+      showSnackMessage(context, "Please Fill Required Fields");
     }
   }
 
@@ -710,13 +815,13 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
     task.subject = subjectController.text;
     task.status = status!;
     task.type = relatedTo!;
-    task.contact = assignId!;
+    task.contact = assignId;
     task.startDate = startDateController.text;
     task.dueDate = dueDateController.text;
     task.relatedTo = searchController.text;
-    task.relatedId = relatedId!;
+    task.relatedId = relatedId;
     task.assignTo =assignController.text;
-    task.assignId = assignId!;
+    task.assignId = assignId;
     task.description = descriptionController.text;
     task.addedAt = DateTime.now();
     await tasks!.put(task.key, task);
