@@ -18,6 +18,8 @@ class OtherFunctions{
 
   // Function to update an existing note and update data in the database
   Future<void> updateNoteInDatabase(NoteHive note) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
     // Update data in the remote database
     Map<String, dynamic>? databaseInfo = await importFunctions.getDatabaseInfo();
     if (databaseInfo == null) {
@@ -38,6 +40,7 @@ class OtherFunctions{
 
       String noteId = note.id;
       print(noteId);
+      String noteIdQueryParam = noteId.isNotEmpty ? '&id=$noteId' : '';
 
       String jsonData = jsonEncode(postData);
 
@@ -47,7 +50,7 @@ class OtherFunctions{
         databaseInfoQuery += '&$key=$value';
       });
 
-      String finalUrl = '$apiUrl?id=$noteId$databaseInfoQuery';
+      String finalUrl = '$apiUrl?_token=$token$noteIdQueryParam$databaseInfoQuery';
       print(finalUrl);
       // Perform HTTP request to update note in the API
       http.Response response = await http.post(
@@ -75,6 +78,7 @@ class OtherFunctions{
 // Function to update an existing note and update data in the database
   Future<void> updateTaskInDatabase(TaskHive task) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
     String? userId = prefs.getString('id');
     // Update data in the remote database
     Map<String, dynamic>? databaseInfo = await importFunctions.getDatabaseInfo();
@@ -104,6 +108,7 @@ class OtherFunctions{
 
       String taskId = task.id;
       print(taskId);
+      String taskIdQueryParam = taskId.isNotEmpty ? '&id=$taskId' : '';
 
       String jsonData = jsonEncode(postData);
 
@@ -113,7 +118,7 @@ class OtherFunctions{
         databaseInfoQuery += '&$key=$value';
       });
 
-      String finalUrl = '$apiUrl?id=$taskId$databaseInfoQuery';
+      String finalUrl = '$apiUrl?_token=$token$taskIdQueryParam$databaseInfoQuery';
       print(finalUrl);
       // Perform HTTP request to update note in the API
       http.Response response = await http.post(
@@ -138,7 +143,7 @@ class OtherFunctions{
     }
   }
 
-  Future<void> deleteNoteFromDatabase(String id) async {
+  Future<void> deleteNoteFromDatabase(String noteId) async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? token = prefs.getString('token');
@@ -153,13 +158,16 @@ class OtherFunctions{
         return;
       }
 
+      String noteIdQueryParam = noteId.isNotEmpty ? '&id=$noteId' : '';
+
       String apiUrl = deleteNotes;
       String databaseInfoQuery = '';
       databaseInfo.forEach((key, value) {
         databaseInfoQuery += '&$key=$value';
       });
-      String finalUrl = '$apiUrl?id=$id$databaseInfoQuery';
+      String finalUrl = '$apiUrl?_token=$token$noteIdQueryParam$databaseInfoQuery';
       print(finalUrl);
+
 
       final response = await http.delete(
         Uri.parse(finalUrl),
@@ -179,7 +187,7 @@ class OtherFunctions{
     }
   }
 
-  Future<void> deleteTaskFromDatabase(String id) async {
+  Future<void> deleteTaskFromDatabase(String taskId) async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? token = prefs.getString('token');
@@ -193,13 +201,14 @@ class OtherFunctions{
         print('Database info not found');
         return;
       }
+      String taskIdQueryParam = taskId.isNotEmpty ? '&id=$taskId' : '';
 
       String apiUrl = deleteTasks;
       String databaseInfoQuery = '';
       databaseInfo.forEach((key, value) {
         databaseInfoQuery += '&$key=$value';
       });
-      String finalUrl = '$apiUrl?id=$id$databaseInfoQuery';
+      String finalUrl = '$apiUrl?_token=$token$taskIdQueryParam$databaseInfoQuery';
       print(finalUrl);
 
       final response = await http.delete(
@@ -223,6 +232,7 @@ class OtherFunctions{
   // Function to update an existing call and update data in the database
   Future<void> updateCallInDatabase(CallHive call) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString("token");
     String? userId = prefs.getString('id');
     // Update data in the remote database
     Map<String, dynamic>? databaseInfo = await importFunctions.getDatabaseInfo();
@@ -257,6 +267,7 @@ class OtherFunctions{
 
       String callId = call.id;
       print(callId);
+      String callIdQueryParam = callId.isNotEmpty ? '&id=$callId' : '';
 
       String jsonData = jsonEncode(postData);
 
@@ -266,7 +277,7 @@ class OtherFunctions{
         databaseInfoQuery += '&$key=$value';
       });
 
-      String finalUrl = '$apiUrl?id=$callId$databaseInfoQuery';
+      String finalUrl = '$apiUrl?_token=$token$callIdQueryParam$databaseInfoQuery';
       print(finalUrl);
       // Perform HTTP request to update note in the API
       http.Response response = await http.post(
@@ -291,7 +302,7 @@ class OtherFunctions{
     }
   }
 
-  Future<void> deleteCallFromDatabase(String id) async {
+  Future<void> deleteCallFromDatabase(String callId) async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? token = prefs.getString('token');
@@ -305,13 +316,13 @@ class OtherFunctions{
         print('Database info not found');
         return;
       }
-
+      String callIdQueryParam = callId.isNotEmpty ? '&id=$callId' : '';
       String apiUrl = deleteCalls;
       String databaseInfoQuery = '';
       databaseInfo.forEach((key, value) {
         databaseInfoQuery += '&$key=$value';
       });
-      String finalUrl = '$apiUrl?id=$id$databaseInfoQuery';
+      String finalUrl = '$apiUrl?_token=$token$callIdQueryParam$databaseInfoQuery';
       print(finalUrl);
 
       final response = await http.delete(
@@ -336,6 +347,7 @@ class OtherFunctions{
   Future<void> updateOpportunityInDatabase(OpportunityHive opportunity) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('id');
+    String? token = prefs.getString('token');
     // Update data in the remote database
     Map<String, dynamic>? databaseInfo = await importFunctions.getDatabaseInfo();
     if (databaseInfo == null) {
@@ -367,6 +379,7 @@ class OtherFunctions{
 
       String opportunityId = opportunity.id;
       print(opportunityId);
+      String opportunityIdQueryParam = opportunityId.isNotEmpty ? '&id=$opportunityId' : '';
 
       String jsonData = jsonEncode(postData);
 
@@ -376,7 +389,7 @@ class OtherFunctions{
         databaseInfoQuery += '&$key=$value';
       });
 
-      String finalUrl = '$apiUrl?id=$opportunityId$databaseInfoQuery';
+      String finalUrl = '$apiUrl?_token=$token$opportunityIdQueryParam$databaseInfoQuery';
       print(finalUrl);
       // Perform HTTP request to update oportunity in the API
       http.Response response = await http.post(
@@ -405,6 +418,7 @@ class OtherFunctions{
   Future<void> updateCustomerInDatabase(CustomerHive customer) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('id');
+    String? token = prefs.getString('token');
     // Update data in the remote database
     Map<String, dynamic>? databaseInfo = await importFunctions.getDatabaseInfo();
     if (databaseInfo == null) {
@@ -436,6 +450,7 @@ class OtherFunctions{
 
       String customerId = customer.id;
       print(customerId);
+      String customerIdQueryParam = customerId.isNotEmpty ? '&id=$customerId' : '';
 
       String jsonData = jsonEncode(postData);
 
@@ -445,7 +460,7 @@ class OtherFunctions{
         databaseInfoQuery += '&$key=$value';
       });
 
-      String finalUrl = '$apiUrl?id=$customerId$databaseInfoQuery';
+      String finalUrl = '$apiUrl?_token=$token$customerIdQueryParam$databaseInfoQuery';
       print(finalUrl);
       // Perform HTTP request to update Customer in the API
       http.Response response = await http.post(
@@ -474,6 +489,7 @@ class OtherFunctions{
   Future<void> updateLeadInDatabase(LeadHive lead) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('id');
+    String? token = prefs.getString('token');
     // Update data in the remote database
     Map<String, dynamic>? databaseInfo = await importFunctions.getDatabaseInfo();
     if (databaseInfo == null) {
@@ -505,6 +521,7 @@ class OtherFunctions{
 
       String leadId = lead.id;
       print(leadId);
+      String leadIdQueryParam = leadId.isNotEmpty ? '&id=$leadId' : '';
 
       String jsonData = jsonEncode(postData);
 
@@ -514,7 +531,7 @@ class OtherFunctions{
         databaseInfoQuery += '&$key=$value';
       });
 
-      String finalUrl = '$apiUrl?id=$leadId$databaseInfoQuery';
+      String finalUrl = '$apiUrl?_token=$token$leadIdQueryParam$databaseInfoQuery';
       print(finalUrl);
       // Perform HTTP request to update Lead in the API
       http.Response response = await http.post(
@@ -543,6 +560,7 @@ class OtherFunctions{
   Future<void> updateContactInDatabase(ContactHive contact) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('id');
+    String? token = prefs.getString('token');
     // Update data in the remote database
     Map<String, dynamic>? databaseInfo = await importFunctions.getDatabaseInfo();
     if (databaseInfo == null) {
@@ -579,6 +597,7 @@ class OtherFunctions{
 
       String contactId = contact.id;
       print(contactId);
+      String contactIdQueryParam = contactId.isNotEmpty ? '&id=$contactId' : '';
 
       String jsonData = jsonEncode(postData);
 
@@ -588,7 +607,7 @@ class OtherFunctions{
         databaseInfoQuery += '&$key=$value';
       });
 
-      String finalUrl = '$apiUrl?id=$contactId$databaseInfoQuery';
+      String finalUrl = '$apiUrl?_token=$token$contactIdQueryParam$databaseInfoQuery';
       print(finalUrl);
       // Perform HTTP request to update contact in the API
       http.Response response = await http.post(

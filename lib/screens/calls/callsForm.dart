@@ -203,9 +203,25 @@ class _AddCallsState extends State<AddCalls> {
   void initState() {
     super.initState();
     functionCall();
-    // If an existing call is provided, initialize the form controllers with the existing call's data
+
     if (widget.existingCall != null) {
       fetchNames();
+
+      // Parsing the existing call start and end datetime
+      String existingStartDateTime = widget.existingCall!.startDate;
+      String existingEndDateTime = widget.existingCall!.endDate;
+
+      // Split the date and time components for start and end
+      List<String> startDateTimeParts = existingStartDateTime.split(' ');
+      List<String> endDateTimeParts = existingEndDateTime.split(' ');
+
+      // Assign the date and time to respective controllers
+      startDateController.text = startDateTimeParts[0];
+      startTimeController.text = startDateTimeParts[1];
+      endDateController.text = endDateTimeParts[0];
+      endTimeController.text = endDateTimeParts[1];
+
+      // Assign other data
       contactId = widget.existingCall!.contactId;
       subjectController.text = widget.existingCall!.subject;
       selectedStatus = widget.existingCall!.status;
@@ -213,15 +229,12 @@ class _AddCallsState extends State<AddCalls> {
       relatedId = widget.existingCall!.relatedId;
       searchController.text = relatedName ?? widget.existingCall!.relatedTo ?? "";
       contactNameController.text = contactName ?? widget.existingCall!.contactName ?? "";
-      startDateController.text = widget.existingCall!.startDate;
-      startTimeController.text = widget.existingCall!.startTime;
-      endDateController.text = widget.existingCall!.endDate;
-      endTimeController.text = widget.existingCall!.endTime;
       selectedCommunication = widget.existingCall!.communicationType;
       assignController.text = assignName ?? widget.existingCall!.assignTo ?? "";
       descriptionController.text = widget.existingCall!.description;
     }
   }
+
 
   // Add or Update Call through Hive
   void saveCall() async {
@@ -694,7 +707,16 @@ class _AddCallsState extends State<AddCalls> {
     }
   }
 
-  // Start Time Pick Function
+  String formatTimeOfDayToHHMMSS(TimeOfDay time) {
+    final String hour = time.hour.toString().padLeft(2, '0');
+    final String minute = time.minute.toString().padLeft(2, '0');
+    final String seconds = '00';
+
+    // Return the formatted time in HH:MM:SS format
+    return '$hour:$minute:$seconds';
+  }
+
+
   Future<void> _selectStartTime(BuildContext context) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
@@ -702,13 +724,13 @@ class _AddCallsState extends State<AddCalls> {
     );
     if (picked != null) {
       setState(() {
-        startTimeController.text = picked.format(context);
+        // Format the TimeOfDay to HH:MM:SS format using the custom function
+        startTimeController.text = formatTimeOfDayToHHMMSS(picked);
         print(startTimeController.text);
       });
     }
   }
 
-  // Start Time Pick Function
   Future<void> _selectEndTime(BuildContext context) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
@@ -716,11 +738,13 @@ class _AddCallsState extends State<AddCalls> {
     );
     if (picked != null) {
       setState(() {
-        endTimeController.text = picked.format(context);
+        // Format the TimeOfDay to HH:MM:SS format using the custom function
+        endTimeController.text = formatTimeOfDayToHHMMSS(picked);
         print(endTimeController.text);
       });
     }
   }
+
 
   void searchCustomer(BuildContext context, TextEditingController textFieldController) async {
     try {

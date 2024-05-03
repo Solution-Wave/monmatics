@@ -36,17 +36,17 @@ class CustomerView extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('Id:', style: titleStyle),
-                            Container(
-                                width: MediaQuery.of(context).size.width * 0.4,
-                                child:
-                                Text(customer.id, style: normalStyle)),
-                          ],
-                        ),
+                        // Row(
+                        //   crossAxisAlignment: CrossAxisAlignment.start,
+                        //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        //   children: [
+                        //     Text('Id:', style: titleStyle),
+                        //     Container(
+                        //         width: MediaQuery.of(context).size.width * 0.4,
+                        //         child:
+                        //         Text(customer.id, style: normalStyle)),
+                        //   ],
+                        // ),
                         const SizedBox(
                           height: 10.0,
                         ),
@@ -58,7 +58,9 @@ class CustomerView extends StatelessWidget {
                             Container(
                                 width: MediaQuery.of(context).size.width * 0.4,
                                 child:
-                                    Text(customer.name, style: normalStyle)),
+                                    Text(customer.name,
+                                        style: normalStyle1
+                                    )),
                           ],
                         ),
                         const SizedBox(
@@ -76,7 +78,7 @@ class CustomerView extends StatelessWidget {
                                 width: MediaQuery.of(context).size.width * 0.4,
                                 child: Text(
                                   customer.email,
-                                  style: normalStyle,
+                                  style: normalStyle1,
                                 )),
                           ],
                         ),
@@ -152,7 +154,7 @@ class CustomerView extends StatelessWidget {
                                 width: MediaQuery.of(context).size.width * 0.4,
                                 child: Text(
                                   customer.accountCode,
-                                  style: normalStyle,
+                                  style: normalStyle1,
                                 )),
                           ],
                         ),
@@ -285,7 +287,7 @@ class CustomerView extends StatelessWidget {
                                 width: MediaQuery.of(context).size.width * 0.4,
                                 child: Text(
                                   customer.note,
-                                  style: normalStyle,
+                                  style: normalStyle1,
                                 )),
                           ],
                         ),
@@ -304,7 +306,7 @@ class CustomerView extends StatelessWidget {
                                 width: MediaQuery.of(context).size.width * 0.4,
                                 child: Text(
                                   customer.address,
-                                  style: normalStyle,
+                                  style: normalStyle1,
                                 )),
                           ],
                         ),

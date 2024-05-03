@@ -50,6 +50,10 @@ fontSize: 16.0,
 overflow: TextOverflow.ellipsis
 );
 
+TextStyle normalStyle1 = const TextStyle(
+    fontSize: 16.0,
+);
+
 TextStyle headerTextStyle  = TextStyle(
     fontSize: 18.0,
     fontWeight: FontWeight.w700,

@@ -104,6 +104,7 @@ class ExportFunctions {
           },
           body: jsonData,
         );
+        print(finalUrl);
 
         if (response.statusCode == 200) {
           print('lead added successfully: ${lead.name}');
@@ -116,15 +117,14 @@ class ExportFunctions {
     }
   }
 
-
   // Add customer To API
   Future<void> postCustomerToApi() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('id');
+    String? token = prefs.getString('token');
+
 
     String apiUrl = saveUpdateCustomers;
-    print(apiUrl);
-    print(userId);
 
     try {
       Map<String, dynamic>? databaseInfo = await importFunctions.getDatabaseInfo();
@@ -188,7 +188,7 @@ class ExportFunctions {
           databaseInfoQuery += '&$key=$value';
         });
 
-        String finalUrl = '$apiUrl?$databaseInfoQuery';
+        String finalUrl = '$apiUrl?_token=$token$databaseInfoQuery';
         http.Response response = await http.post(
           Uri.parse(finalUrl),
           headers: <String, String>{
@@ -197,7 +197,6 @@ class ExportFunctions {
           body: jsonData,
         );
         print(finalUrl);
-        print(jsonData);
 
         if (response.statusCode == 200) {
           print('customer added successfully: ${customer.name}');
@@ -209,7 +208,6 @@ class ExportFunctions {
       print('Error: $error');
     }
   }
-
 
   // Add Contact To API
   Future<void> postContactsToApi() async {
@@ -296,6 +294,7 @@ class ExportFunctions {
         },
         body: jsonData,
       );
+      print(finalUrl);
 
       // Handle the API response
       if (response.statusCode == 200) {
@@ -305,7 +304,6 @@ class ExportFunctions {
       }
     }
   }
-
 
   // Add Notes To API
   Future<void> postNotesToApi(Box<NoteHive> notesBox) async {
@@ -319,9 +317,6 @@ class ExportFunctions {
     }
 
     String apiUrl = saveUpdateNotes;
-    print(apiUrl);
-    print(userId);
-    print(token);
 
     try {
       Map<String, dynamic>? databaseInfo = await importFunctions.getDatabaseInfo();
@@ -372,7 +367,7 @@ class ExportFunctions {
           databaseInfoQuery += '&$key=$value';
         });
 
-        String finalUrl = '$apiUrl?$databaseInfoQuery';
+        String finalUrl = '$apiUrl?_token=$token$databaseInfoQuery';
         print(finalUrl);
         http.Response response = await http.post(
           Uri.parse(finalUrl),
@@ -381,7 +376,7 @@ class ExportFunctions {
           },
           body: jsonData,
         );
-        print(jsonData);
+        print(finalUrl);
 
         if (response.statusCode == 200) {
           print('Note added successfully: ${note.id}');
@@ -393,7 +388,6 @@ class ExportFunctions {
       print('Error: $error');
     }
   }
-
 
   //Add Tasks To API
   Future<void> postTasksToApi(Box<TaskHive> taskBox) async {
@@ -407,7 +401,6 @@ class ExportFunctions {
     }
 
     String apiUrl = saveUpdateTasks;
-    print(apiUrl);
 
     try {
       Map<String, dynamic>? databaseInfo = await importFunctions.getDatabaseInfo();
@@ -467,8 +460,7 @@ class ExportFunctions {
           databaseInfoQuery += '&$key=$value';
         });
 
-        String finalUrl = '$apiUrl?$databaseInfoQuery';
-        print(finalUrl);
+        String finalUrl = '$apiUrl?_token=$token$databaseInfoQuery';
         http.Response response = await http.post(
           Uri.parse(finalUrl),
           headers: <String, String>{
@@ -476,7 +468,7 @@ class ExportFunctions {
           },
           body: jsonData,
         );
-        print(jsonData);
+        print(finalUrl);
 
         if (response.statusCode == 200) {
           print('Task added successfully: ${task.id}');
@@ -489,14 +481,12 @@ class ExportFunctions {
     }
   }
 
-
   //Add Calls To API
   Future<void> postCallsToApi() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('id');
-
+    String? token = prefs.getString('token');
     String apiUrl = saveUpdateCalls;
-    print(apiUrl);
 
     try {
       Map<String, dynamic>? databaseInfo = await importFunctions.getDatabaseInfo();
@@ -527,14 +517,16 @@ class ExportFunctions {
 
       for (CallHive call in calls) {
         // Convert the date and time to the desired format
-        DateFormat inputFormat = DateFormat("yyyy-MM-dd h:mm a");
+        // DateFormat inputFormat = DateFormat("yyyy-MM-dd h:mm a");
         DateFormat outputFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
 
         // Parse the input date and time
-        DateTime dateTime = inputFormat.parse("${call.startDate} ${call.startTime}");
+        DateTime startDateTime = outputFormat.parse("${call.startDate} ${call.startTime}");
+        DateTime endDateTime = outputFormat.parse("${call.endDate} ${call.endTime}");
 
         // Format the date and time in the desired format
-        String startDate = outputFormat.format(dateTime);
+        String startDate = outputFormat.format(startDateTime);
+        String endDate = outputFormat.format(endDateTime);
 
         // Prepare data to add contact
         Map<String, dynamic> postData = {
@@ -542,7 +534,7 @@ class ExportFunctions {
           'subject': call.subject,
           'status': call.status,
           'start_date': startDate,
-          'end_date': call.endDate,
+          'end_date': endDate,
           'assigned_to': call.assignId,
           'related_id': call.relatedId,
           'related_to_type': call.relatedType,
@@ -560,8 +552,7 @@ class ExportFunctions {
           databaseInfoQuery += '&$key=$value';
         });
 
-        String finalUrl = '$apiUrl?$databaseInfoQuery';
-        print(finalUrl);
+        String finalUrl = '$apiUrl?_token=$token$databaseInfoQuery';
         print("${call.addedAt}");
         http.Response response = await http.post(
           Uri.parse(finalUrl),
@@ -570,7 +561,7 @@ class ExportFunctions {
           },
           body: jsonData,
         );
-        print(jsonData);
+        print(finalUrl);
 
         if (response.statusCode == 200) {
           print('Call added successfully: ${call.id}');
@@ -657,7 +648,6 @@ class ExportFunctions {
     }
 
     String apiUrl = saveUpdateOpportunity;
-    print(apiUrl);
 
     try {
       Map<String, dynamic>? databaseInfo = await importFunctions.getDatabaseInfo();
@@ -722,7 +712,7 @@ class ExportFunctions {
           databaseInfoQuery += '&$key=$value';
         });
 
-        String finalUrl = '$apiUrl?$databaseInfoQuery';
+        String finalUrl = '$apiUrl?_token=$token$databaseInfoQuery';
         print(finalUrl);
         http.Response response = await http.post(
           Uri.parse(finalUrl),
@@ -731,7 +721,7 @@ class ExportFunctions {
           },
           body: jsonData,
         );
-        print(jsonData);
+        print(finalUrl);
 
         if (response.statusCode == 200) {
           print('Opportunity added successfully: ${opportunity.name}');

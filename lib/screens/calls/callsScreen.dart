@@ -215,7 +215,7 @@ class _CallsListTileState extends State<CallsListTile> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(widget.obj.subject, style: listViewTextStyle),
-                    Text(widget.obj.startDate),
+                    Text("${widget.obj.startDate} ${widget.obj.startTime}"),
                   ],
                 ),
               ),
@@ -246,48 +246,110 @@ class _CallsListTileState extends State<CallsListTile> {
             });
           },
           children: [
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Name:', style: titleStyle),
-                    const SizedBox(height: 10.0),
-                    Text('Date:', style: titleStyle),
-                    const SizedBox(height: 10.0),
-                    Text('Subject:', style: titleStyle),
-                    const SizedBox(height: 10.0),
-                    Text('Related To:', style: titleStyle),
-                    const SizedBox(height: 10.0),
-                    Text('Type:', style: titleStyle),
-                    const SizedBox(height: 10.0),
-                    Text('Description:', style: titleStyle),
+                    Text('Name',style: titleStyle,),
+                    Container(
+                        width: MediaQuery.of(context).size.width*0.4,
+                        child: Text(contactName, style: normalStyle1,)),
                   ],
                 ),
-                const SizedBox(width: 10.0),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(contactName, style: normalStyle),
-                      const SizedBox(height: 10.0),
-                      Text(widget.obj.startDate, style: normalStyle),
-                      const SizedBox(height: 10.0),
-                      Text(widget.obj.subject, style: normalStyle),
-                      const SizedBox(height: 10.0),
-                      Text(relatedName, style: normalStyle),
-                      const SizedBox(height: 10.0),
-                      Text(widget.obj.communicationType, style: normalStyle),
-                      const SizedBox(height: 10.0),
-                      Container(
-                        width: MediaQuery.of(context).size.width * 0.6,
-                        child: Text(widget.obj.description, style: normalStyle),
+                // Row for Name
+                const SizedBox(height: 10.0),
+
+                // Row for Date
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Start Date:', style: titleStyle),
+                    Container(
+                        width: MediaQuery.of(context).size.width*0.4,
+                        child: Text("${widget.obj.startDate} ${widget.obj.startTime}",
+                            style: normalStyle)),
+                  ],
+                ),
+                const SizedBox(height: 10.0),
+
+                // Row for Date
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('End Date:', style: titleStyle),
+                    Container(
+                        width: MediaQuery.of(context).size.width*0.4,
+                        child: Text("${widget.obj.startDate} ${widget.obj.startTime}",
+                            style: normalStyle)),
+                  ],
+                ),
+                const SizedBox(height: 10.0),
+
+                // Row for Subject
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Subject:', style: titleStyle),
+                    Container(
+                        width: MediaQuery.of(context).size.width*0.4,
+                        child: Text(widget.obj.subject, style: normalStyle)),
+                  ],
+                ),
+                const SizedBox(height: 10.0),
+
+                // Row for Related To
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Related To:', style: titleStyle),
+                    Container(
+                        width: MediaQuery.of(context).size.width*0.4,
+                        child: Text(relatedName, style: normalStyle1)),
+                  ],
+                ),
+                const SizedBox(height: 10.0),
+
+                // Row for Type
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Type:', style: titleStyle),
+                    Container(
+                        width: MediaQuery.of(context).size.width*0.4,
+                        child: Text(widget.obj.communicationType, style: normalStyle)),
+                  ],
+                ),
+                const SizedBox(height: 10.0),
+
+                // Row for Description
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Description:', style: titleStyle),
+                    // Container for the description
+                    Container(
+                      width: MediaQuery.of(context).size.width*0.4,
+                      child: Text(
+                        widget.obj.description,
+                        style: normalStyle1,
+                        textAlign: TextAlign.start,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ],
             ),
+
           ],
         ),
       ),

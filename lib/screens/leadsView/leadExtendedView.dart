@@ -32,18 +32,18 @@ class LeadsScreen extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('Id:', style: titleStyle),
-                            Container(
-                              width: MediaQuery.of(context).size.width*0.4,
-                              child: Text(object.id,
-                                  style: normalStyle),
-                            ),
-                          ],
-                        ),
+                        // Row(
+                        //   crossAxisAlignment: CrossAxisAlignment.start,
+                        //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        //   children: [
+                        //     Text('Id:', style: titleStyle),
+                        //     Container(
+                        //       width: MediaQuery.of(context).size.width*0.4,
+                        //       child: Text(object.id,
+                        //           style: normalStyle),
+                        //     ),
+                        //   ],
+                        // ),
                         const SizedBox(
                           height: 10.0,
                         ),
@@ -68,7 +68,7 @@ class LeadsScreen extends StatelessWidget {
                             Container(
                               width: MediaQuery.of(context).size.width*0.4,
                               child: Text(object.email,
-                                  style: normalStyle),
+                                  style: normalStyle1),
                             ),
                           ],
                         ),
@@ -81,7 +81,7 @@ class LeadsScreen extends StatelessWidget {
                             Container(
                               width: MediaQuery.of(context).size.width*0.4,
                               child: Text(object.phone,
-                                  style: normalStyle),
+                                  style: normalStyle1),
                             ),
                           ],
                         ),
@@ -143,7 +143,7 @@ class LeadsScreen extends StatelessWidget {
                             Text('Note',style: titleStyle,),
                             Container(
                                 width: MediaQuery.of(context).size.width*0.4,
-                                child: Text(object.note, style: normalStyle,)),
+                                child: Text(object.note, style: normalStyle1,)),
                           ],
                         ),
                         const SizedBox(height: 10.0,),
@@ -154,7 +154,7 @@ class LeadsScreen extends StatelessWidget {
                             Text('Address',style: titleStyle,),
                             Container(
                                 width: MediaQuery.of(context).size.width*0.4,
-                                child: Text(object.address, style: normalStyle,)),
+                                child: Text(object.address, style: normalStyle1,)),
                           ],
                         ),
                       ],

@@ -126,7 +126,7 @@ class _TaskExpandedViewState extends State<TaskExpandedView> {
                         Text('Subject:', style: titleStyle),
                         Container(
                             width: MediaQuery.of(context).size.width*0.5,
-                            child: Text(widget.task_item.subject, style: normalStyle)),
+                            child: Text(widget.task_item.subject, style: normalStyle1)),
                       ],
                     ),
                     const SizedBox(height: 10.0,),
@@ -181,7 +181,7 @@ class _TaskExpandedViewState extends State<TaskExpandedView> {
                         Text('Related To:',style: titleStyle,),
                         Container(
                             width: MediaQuery.of(context).size.width*0.5,
-                            child: Text(relatedName, style: normalStyle,)
+                            child: Text(relatedName, style: normalStyle1,)
                         ),
                       ],
                     ),
@@ -204,7 +204,7 @@ class _TaskExpandedViewState extends State<TaskExpandedView> {
                         Text('Description:', style: titleStyle,),
                         Container(
                             width: MediaQuery.of(context).size.width*0.5,
-                            child: Text(widget.task_item.description, style: normalStyle,)),
+                            child: Text(widget.task_item.description, style: normalStyle1,)),
                       ],
                     ),
                   ],

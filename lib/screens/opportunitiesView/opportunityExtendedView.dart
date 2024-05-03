@@ -86,18 +86,18 @@ class _OpportunityExtendedScreenState extends State<OpportunityExtendedScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('Id:', style: titleStyle),
-                            Container(
-                              width: MediaQuery.of(context).size.width*0.4,
-                              child: Text(widget.object.id,
-                                  style: normalStyle),
-                            ),
-                          ],
-                        ),
+                        // Row(
+                        //   crossAxisAlignment: CrossAxisAlignment.start,
+                        //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        //   children: [
+                        //     Text('Id:', style: titleStyle),
+                        //     Container(
+                        //       width: MediaQuery.of(context).size.width*0.4,
+                        //       child: Text(widget.object.id,
+                        //           style: normalStyle),
+                        //     ),
+                        //   ],
+                        // ),
                         const SizedBox(
                           height: 10.0,
                         ),
@@ -109,7 +109,7 @@ class _OpportunityExtendedScreenState extends State<OpportunityExtendedScreen> {
                             Container(
                               width: MediaQuery.of(context).size.width*0.4,
                               child: Text(widget.object.name,
-                                  style: normalStyle),
+                                  style: normalStyle1),
                             ),
                           ],
                         ),
@@ -198,7 +198,7 @@ class _OpportunityExtendedScreenState extends State<OpportunityExtendedScreen> {
                             Container(
                               width: MediaQuery.of(context).size.width*0.4,
                               child: Text(widget.object.nextStep,
-                                  style: normalStyle),
+                                  style: normalStyle1),
                             ),
                           ],
                         ),
@@ -221,7 +221,7 @@ class _OpportunityExtendedScreenState extends State<OpportunityExtendedScreen> {
                             Text('Description',style: titleStyle,),
                             Container(
                                 width: MediaQuery.of(context).size.width*0.4,
-                                child: Text(widget.object.description, style: normalStyle,)),
+                                child: Text(widget.object.description, style: normalStyle1,)),
                           ],
                         ),
                         const SizedBox(height: 20.0,),

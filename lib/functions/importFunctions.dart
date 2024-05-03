@@ -32,8 +32,9 @@ class ImportFunctions{
   // Leads Fetch Function
   Future<void> fetchLeadsFromApi() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('token') ?? '';
     String id = prefs.getString('id') ?? '';
-    String idQueryParam = id.isNotEmpty ? 'id=$id&' : '';
+    String idQueryParam = id.isNotEmpty ? '&id=$id' : '';
     // Make an HTTP GET request to fetch leads from the API
     Map<String, dynamic>? databaseInfo = await getDatabaseInfo();
     String databaseInfoQuery = '';
@@ -41,7 +42,7 @@ class ImportFunctions{
       databaseInfoQuery += '&$key=$value';
     });
     String apiUrl = getLeads;
-    String finalUrl = '$apiUrl?$idQueryParam$databaseInfoQuery';
+    String finalUrl = '$apiUrl?_token=$token$idQueryParam$databaseInfoQuery';
     final response = await http.get(Uri.parse(finalUrl));
     print(finalUrl);
 
@@ -69,8 +70,9 @@ class ImportFunctions{
   // Customer Fetch Function
   Future<void> fetchCustomersFromApi() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('token') ?? '';
     String id = prefs.getString('id') ?? '';
-    String idQueryParam = id.isNotEmpty ? 'userId=$id&' : '';
+    String idQueryParam = id.isNotEmpty ? '&userId=$id' : '';
     // Make an HTTP GET request to fetch customers from the API
     Map<String, dynamic>? databaseInfo = await getDatabaseInfo();
     String databaseInfoQuery = '';
@@ -78,7 +80,7 @@ class ImportFunctions{
       databaseInfoQuery += '&$key=$value';
     });
     String apiUrl = getCustomer;
-    String finalUrl = '$apiUrl?$idQueryParam$databaseInfoQuery';
+    String finalUrl = '$apiUrl?_token=$token$idQueryParam$databaseInfoQuery';
     final response = await http.get(Uri.parse(finalUrl));
     print(finalUrl);
 
@@ -106,9 +108,9 @@ class ImportFunctions{
   // Contacts Fetch Function
   Future<void> fetchContactsFromApi() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    // String? token = prefs.getString('token');
+    String? token = prefs.getString('token');
     String id = prefs.getString('id') ?? '';
-    String idQueryParam = id.isNotEmpty ? 'userId=$id&' : '';
+    String idQueryParam = id.isNotEmpty ? '&userId=$id' : '';
     // Make an HTTP GET request to fetch contacts from the API
     Map<String, dynamic>? databaseInfo = await getDatabaseInfo();
     String databaseInfoQuery = '';
@@ -116,7 +118,7 @@ class ImportFunctions{
       databaseInfoQuery += '&$key=$value';
     });
     String apiUrl = getContacts;
-    String finalUrl = '$apiUrl?$idQueryParam$databaseInfoQuery';
+    String finalUrl = '$apiUrl?_token=$token$idQueryParam$databaseInfoQuery';
     final response = await http.get(Uri.parse(finalUrl));
     print(finalUrl);
 
@@ -145,15 +147,16 @@ class ImportFunctions{
   Future<void> fetchTasksFromApi() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('token');
       String id = prefs.getString('id') ?? '';
-      String idQueryParam = id.isNotEmpty ? 'userId=$id&' : '';
+      String idQueryParam = id.isNotEmpty ? '&userId=$id&' : '';
 
       // Make an HTTP GET request to fetch Notes from the API
       Map<String, dynamic> databaseInfo = (await getDatabaseInfo()) ?? {};
       String databaseInfoQuery = databaseInfo.entries.map((entry) => '${entry.key}=${entry.value}').join('&');
 
       String apiUrl = getTasksUrl;
-      String finalUrl = '$apiUrl?$idQueryParam$databaseInfoQuery';
+      String finalUrl = '$apiUrl?_token=$token$idQueryParam$databaseInfoQuery';
 
       final response = await http.get(Uri.parse(finalUrl));
       print(finalUrl);
@@ -188,15 +191,16 @@ class ImportFunctions{
   Future<void> fetchNotesFromApi() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('token');
       String id = prefs.getString('id') ?? '';
-      String idQueryParam = id.isNotEmpty ? 'id=$id&' : '';
+      String idQueryParam = id.isNotEmpty ? '&id=$id&' : '';
 
       // Make an HTTP GET request to fetch Notes from the API
       Map<String, dynamic> databaseInfo = (await getDatabaseInfo()) ?? {};
       String databaseInfoQuery = databaseInfo.entries.map((entry) => '${entry.key}=${entry.value}').join('&');
 
       String apiUrl = getNotes;
-      String finalUrl = '$apiUrl?$idQueryParam$databaseInfoQuery';
+      String finalUrl = '$apiUrl?_token=$token$idQueryParam$databaseInfoQuery';
 
       final response = await http.get(Uri.parse(finalUrl));
       print(finalUrl);
@@ -269,9 +273,9 @@ class ImportFunctions{
   // Calls Fetch Function
   Future<void> fetchCallsFromApi() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    // String? token = prefs.getString('token');
+    String? token = prefs.getString('token');
     String id = prefs.getString('id') ?? '';
-    String idQueryParam = id.isNotEmpty ? 'userId=$id&' : '';
+    String idQueryParam = id.isNotEmpty ? '&userId=$id' : '';
     // Make an HTTP GET request to fetch contacts from the API
     Map<String, dynamic>? databaseInfo = await getDatabaseInfo();
     String databaseInfoQuery = '';
@@ -279,7 +283,7 @@ class ImportFunctions{
       databaseInfoQuery += '&$key=$value';
     });
     String apiUrl = getCallsUrl;
-    String finalUrl = '$apiUrl?$idQueryParam$databaseInfoQuery';
+    String finalUrl = '$apiUrl?_token=$token$idQueryParam$databaseInfoQuery';
     final response = await http.get(Uri.parse(finalUrl));
     print(finalUrl);
 
@@ -307,9 +311,9 @@ class ImportFunctions{
   // Opportunity Fetch Function
   Future<void> fetchOpportunitiesFromApi() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    // String? token = prefs.getString('token');
+    String? token = prefs.getString('token');
     String id = prefs.getString('id') ?? '';
-    String idQueryParam = id.isNotEmpty ? 'userId=$id&' : '';
+    String idQueryParam = id.isNotEmpty ? '&userId=$id' : '';
     // Make an HTTP GET request to fetch opportunities from the API
     Map<String, dynamic>? databaseInfo = await getDatabaseInfo();
     String databaseInfoQuery = '';
@@ -317,7 +321,7 @@ class ImportFunctions{
       databaseInfoQuery += '&$key=$value';
     });
     String apiUrl = getOpportunities;
-    String finalUrl = '$apiUrl?$idQueryParam$databaseInfoQuery';
+    String finalUrl = '$apiUrl?_token=$token$idQueryParam$databaseInfoQuery';
     print(finalUrl);
 
     final response = await http.get(Uri.parse(finalUrl));
