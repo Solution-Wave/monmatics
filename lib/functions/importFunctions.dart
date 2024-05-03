@@ -166,15 +166,15 @@ class ImportFunctions{
         final dynamic responseData = jsonDecode(response.body);
         final List<dynamic> tasksJson = responseData['data'] ?? [];
 
-        // Open the Notes Hive box
+        // Open the Tasks Hive box
         final taskBox = await Hive.openBox<TaskHive>('tasks');
 
-        // Clear existing Notes before adding new ones
+        // Clear existing Tasks before adding new ones
         await taskBox.clear();
 
-        // Add each note to the Hive box
-        for (final noteJson in tasksJson) {
-          final tasks = TaskHive.fromJson(noteJson);
+        // Add each Task to the Hive box
+        for (final taskJson in tasksJson) {
+          final tasks = TaskHive.fromJson(taskJson);
           await taskBox.add(tasks);
         }
       } else {
@@ -355,5 +355,7 @@ class ImportFunctions{
       throw Exception('Failed to fetch opportunities from the API');
     }
   }
+
+
 
 }

@@ -27,6 +27,8 @@ String saveUpdateContacts = "";
 String saveUpdateOpportunity = "";
 String saveUpdateLeads = "";
 
+String dropdownValues = "";
+
 void updateUrls(String newBaseUrl) {
 
   baseUrl = newBaseUrl;
@@ -57,4 +59,7 @@ void updateUrls(String newBaseUrl) {
   deleteNotes = '$baseUrl/delete_notes';
   deleteTasks = '$baseUrl/delete_tasks';
   deleteCalls = '$baseUrl/delete_calls';
+
+  // Dropdown APIs
+  dropdownValues = '$baseUrl/get_options';
 }

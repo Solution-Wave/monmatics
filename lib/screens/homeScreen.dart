@@ -1,9 +1,5 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:monmatics/models/contactItem.dart';
-import 'package:monmatics/models/customerItem.dart';
-import 'package:monmatics/models/leadItem.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../Functions/importFunctions.dart';
@@ -11,6 +7,9 @@ import '../components/navDrawer.dart';
 import '../components/segmentedBar.dart';
 import '../functions/exportFunctions.dart';
 import '../functions/otherFunctions.dart';
+import '../models/contactItem.dart';
+import '../models/customerItem.dart';
+import '../models/leadItem.dart';
 import '../models/noteItem.dart';
 import '../models/taskItem.dart';
 import '../models/userItem.dart';
@@ -110,12 +109,17 @@ class _HomeState extends State<Home> {
   OtherFunctions otherFunctions = OtherFunctions();
 
 
+  late Future<List<String>> statusOptions;
+  late Future<List<String>> priorityOptions;
+
   @override
   void initState() {
-    formKey = GlobalKey<FormState>();
     super.initState();
+    formKey = GlobalKey<FormState>();
     getNotesFromBox();
     getTasksFromBox();
+    statusOptions = otherFunctions.fetchDropdownOptions("task_status");
+    priorityOptions = otherFunctions.fetchDropdownOptions("task_priority");
   }
 
 
@@ -499,27 +503,18 @@ class _HomeState extends State<Home> {
                               prefixIcon: const Icon(Icons.subject)
                           ),
                           const SizedBox(height: 15.0,),
-                          CustomDropdownButtonFormField(
-                            value: status,
-                            hintText: "Select Status",
-                            labelText: "Status",
-                            prefixIcon: const Icon(Icons.person_3),
+                          AsyncDropdownButton(
+                            futureItems: statusOptions,
+                            selectedValue: status,
                             onChanged: (value) {
-                              print('Status: $value');
+                              print('Selected Status: $value');
                               setState(() {
                                 status = value;
                               });
                             },
-                            items: <String>[
-                              "Close",
-                              "Open",
-                            ].map((String value) {
-                              return DropdownMenuItem<String>(
-                                alignment: AlignmentDirectional.center,
-                                value: value,
-                                child: Text(value),
-                              );
-                            }).toList(),
+                            hintText: "Select Status",
+                            labelText: "Status",
+                            prefixIcon: const Icon(Icons.person_3),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return null;
@@ -658,27 +653,18 @@ class _HomeState extends State<Home> {
 
                           ),
                           const SizedBox(height: 15.0,),
-                          CustomDropdownButtonFormField(
-                            value: priority,
-                            hintText: "Select Priority",
-                            labelText: "Priority",
-                            prefixIcon: const Icon(Icons.person_3),
+                          AsyncDropdownButton(
+                            futureItems: priorityOptions,
+                            selectedValue: priority,
                             onChanged: (value) {
-                              print('Priority: $value');
+                              print('Selected Priority: $value');
                               setState(() {
                                 priority = value;
                               });
                             },
-                            items: <String>[
-                              "New",
-                              "Old",
-                            ].map((String value) {
-                              return DropdownMenuItem<String>(
-                                alignment: AlignmentDirectional.center,
-                                value: value,
-                                child: Text(value),
-                              );
-                            }).toList(),
+                            hintText: "Select Priority",
+                            labelText: "Priority",
+                            prefixIcon: const Icon(Icons.auto_graph),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return null;

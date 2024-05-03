@@ -1,15 +1,13 @@
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:monmatics/models/contactItem.dart';
-import 'package:monmatics/models/customerItem.dart';
-import 'package:monmatics/models/leadItem.dart';
-import 'package:monmatics/utils/messages.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Functions/importFunctions.dart';
-import '../controllers/localdbController.dart';
 import '../functions/exportFunctions.dart';
 import '../models/callItem.dart';
+import '../models/contactItem.dart';
+import '../models/customerItem.dart';
+import '../models/leadItem.dart';
 import '../models/noteItem.dart';
 import '../models/opportunityItem.dart';
 import '../models/taskItem.dart';
@@ -22,6 +20,7 @@ import '../screens/opportunitiesView/opportunitysListView.dart';
 import '../splashScreen.dart';
 import '../utils/colors.dart';
 import '../utils/constants.dart';
+import '../utils/messages.dart';
 import 'logout.dart';
 import 'package:icons_flutter/icons_flutter.dart';
 
@@ -96,6 +95,7 @@ class _navigationdrawerState extends State<navigationdrawer> {
     final usersBox = await Hive.openBox<UsersHive>('users');
     final opportunityBox = await Hive.openBox<OpportunityHive>('opportunity');
     final callBox = await Hive.openBox<CallHive>('calls');
+    final dropdownOptionsBox = await Hive.openBox<String>("dropdownOptions");
 
     await customersBox.clear();
     await leadsBox.clear();
@@ -103,6 +103,7 @@ class _navigationdrawerState extends State<navigationdrawer> {
     await usersBox.clear();
     await opportunityBox.clear();
     await callBox.clear();
+    await dropdownOptionsBox.clear();
   }
 
   ExportFunctions exportFunctions = ExportFunctions();

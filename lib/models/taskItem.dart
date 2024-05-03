@@ -1,33 +1,5 @@
 import 'package:hive/hive.dart';
 
-// class Tasks {
-//   String? Subject;
-//   String? StDate;
-//   String? DueDate;
-//   String? Status;
-//   String? Priority;
-//   String? Description;
-//
-//   Tasks({
-//     this.Subject,
-//     this.StDate,
-//     this.Priority,
-//     this.Description,
-//     this.DueDate,
-//     this.Status,
-//   });
-//
-//   Tasks.fromJson(Map obj) {
-//     // print('json in item class: $json');
-//     Subject = obj["subject"] ?? '';
-//     StDate = obj["start_date"] ?? '';
-//     DueDate = obj["due_date"] ?? '';
-//     Status = obj["status"] ?? '';
-//     Priority = obj["priority"] ?? '';
-//     Description = obj["description"] ?? '';
-//   }
-// }
-
 
 // Hive
 @HiveType(typeId: 2)

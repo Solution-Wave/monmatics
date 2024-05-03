@@ -119,3 +119,71 @@ class CustomDropdownButtonFormField extends StatelessWidget {
     );
   }
 }
+
+
+// AsyncDropdownButton
+class AsyncDropdownButton extends StatelessWidget {
+  final Future<List<String>> futureItems;
+  final String? selectedValue;
+  final Function(String?) onChanged;
+  final String hintText;
+  final String labelText;
+  final Widget prefixIcon;
+  final FormFieldValidator<String>? validator;
+
+  AsyncDropdownButton({
+    required this.futureItems,
+    required this.selectedValue,
+    required this.onChanged,
+    required this.hintText,
+    required this.labelText,
+    required this.prefixIcon,
+    this.validator,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<String>>(
+      future: futureItems,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          // Return a loading indicator while waiting for the options to load
+          return const CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          // Return an error message if an error occurred while loading options
+          return const Text('Failed to load options');
+        } else if (snapshot.hasData) {
+          // When data is available, use it to populate the dropdown
+          final options = snapshot.data!;
+          return DropdownButtonFormField<String>(
+            value: selectedValue,
+            onChanged: onChanged,
+            items: options.map((String value) {
+              return DropdownMenuItem<String>(
+                alignment: AlignmentDirectional.center,
+                value: value,
+                child: Text(value),
+              );
+            }).toList(),
+            hint: Text(hintText),
+            decoration: InputDecoration(
+              labelText: labelText,
+              prefixIcon: prefixIcon,
+              enabledBorder: OutlineInputBorder(
+                borderSide: const BorderSide(width: 1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              border: OutlineInputBorder(
+                borderSide: const BorderSide(color: Colors.blue, width: 2),
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            validator: validator,
+          );
+        }
+        return Container();
+      },
+    );
+  }
+}
+

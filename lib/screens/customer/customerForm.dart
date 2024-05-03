@@ -40,11 +40,17 @@ class _AddCustomerState extends State<AddCustomer> {
   String? selectedType;
 
   ExportFunctions exportFunctions = ExportFunctions();
+  OtherFunctions otherFunctions = OtherFunctions();
+
+  late Future<List<String>> creditLimitList;
+  late Future<List<String>> customerTypeList;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    creditLimitList = otherFunctions.fetchDropdownOptions("customer_credit_limit");
+    customerTypeList = otherFunctions.fetchDropdownOptions("customer_type");
     if(widget.existingCustomer != null){
       nameController.text = widget.existingCustomer!.name;
       phoneController.text = widget.existingCustomer!.phone;
@@ -62,8 +68,6 @@ class _AddCustomerState extends State<AddCustomer> {
       selectedType = widget.existingCustomer!.type;
     }
   }
-
-  OtherFunctions otherFunctions = OtherFunctions();
 
   // Add Customer Through Hive
   void saveCustomer()async{
@@ -282,27 +286,18 @@ class _AddCustomerState extends State<AddCustomer> {
                         prefixIcon: const Icon(Icons.numbers),
                       ),
                       const SizedBox(height: 15.0,),
-                      CustomDropdownButtonFormField(
-                        value: selectedLimit,
-                        hintText: "Select Credit Limit",
-                        labelText: "Credit Limit",
-                        prefixIcon: const Icon(Icons.account_balance_wallet),
+                      AsyncDropdownButton(
+                        futureItems: creditLimitList,
+                        selectedValue: selectedLimit,
                         onChanged: (value) {
                           print('Selected Credit Limit: $value');
                           setState(() {
                             selectedLimit = value;
                           });
                         },
-                        items: <String>[
-                          "Cash",
-                          "Whole Sale"
-                        ].map((String value) {
-                          return DropdownMenuItem<String>(
-                            alignment: AlignmentDirectional.center,
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
+                        hintText: "Select Credit Limit",
+                        labelText: "Credit Limit",
+                        prefixIcon: const Icon(Icons.account_balance_wallet),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return null;
@@ -373,27 +368,18 @@ class _AddCustomerState extends State<AddCustomer> {
                         },
                       ),
                       const SizedBox(height: 15.0,),
-                      CustomDropdownButtonFormField(
-                        value: selectedType,
-                        hintText: "Select Type",
-                        labelText: "Type",
-                        prefixIcon: const Icon(Icons.type_specimen),
+                      AsyncDropdownButton(
+                        futureItems: customerTypeList,
+                        selectedValue: selectedType,
                         onChanged: (value) {
                           print('Selected Type: $value');
                           setState(() {
                             selectedType = value;
                           });
                         },
-                        items: <String>[
-                          "AL-2",
-                          "AL-3",
-                        ].map((String value) {
-                          return DropdownMenuItem<String>(
-                            alignment: AlignmentDirectional.center,
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
+                        hintText: "Select Type",
+                        labelText: "Type",
+                        prefixIcon: const Icon(Icons.type_specimen),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return null;

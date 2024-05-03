@@ -153,10 +153,18 @@ class _AddOpportunityState extends State<AddOpportunity> {
     await fetchRelatedNames(widget.existingOpportunity!.leadId);
   }
 
+  late Future<List<String>> opportunityTypeList;
+  late Future<List<String>> opportunitySaleStageList;
+  late Future<List<String>> opportunityLeadSourceList;
+
   // Load existing data if provided
   @override
   void initState() {
     super.initState();
+    opportunityTypeList = otherFunctions.fetchDropdownOptions("opportunities_type");
+    opportunitySaleStageList = otherFunctions.fetchDropdownOptions("opportunities_sale_stage");
+    opportunityLeadSourceList = otherFunctions.fetchDropdownOptions("opportunities_lead_source");
+
     if (widget.existingOpportunity != null) {
       OpportunityHive opportunity = widget.existingOpportunity!;
       fetchNames();
@@ -380,89 +388,61 @@ class _AddOpportunityState extends State<AddOpportunity> {
 
                       ),
                       const SizedBox(height: 15.0,),
-                      CustomDropdownButtonFormField(
-                        value: selectedType,
-                        hintText: "Select Type",
-                        labelText: "Type",
-                        prefixIcon: const Icon(Icons.type_specimen),
+                      AsyncDropdownButton(
+                        futureItems: opportunityTypeList,
+                        selectedValue: selectedType,
                         onChanged: (value) {
-                          print('Selected Type: $value');
+                          print('Selected Opportunity Type: $value');
                           setState(() {
                             selectedType = value;
                           });
                         },
-                        items: <String>[
-                          "AL-2",
-                          "AL-3",
-                        ].map((String value) {
-                          return DropdownMenuItem<String>(
-                            alignment: AlignmentDirectional.center,
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
+                        hintText: "Select Opportunity Type",
+                        labelText: "Opportunity Type",
+                        prefixIcon: const Icon(Icons.type_specimen),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please Choose Type';
+                            return null;
                           }
                           return null;
                         },
                       ),
                       const SizedBox(height: 15.0,),
-                      CustomDropdownButtonFormField(
-                        value: selectedStage,
-                        hintText: "Sale Stage",
-                        labelText: "Select Sale Stage",
-                        prefixIcon: const Icon(Icons.stacked_bar_chart),
+                      AsyncDropdownButton(
+                        futureItems: opportunitySaleStageList,
+                        selectedValue: selectedStage,
                         onChanged: (value) {
-                          print('Selected Stage: $value');
+                          print('Selected Sale Stage: $value');
                           setState(() {
                             selectedStage = value;
                           });
                         },
-                        items: <String>[
-                          "In-Process",
-                          "Win",
-                          "Lose",
-                        ].map((String value) {
-                          return DropdownMenuItem<String>(
-                            alignment: AlignmentDirectional.center,
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
+                        hintText: "Select Sale Stage",
+                        labelText: "Sale Stage",
+                        prefixIcon: const Icon(Icons.stacked_bar_chart),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please Choose a Stage';
+                            return null;
                           }
                           return null;
                         },
                       ),
                       const SizedBox(height: 15.0,),
-                      CustomDropdownButtonFormField(
-                        value: selectedSource,
-                        hintText: "Lead Source",
-                        labelText: "Source",
-                        prefixIcon: const Icon(Icons.source),
+                      AsyncDropdownButton(
+                        futureItems: opportunityLeadSourceList,
+                        selectedValue: selectedSource,
                         onChanged: (value) {
-                          print('Selected Source: $value');
+                          print('Selected Sale Stage: $value');
                           setState(() {
                             selectedSource = value;
                           });
                         },
-                        items: <String>[
-                          "AL-2",
-                          "AL-3",
-                        ].map((String value) {
-                          return DropdownMenuItem<String>(
-                            alignment: AlignmentDirectional.center,
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
+                        hintText: "Select Lead Source",
+                        labelText: "Lead Source",
+                        prefixIcon: const Icon(Icons.source),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please Choose a Source';
+                            return null;
                           }
                           return null;
                         },

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'hiveadapters/callAdapter.dart';
 import 'hiveadapters/conatctAdapter.dart';
 import 'hiveadapters/customerAdapter.dart';
+import 'hiveadapters/dropdownAdapter.dart';
 import 'hiveadapters/leadAdapter.dart';
 import 'hiveadapters/notesAdapter.dart';
 import 'hiveadapters/oppAdapter.dart';
@@ -31,6 +32,7 @@ void main()async {
   Hive.registerAdapter(CallsAdapter());
   Hive.registerAdapter(UserAdapter());
   Hive.registerAdapter(OpportunityAdapter());
+  Hive.registerAdapter(DropdownOptionsAdapter());
   runApp(
   //   DevicePreview(
   //     enabled: !kReleaseMode,
@@ -112,3 +114,4 @@ class _MyAppState extends State<MyApp> {
 // Call Hive Id 5
 // Users Hive Id 6
 // Opportunity Hive Id 7
+// Dropdown Hive Id 8

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/callItem.dart';
@@ -631,5 +632,68 @@ class OtherFunctions{
       // You can handle error scenario here
     }
   }
+
+  Future<Box<String>> openDropdownOptionsBox() async {
+    return await Hive.openBox<String>('dropdownOptions');
+  }
+
+  Future<List<String>> fetchDropdownOptions(String optionGroup) async {
+    // Open the Hive box
+    Box<String> box = await openDropdownOptionsBox();
+
+    // Check if options are already stored in the box
+    if (box.containsKey(optionGroup)) {
+      // If options are stored in the box, return them
+      String? optionsJson = box.get(optionGroup);
+      if (optionsJson != null) {
+        print('Retrieved options for "$optionGroup" from Hive box.');
+        List<dynamic> optionsList = json.decode(optionsJson);
+        return optionsList.cast<String>();
+      }
+    }
+
+    // If options are not in the box, fetch them from the API
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+    String id = prefs.getString('id') ?? '';
+    String idQueryParam = id.isNotEmpty ? '&userId=$id&' : '';
+
+    // Retrieve database information
+    Map<String, dynamic> databaseInfo = (await importFunctions.getDatabaseInfo()) ?? {};
+    String databaseInfoQuery = databaseInfo.entries.map((entry) => '${entry.key}=${entry.value}').join('&');
+
+    // Construct the final URL
+    String apiUrl = dropdownValues; // Ensure this variable is set correctly
+    String finalUrl = '$apiUrl?_token=$token$idQueryParam$databaseInfoQuery&option_group=$optionGroup';
+
+    print('Fetching options for "$optionGroup" from API: $finalUrl');
+    final response = await http.get(Uri.parse(finalUrl));
+    if (response.statusCode == 200) {
+      // Parse the JSON response
+      var data = json.decode(response.body);
+
+      // Check if data is a map and contains the 'message' key
+      if (data is Map<String, dynamic> && data.containsKey('message')) {
+        List<dynamic> messageList = data['message'];
+
+        // Map each item in the list to its description as a string
+        List<String> options = messageList.map((item) => item['description'].toString()).toList();
+
+        // Store the options in the Hive box
+        await box.put(optionGroup, json.encode(options));
+        print('Stored options for "$optionGroup" in Hive box.');
+
+        // Return the options
+        return options;
+      } else {
+        print('Unexpected data structure in response for "$optionGroup".');
+        throw Exception('Unexpected data structure in response');
+      }
+    } else {
+      print('Failed to load options for "$optionGroup" (HTTP ${response.statusCode}).');
+      throw Exception('Failed to load options (HTTP ${response.statusCode})');
+    }
+  }
+
 
 }

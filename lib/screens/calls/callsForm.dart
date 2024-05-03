@@ -199,11 +199,13 @@ class _AddCallsState extends State<AddCalls> {
     await getSharedData();
   }
 
+  late Future<List<String>> callCommunicationType;
+
   @override
   void initState() {
     super.initState();
+    callCommunicationType = otherFunctions.fetchDropdownOptions('calls_communication_type');
     functionCall();
-
     if (widget.existingCall != null) {
       fetchNames();
 
@@ -234,7 +236,6 @@ class _AddCallsState extends State<AddCalls> {
       descriptionController.text = widget.existingCall!.description;
     }
   }
-
 
   // Add or Update Call through Hive
   void saveCall() async {
@@ -572,27 +573,18 @@ class _AddCallsState extends State<AddCalls> {
                         },
                       ),
                       const SizedBox(height: 15.0,),
-                      CustomDropdownButtonFormField(
-                        value: selectedCommunication,
-                        hintText: "Select Communication Type",
-                        labelText: "Communication Type",
-                        prefixIcon: const Icon(Icons.phone),
+                      AsyncDropdownButton(
+                        futureItems: callCommunicationType,
+                        selectedValue: selectedCommunication,
                         onChanged: (value) {
                           print('Selected Communication Type: $value');
                           setState(() {
                             selectedCommunication = value;
                           });
                         },
-                        items: <String>[
-                          "phone call",
-                          "Close",
-                        ].map((String value) {
-                          return DropdownMenuItem<String>(
-                            alignment: AlignmentDirectional.center,
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
+                        hintText: "Select Communication Type",
+                        labelText: "Communication Type",
+                        prefixIcon: const Icon(Icons.phone_android),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return null;
