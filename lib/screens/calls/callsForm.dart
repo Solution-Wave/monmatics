@@ -200,11 +200,13 @@ class _AddCallsState extends State<AddCalls> {
   }
 
   late Future<List<String>> callCommunicationType;
+  late Future<List<String>> callStatusList;
 
   @override
   void initState() {
     super.initState();
     callCommunicationType = otherFunctions.fetchDropdownOptions('calls_communication_type');
+    callStatusList = otherFunctions.fetchDropdownOptions('call_status');
     functionCall();
     if (widget.existingCall != null) {
       fetchNames();
@@ -349,27 +351,18 @@ class _AddCallsState extends State<AddCalls> {
                         },
                       ),
                       const SizedBox(height: 15.0,),
-                      CustomDropdownButtonFormField(
-                        value: selectedStatus,
-                        hintText: "Select Status",
-                        labelText: "Status",
-                        prefixIcon: const Icon(Icons.access_time),
+                      AsyncDropdownButton(
+                        futureItems: callStatusList,
+                        selectedValue: selectedStatus,
                         onChanged: (value) {
                           print('Selected Status: $value');
                           setState(() {
                             selectedStatus = value;
                           });
                         },
-                        items: <String>[
-                          "Open",
-                          "Close",
-                        ].map((String value) {
-                          return DropdownMenuItem<String>(
-                            alignment: AlignmentDirectional.center,
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
+                        hintText: "Select Status",
+                        labelText: "Status",
+                        prefixIcon: const Icon(Icons.access_time),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return null;

@@ -38,6 +38,25 @@ class DropdownOptions extends HiveObject {
   @HiveField(11)
   List<String> ticketPriority;
 
+  @HiveField(12)
+  List<String> customerCategory;
+
+  @HiveField(13)
+  List<String> customerStatus;
+
+  @HiveField(14)
+  List<String> callStatus;
+
+  @HiveField(15)
+  List<String> opportunityCurrency;
+
+  @HiveField(16)
+  List<String> opportunityCampaign;
+
+  @HiveField(17)
+  List<String> leadStatus;
+
+
   // Constructor
   DropdownOptions({
     required this.customerCreditLimit,
@@ -52,9 +71,15 @@ class DropdownOptions extends HiveObject {
     required this.ticketStatus,
     required this.ticketCategory,
     required this.ticketPriority,
+    required this.customerCategory,
+    required this.customerStatus,
+    required this.callStatus,
+    required this.opportunityCurrency,
+    required this.opportunityCampaign,
+    required this.leadStatus,
   });
 
-  // Factory constructor to create an instance from a JSON map
+/*  // Factory constructor to create an instance from a JSON map
   factory DropdownOptions.fromJson(Map<String, dynamic> json) {
     return DropdownOptions(
       customerCreditLimit: List<String>.from(json['customerCreditLimit'] ?? []),
@@ -69,6 +94,7 @@ class DropdownOptions extends HiveObject {
       ticketStatus: List<String>.from(json['ticketStatus'] ?? []),
       ticketCategory: List<String>.from(json['ticketCategory'] ?? []),
       ticketPriority: List<String>.from(json['ticketPriority'] ?? []),
+      customerCategory: List<String>.from(json['customerCategory'] ?? []),
     );
   }
 
@@ -87,6 +113,7 @@ class DropdownOptions extends HiveObject {
       'ticketStatus': ticketStatus,
       'ticketCategory': ticketCategory,
       'ticketPriority': ticketPriority,
+      'customerCategory': customerCategory,
     };
-  }
+  }*/
 }

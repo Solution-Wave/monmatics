@@ -209,6 +209,7 @@ class _ContactTileFormatState extends State<ContactTileFormat> {
                     ),
                     IconButton(
                       iconSize: 20.0,
+                      color: Colors.blueAccent,
                       onPressed: ()=> navigateToEditScreen(context, widget.obj),
                       icon: const Icon(Icons.edit),
                     ),

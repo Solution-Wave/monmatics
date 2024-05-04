@@ -1,5 +1,4 @@
 import 'package:hive/hive.dart';
-
 import '../models/dropdownItem.dart';
 
 class DropdownOptionsAdapter extends TypeAdapter<DropdownOptions> {
@@ -21,6 +20,12 @@ class DropdownOptionsAdapter extends TypeAdapter<DropdownOptions> {
       ticketStatus: reader.readList().cast<String>(),
       ticketCategory: reader.readList().cast<String>(),
       ticketPriority: reader.readList().cast<String>(),
+      customerCategory: reader.readList().cast<String>(),
+      customerStatus: reader.readList().cast<String>(),
+      callStatus: reader.readList().cast<String>(),
+      opportunityCurrency: reader.readList().cast<String>(),
+      opportunityCampaign: reader.readList().cast<String>(),
+      leadStatus: reader.readList().cast<String>(),
     );
   }
 
@@ -39,5 +44,11 @@ class DropdownOptionsAdapter extends TypeAdapter<DropdownOptions> {
     writer.writeList(obj.ticketStatus);
     writer.writeList(obj.ticketCategory);
     writer.writeList(obj.ticketPriority);
+    writer.writeList(obj.customerCategory);
+    writer.writeList(obj.customerStatus);
+    writer.writeList(obj.callStatus);
+    writer.writeList(obj.opportunityCurrency);
+    writer.writeList(obj.opportunityCampaign);
+    writer.writeList(obj.leadStatus);
   }
 }

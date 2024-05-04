@@ -28,6 +28,9 @@ String saveUpdateOpportunity = "";
 String saveUpdateLeads = "";
 
 String dropdownValues = "";
+String customerCategoriesDropdownValues = "";
+String opportunityCurrencyDropdownValues = "";
+String opportunityCampaignDropdownValues = "";
 
 void updateUrls(String newBaseUrl) {
 
@@ -62,4 +65,7 @@ void updateUrls(String newBaseUrl) {
 
   // Dropdown APIs
   dropdownValues = '$baseUrl/get_options';
+  customerCategoriesDropdownValues = '$baseUrl/get_CustomerCategories';
+  opportunityCurrencyDropdownValues = '$baseUrl/get_currencies';
+  opportunityCampaignDropdownValues = '$baseUrl/get_campaign';
 }

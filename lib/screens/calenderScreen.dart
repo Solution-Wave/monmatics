@@ -47,6 +47,9 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
   String assignName = "";
   String relatedName = "";
 
+  late Future<List<String>> statusOptions;
+  late Future<List<String>> priorityOptions;
+
   Future<void> getSharedData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -67,6 +70,8 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
     mySelectedEvents = {};
     getTasksFromBox();
     functionCall();
+    statusOptions = otherFunctions.fetchDropdownOptions("task_status");
+    priorityOptions = otherFunctions.fetchDropdownOptions("task_priority");
   }
 
   Future<void> fetchRelatedNames(String? relatedId) async {
@@ -463,27 +468,18 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                               prefixIcon: const Icon(Icons.subject)
                           ),
                           const SizedBox(height: 15.0,),
-                          CustomDropdownButtonFormField(
-                            value: status,
-                            hintText: "Select Status",
-                            labelText: "Status",
-                            prefixIcon: const Icon(Icons.person_3),
+                          AsyncDropdownButton(
+                            futureItems: statusOptions,
+                            selectedValue: status,
                             onChanged: (value) {
-                              print('Status: $value');
+                              print('Selected Status: $value');
                               setState(() {
                                 status = value;
                               });
                             },
-                            items: <String>[
-                              "Close",
-                              "Open",
-                            ].map((String value) {
-                              return DropdownMenuItem<String>(
-                                alignment: AlignmentDirectional.center,
-                                value: value,
-                                child: Text(value),
-                              );
-                            }).toList(),
+                            hintText: "Select Status",
+                            labelText: "Status",
+                            prefixIcon: const Icon(Icons.person_3),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return null;
@@ -622,27 +618,18 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
 
                           ),
                           const SizedBox(height: 15.0,),
-                          CustomDropdownButtonFormField(
-                            value: priority,
-                            hintText: "Select Priority",
-                            labelText: "Priority",
-                            prefixIcon: const Icon(Icons.person_3),
+                          AsyncDropdownButton(
+                            futureItems: priorityOptions,
+                            selectedValue: priority,
                             onChanged: (value) {
-                              print('Priority: $value');
+                              print('Selected Priority: $value');
                               setState(() {
                                 priority = value;
                               });
                             },
-                            items: <String>[
-                              "New",
-                              "Old",
-                            ].map((String value) {
-                              return DropdownMenuItem<String>(
-                                alignment: AlignmentDirectional.center,
-                                value: value,
-                                child: Text(value),
-                              );
-                            }).toList(),
+                            hintText: "Select Priority",
+                            labelText: "Priority",
+                            prefixIcon: const Icon(Icons.auto_graph),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return null;

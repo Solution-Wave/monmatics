@@ -152,6 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           "https://monmatics.com/api"
                         ].map((String value) {
                           return DropdownMenuItem<String>(
+                            alignment: AlignmentDirectional.center,
                             value: value,
                             child: Text(value),
                           );

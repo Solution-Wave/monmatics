@@ -98,9 +98,22 @@ class CustomDropdownButtonFormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Create a copy of the items list and add an empty option at the beginning
+    List<DropdownMenuItem<String>> modifiedItems = [
+      const DropdownMenuItem<String>(
+        alignment: AlignmentDirectional.center,
+        value: '',
+        child: Text('Select an option'),
+      ),
+      ...items,
+    ];
+
+    // Check if the provided value matches any of the available items
+    final validValue = items.any((item) => item.value == value) ? value : '';
+
     return DropdownButtonFormField<String>(
+      value: validValue,
       hint: Text(hintText),
-      borderRadius: BorderRadius.circular(20.0),
       decoration: InputDecoration(
         labelText: labelText,
         prefixIcon: prefixIcon,
@@ -113,15 +126,17 @@ class CustomDropdownButtonFormField extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
         ),
       ),
-      value: value,
-      items: items,
+      items: modifiedItems,
       onChanged: onChanged,
+      validator: validator,
     );
   }
 }
 
 
+
 // AsyncDropdownButton
+
 class AsyncDropdownButton extends StatelessWidget {
   final Future<List<String>> futureItems;
   final String? selectedValue;
@@ -153,16 +168,26 @@ class AsyncDropdownButton extends StatelessWidget {
           // Return an error message if an error occurred while loading options
           return const Text('Failed to load options');
         } else if (snapshot.hasData) {
-          // When data is available, use it to populate the dropdown
-          final options = snapshot.data!;
+          // Data is available, use it to populate the dropdown
+          final List<String> options = snapshot.data ?? [];
+          // Add an empty option (e.g., "Select an option") to the options list
+          if (!options.contains("")) {
+            options.insert(0, ''); // Add an empty option at the start
+          }
+
+          // Check if the selected value matches any option, if not, set it to the empty option
+          final validValue = options.contains(selectedValue) ? selectedValue : '';
+
           return DropdownButtonFormField<String>(
-            value: selectedValue,
+            value: validValue,
             onChanged: onChanged,
             items: options.map((String value) {
               return DropdownMenuItem<String>(
                 alignment: AlignmentDirectional.center,
                 value: value,
-                child: Text(value),
+                child: Text(
+                  value.isEmpty ? 'Select an option' : value,
+                ),
               );
             }).toList(),
             hint: Text(hintText),
@@ -181,9 +206,11 @@ class AsyncDropdownButton extends StatelessWidget {
             validator: validator,
           );
         }
+        // Return an empty container if none of the above conditions are met
         return Container();
       },
     );
   }
 }
+
 

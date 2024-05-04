@@ -44,6 +44,8 @@ class _AddCustomerState extends State<AddCustomer> {
 
   late Future<List<String>> creditLimitList;
   late Future<List<String>> customerTypeList;
+  late Future<List<String>> customerStatusList;
+  late Future<List<String>> customerCategoryList;
 
   @override
   void initState() {
@@ -51,6 +53,8 @@ class _AddCustomerState extends State<AddCustomer> {
     super.initState();
     creditLimitList = otherFunctions.fetchDropdownOptions("customer_credit_limit");
     customerTypeList = otherFunctions.fetchDropdownOptions("customer_type");
+    customerStatusList = otherFunctions.fetchDropdownOptions("customer_status");
+    customerCategoryList = otherFunctions.fetchAndSaveCustomerAndLeadCategories();
     if(widget.existingCustomer != null){
       nameController.text = widget.existingCustomer!.name;
       phoneController.text = widget.existingCustomer!.phone;
@@ -207,29 +211,18 @@ class _AddCustomerState extends State<AddCustomer> {
 
                       ),
                       const SizedBox(height: 15.0,),
-                      CustomDropdownButtonFormField(
-                        value: selectedCategory,
-                        hintText: "Select a Category",
-                        labelText: "Category",
-                        prefixIcon: const Icon(Icons.category),
+                      AsyncDropdownButton(
+                        futureItems: customerCategoryList ?? Future.value([]),
+                        selectedValue: selectedCategory,
                         onChanged: (value) {
                           print('Selected Category: $value');
                           setState(() {
                             selectedCategory = value;
                           });
                         },
-                        items: <String>[
-                          "Developer",
-                          "Front End",
-                          "Full Stack",
-                          "SQA",
-                        ].map((String value) {
-                          return DropdownMenuItem<String>(
-                            alignment: AlignmentDirectional.center,
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
+                        hintText: "Select Category",
+                        labelText: "Category",
+                        prefixIcon: const Icon(Icons.category),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return null;
@@ -338,28 +331,18 @@ class _AddCustomerState extends State<AddCustomer> {
                         prefixIcon: const Icon(Icons.confirmation_number),
                       ),
                       const SizedBox(height: 15.0,),
-                      CustomDropdownButtonFormField(
-                        value: selectedStatus,
-                        hintText: "Select Status",
-                        labelText: "Status",
-                        prefixIcon: const Icon(Icons.access_time),
+                      AsyncDropdownButton(
+                        futureItems: customerStatusList,
+                        selectedValue: selectedStatus,
                         onChanged: (value) {
                           print('Selected Status: $value');
                           setState(() {
                             selectedStatus = value;
                           });
                         },
-                        items: <String>[
-                          "Active",
-                          "Suspended",
-                          "Closed",
-                        ].map((String value) {
-                          return DropdownMenuItem<String>(
-                            alignment: AlignmentDirectional.center,
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
+                        hintText: "Select Status",
+                        labelText: "Status",
+                        prefixIcon: const Icon(Icons.access_time),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return null;

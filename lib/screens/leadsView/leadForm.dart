@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../../Functions/exportFunctions.dart';
 import '../../functions/otherFunctions.dart';
@@ -37,9 +36,18 @@ class _AddLeadState extends State<AddLead> {
   ExportFunctions exportFunctions = ExportFunctions();
   OtherFunctions otherFunctions = OtherFunctions();
 
+  late Future<List<String>> leadSourceList;
+  late Future<List<String>> leadCategoryList;
+  late Future<List<String>> leadStatusList;
+  late Future<List<String>> leadTypeList;
+
   @override
   void initState() {
     // TODO: implement initState
+    leadSourceList = otherFunctions.fetchDropdownOptions("opportunities_lead_source");
+    leadStatusList = otherFunctions.fetchDropdownOptions("lead_status");
+    leadTypeList = otherFunctions.fetchDropdownOptions("customer_type");
+    leadCategoryList = otherFunctions.fetchAndSaveCustomerAndLeadCategories();
     super.initState();
     if(widget.existingLead != null){
       nameController.text = widget.existingLead!.name;
@@ -176,29 +184,18 @@ class _AddLeadState extends State<AddLead> {
 
                       ),
                       const SizedBox(height: 15.0,),
-                      CustomDropdownButtonFormField(
-                        value: selectedCategory,
-                        hintText: "Select a Category",
-                        labelText: "Category",
-                        prefixIcon: const Icon(Icons.category),
+                      AsyncDropdownButton(
+                        futureItems: leadCategoryList,
+                        selectedValue: selectedCategory,
                         onChanged: (value) {
                           print('Selected Category: $value');
                           setState(() {
                             selectedCategory = value;
                           });
                         },
-                        items: <String>[
-                          "Developer",
-                          "Front End",
-                          "Full Stack",
-                          "SQA",
-                        ].map((String value) {
-                          return DropdownMenuItem<String>(
-                            alignment: AlignmentDirectional.center,
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
+                        hintText: "Select a Category",
+                        labelText: "Category",
+                        prefixIcon: const Icon(Icons.category),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return null;
@@ -207,26 +204,18 @@ class _AddLeadState extends State<AddLead> {
                         },
                       ),
                       const SizedBox(height: 15.0,),
-                      CustomDropdownButtonFormField(
-                        value: selectedSource,
-                        hintText: "Select Source",
-                        labelText: "Lead Source",
-                        prefixIcon: const Icon(Icons.source),
+                      AsyncDropdownButton(
+                        futureItems: leadSourceList,
+                        selectedValue: selectedSource,
                         onChanged: (value) {
                           print('Selected Lead Source: $value');
                           setState(() {
                             selectedSource = value;
                           });
                         },
-                        items: <String>[
-                          "AL1",
-                        ].map((String value) {
-                          return DropdownMenuItem<String>(
-                            alignment: AlignmentDirectional.center,
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
+                        hintText: "Select Lead Source",
+                        labelText: "Lead Source",
+                        prefixIcon: const Icon(Icons.source),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return null;
@@ -235,28 +224,18 @@ class _AddLeadState extends State<AddLead> {
                         },
                       ),
                       const SizedBox(height: 15.0,),
-                      CustomDropdownButtonFormField(
-                        value: selectedStatus,
-                        hintText: "Select Status",
-                        labelText: "Status",
-                        prefixIcon: const Icon(Icons.access_time),
+                      AsyncDropdownButton(
+                        futureItems: leadStatusList,
+                        selectedValue: selectedStatus,
                         onChanged: (value) {
-                          print('Selected Status: $value');
+                          print('Selected Lead Status: $value');
                           setState(() {
                             selectedStatus = value;
                           });
                         },
-                        items: <String>[
-                          "Active",
-                          "Suspended",
-                          "Closed",
-                        ].map((String value) {
-                          return DropdownMenuItem<String>(
-                            alignment: AlignmentDirectional.center,
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
+                        hintText: "Select Lead Status",
+                        labelText: "Lead Status",
+                        prefixIcon: const Icon(Icons.access_time),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return null;
@@ -265,27 +244,18 @@ class _AddLeadState extends State<AddLead> {
                         },
                       ),
                       const SizedBox(height: 15.0,),
-                      CustomDropdownButtonFormField(
-                        value: selectedType,
-                        hintText: "Select Type",
-                        labelText: "Type",
-                        prefixIcon: const Icon(Icons.type_specimen),
+                      AsyncDropdownButton(
+                        futureItems: leadTypeList,
+                        selectedValue: selectedType,
                         onChanged: (value) {
-                          print('Selected Type: $value');
+                          print('Selected Lead Type: $value');
                           setState(() {
                             selectedType = value;
                           });
                         },
-                        items: <String>[
-                          "AL-2",
-                          "AL-3",
-                        ].map((String value) {
-                          return DropdownMenuItem<String>(
-                            alignment: AlignmentDirectional.center,
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
+                        hintText: "Select Lead Type",
+                        labelText: "Lead Type",
+                        prefixIcon: const Icon(Icons.type_specimen),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return null;

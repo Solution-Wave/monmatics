@@ -156,6 +156,8 @@ class _AddOpportunityState extends State<AddOpportunity> {
   late Future<List<String>> opportunityTypeList;
   late Future<List<String>> opportunitySaleStageList;
   late Future<List<String>> opportunityLeadSourceList;
+  late Future<List<String>> opportunityCurrencyList;
+  late Future<List<String>> opportunityCampaignList;
 
   // Load existing data if provided
   @override
@@ -164,6 +166,8 @@ class _AddOpportunityState extends State<AddOpportunity> {
     opportunityTypeList = otherFunctions.fetchDropdownOptions("opportunities_type");
     opportunitySaleStageList = otherFunctions.fetchDropdownOptions("opportunities_sale_stage");
     opportunityLeadSourceList = otherFunctions.fetchDropdownOptions("opportunities_lead_source");
+    opportunityCurrencyList = otherFunctions.fetchAndSaveOpportunityCurrency();
+    opportunityCampaignList = otherFunctions.fetchAndSaveOpportunityCampaign();
 
     if (widget.existingOpportunity != null) {
       OpportunityHive opportunity = widget.existingOpportunity!;
@@ -324,34 +328,53 @@ class _AddOpportunityState extends State<AddOpportunity> {
                         },
                       ),
                       const SizedBox(height: 15.0,),
-                      CustomDropdownButtonFormField(
-                        value: selectedCurrency,
-                        hintText: "Select Currency",
-                        labelText: "Currency",
-                        prefixIcon: const Icon(Icons.attach_money),
+                      AsyncDropdownButton(
+                        futureItems: opportunityCurrencyList,
+                        selectedValue: selectedCurrency,
                         onChanged: (value) {
                           print('Selected Currency: $value');
                           setState(() {
                             selectedCurrency = value;
                           });
                         },
-                        items: <String>[
-                          "SAR",
-                          "PKR",
-                        ].map((String value) {
-                          return DropdownMenuItem<String>(
-                            alignment: AlignmentDirectional.center,
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
+                        hintText: "Select Currency",
+                        labelText: "Currency",
+                        prefixIcon: const Icon(Icons.attach_money),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please Choose a Currency';
+                            return null;
                           }
                           return null;
                         },
                       ),
+                      // CustomDropdownButtonFormField(
+                      //   value: selectedCurrency,
+                      //   hintText: "Select Currency",
+                      //   labelText: "Currency",
+                      //   prefixIcon: const Icon(Icons.attach_money),
+                      //   onChanged: (value) {
+                      //     print('Selected Currency: $value');
+                      //     setState(() {
+                      //       selectedCurrency = value;
+                      //     });
+                      //   },
+                      //   items: <String>[
+                      //     "SAR",
+                      //     "PKR",
+                      //   ].map((String value) {
+                      //     return DropdownMenuItem<String>(
+                      //       alignment: AlignmentDirectional.center,
+                      //       value: value,
+                      //       child: Text(value),
+                      //     );
+                      //   }).toList(),
+                      //   validator: (value) {
+                      //     if (value == null || value.isEmpty) {
+                      //       return 'Please Choose a Currency';
+                      //     }
+                      //     return null;
+                      //   },
+                      // ),
                       const SizedBox(height: 10.0,),
                       CustomTextFormField(
                         labelText: "Opportunity Amount",
@@ -432,7 +455,7 @@ class _AddOpportunityState extends State<AddOpportunity> {
                         futureItems: opportunityLeadSourceList,
                         selectedValue: selectedSource,
                         onChanged: (value) {
-                          print('Selected Sale Stage: $value');
+                          print('Selected Source: $value');
                           setState(() {
                             selectedSource = value;
                           });
@@ -448,31 +471,21 @@ class _AddOpportunityState extends State<AddOpportunity> {
                         },
                       ),
                       const SizedBox(height: 15.0,),
-                      CustomDropdownButtonFormField(
-                        value: selectedCampaign,
-                        hintText: "Select Campaign",
-                        labelText: "Campaign",
-                        prefixIcon: const Icon(Icons.campaign),
+                      AsyncDropdownButton(
+                        futureItems: opportunityCampaignList,
+                        selectedValue: selectedCampaign,
                         onChanged: (value) {
-                          print('Selected Compaign: $value');
+                          print('Selected Campaign: $value');
                           setState(() {
                             selectedCampaign = value;
                           });
                         },
-                        items: <String>[
-                          "Cash",
-                          "Whole Sale",
-                          ""
-                        ].map((String value) {
-                          return DropdownMenuItem<String>(
-                            alignment: AlignmentDirectional.center,
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
+                        hintText: "Select Campaign",
+                        labelText: "Campaign",
+                        prefixIcon: const Icon(Icons.campaign),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please Choose a Campaign';
+                            return null;
                           }
                           return null;
                         },
@@ -504,7 +517,7 @@ class _AddOpportunityState extends State<AddOpportunity> {
                         nameController: assignController,
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter User";
+                            return null;
                           }
                           else {
                             return null;
