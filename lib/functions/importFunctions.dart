@@ -31,41 +31,59 @@ class ImportFunctions{
 
   // Leads Fetch Function
   Future<void> fetchLeadsFromApi() async {
+    // Get SharedPreferences instance
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String token = prefs.getString('token') ?? '';
     String id = prefs.getString('id') ?? '';
     String idQueryParam = id.isNotEmpty ? '&id=$id' : '';
-    // Make an HTTP GET request to fetch leads from the API
+
+    // Retrieve database info and construct query parameters
     Map<String, dynamic>? databaseInfo = await getDatabaseInfo();
     String databaseInfoQuery = '';
-    databaseInfo!.forEach((key, value) {
-      databaseInfoQuery += '&$key=$value';
-    });
+    if (databaseInfo != null) {
+      databaseInfo.forEach((key, value) {
+        databaseInfoQuery += '&$key=$value';
+      });
+    }
+
+    // Construct the final URL for the API request
     String apiUrl = getLeads;
     String finalUrl = '$apiUrl?_token=$token$idQueryParam$databaseInfoQuery';
-    final response = await http.get(Uri.parse(finalUrl));
     print(finalUrl);
 
+    // Make the API request
+    final response = await http.get(Uri.parse(finalUrl));
+
     if (response.statusCode == 200) {
-      // If the request is successful, parse the JSON response
-      final List<dynamic> leadsJson = jsonDecode(response.body)['data'];
+      // Parse the JSON response
+      final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
 
-      // Open the leads Hive box
-      final leadsBox = await Hive.openBox<LeadHive>('leads');
+      // Check if 'data' key exists and is a list
+      if (jsonResponse.containsKey('data') && jsonResponse['data'] is List) {
+        final List<dynamic> leadsJson = jsonResponse['data'];
 
-      // Clear existing leads before adding new ones
-      await leadsBox.clear();
+        // Open the leads Hive box
+        final leadsBox = await Hive.openBox<LeadHive>('leads');
 
-      // Add each lead to the Hive box
-      for (final leadJson in leadsJson) {
-        final lead = LeadHive.fromJson(leadJson);
-        await leadsBox.add(lead);
+        // Clear existing leads before adding new ones
+        await leadsBox.clear();
+
+        // Add each lead to the Hive box
+        for (final leadJson in leadsJson) {
+          final lead = LeadHive.fromJson(leadJson);
+          await leadsBox.add(lead);
+        }
+      } else {
+        // Handle cases where 'data' key is missing or not a list
+        print('API response does not contain "data" key or "data" is not a list');
       }
     } else {
-      // If the request fails, handle the error
+      // Handle cases where the API request fails
+      print('API request failed: ${response.body}');
       throw Exception('Failed to fetch leads from the API');
     }
   }
+
 
   // Customer Fetch Function
   Future<void> fetchCustomersFromApi() async {
@@ -107,41 +125,59 @@ class ImportFunctions{
 
   // Contacts Fetch Function
   Future<void> fetchContactsFromApi() async {
+    // Retrieve SharedPreferences instance
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('token');
     String id = prefs.getString('id') ?? '';
     String idQueryParam = id.isNotEmpty ? '&userId=$id' : '';
-    // Make an HTTP GET request to fetch contacts from the API
+
+    // Retrieve database info and construct query parameters
     Map<String, dynamic>? databaseInfo = await getDatabaseInfo();
     String databaseInfoQuery = '';
-    databaseInfo!.forEach((key, value) {
-      databaseInfoQuery += '&$key=$value';
-    });
+    if (databaseInfo != null) {
+      databaseInfo.forEach((key, value) {
+        databaseInfoQuery += '&$key=$value';
+      });
+    }
+
+    // Construct the final URL for the API request
     String apiUrl = getContacts;
     String finalUrl = '$apiUrl?_token=$token$idQueryParam$databaseInfoQuery';
-    final response = await http.get(Uri.parse(finalUrl));
     print(finalUrl);
 
+    // Make the API request
+    final response = await http.get(Uri.parse(finalUrl));
+
     if (response.statusCode == 200) {
-      // If the request is successful, parse the JSON response
-      final List<dynamic> contactsJson = jsonDecode(response.body)['data'];
+      // Parse the JSON response
+      final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
 
-      // Open the contacts Hive box
-      final contactsBox = await Hive.openBox<ContactHive>('contacts');
+      // Check if 'data' key exists and is a list
+      if (jsonResponse.containsKey('data') && jsonResponse['data'] is List) {
+        final List<dynamic> contactsJson = jsonResponse['data'];
 
-      // Clear existing contacts before adding new ones
-      await contactsBox.clear();
+        // Open the contacts Hive box
+        final contactsBox = await Hive.openBox<ContactHive>('contacts');
 
-      // Add each contact to the Hive box
-      for (final contactJson in contactsJson) {
-        final contact = ContactHive.fromJson(contactJson);
-        await contactsBox.add(contact);
+        // Clear existing contacts before adding new ones
+        await contactsBox.clear();
+
+        // Add each contact to the Hive box
+        for (final contactJson in contactsJson) {
+          final contact = ContactHive.fromJson(contactJson);
+          await contactsBox.add(contact);
+        }
+      } else {
+        // Handle cases where 'data' key is missing or not a list
+        print('API response does not contain "data" key or "data" is not a list');
       }
     } else {
-      // If the request fails, handle the error
+      // Handle cases where the API request fails
+      print('API request failed: ${response.body}');
       throw Exception('Failed to fetch contacts from the API');
     }
   }
+
 
   // Task Fetch Function
   Future<void> fetchTasksFromApi() async {
@@ -289,18 +325,25 @@ class ImportFunctions{
 
     if (response.statusCode == 200) {
       // If the request is successful, parse the JSON response
-      final List<dynamic> callsJson = jsonDecode(response.body)['data'];
+      final responseData = jsonDecode(response.body);
 
-      // Open the contacts Hive box
-      final callsBox = await Hive.openBox<CallHive>('calls');
+      // Check if 'data' exists in the response and if it is a list
+      if (responseData != null && responseData.containsKey('data') && responseData['data'] is List) {
+        final List<dynamic> callsJson = responseData['data'];
 
-      // Clear existing contacts before adding new ones
-      await callsBox.clear();
+        // Open the contacts Hive box
+        final callsBox = await Hive.openBox<CallHive>('calls');
 
-      // Add each contact to the Hive box
-      for (final callJson in callsJson) {
-        final call = CallHive.fromJson(callJson);
-        await callsBox.add(call);
+        // Clear existing contacts before adding new ones
+        await callsBox.clear();
+
+        // Add each contact to the Hive box
+        for (final callJson in callsJson) {
+          final call = CallHive.fromJson(callJson);
+          await callsBox.add(call);
+        }
+      } else {
+        throw Exception('Expected key "data" in the response or the data is not a list');
       }
     } else {
       // If the request fails, handle the error
@@ -314,40 +357,55 @@ class ImportFunctions{
     String? token = prefs.getString('token');
     String id = prefs.getString('id') ?? '';
     String idQueryParam = id.isNotEmpty ? '&userId=$id' : '';
-    // Make an HTTP GET request to fetch opportunities from the API
+
+    // Retrieve database info
     Map<String, dynamic>? databaseInfo = await getDatabaseInfo();
     String databaseInfoQuery = '';
-    databaseInfo!.forEach((key, value) {
-      databaseInfoQuery += '&$key=$value';
-    });
+    if (databaseInfo != null) {
+      databaseInfo.forEach((key, value) {
+        databaseInfoQuery += '&$key=$value';
+      });
+    }
+
+    // Construct final URL
     String apiUrl = getOpportunities;
     String finalUrl = '$apiUrl?_token=$token$idQueryParam$databaseInfoQuery';
     print(finalUrl);
 
+    // Make the API request
     final response = await http.get(Uri.parse(finalUrl));
 
     if (response.statusCode == 200) {
       // Parse the JSON response
       final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
 
-      // Check if 'message' key exists and is not null
-      if (jsonResponse.containsKey('message') && jsonResponse['message'] != null) {
-        final List<dynamic> opportunitiesJson = jsonResponse['message'];
+      // Check if 'message' key exists in the JSON response
+      if (jsonResponse.containsKey('message')) {
+        final message = jsonResponse['message'];
 
-        // Open the opportunities Hive box
-        final opportunitiesBox = await Hive.openBox<OpportunityHive>('opportunity');
+        // Handle 'message' depending on its type
+        if (message is List<dynamic>) {
+          // Open the opportunities Hive box
+          final opportunitiesBox = await Hive.openBox<OpportunityHive>('opportunity');
 
-        // Clear existing opportunities before adding new ones
-        await opportunitiesBox.clear();
+          // Clear existing opportunities before adding new ones
+          await opportunitiesBox.clear();
 
-        // Add each opportunity to the Hive box
-        for (final opportunityJson in opportunitiesJson) {
-          final opportunity = OpportunityHive.fromJson(opportunityJson);
-          await opportunitiesBox.add(opportunity);
+          // Add each opportunity to the Hive box
+          for (final opportunityJson in message) {
+            final opportunity = OpportunityHive.fromJson(opportunityJson);
+            await opportunitiesBox.add(opportunity);
+          }
+        } else if (message is String) {
+          // Handle the case where 'message' is a string
+          print('API response message: $message');
+        } else {
+          // Handle unexpected data type for 'message'
+          print('Unexpected type for "message" in API response: ${message.runtimeType}');
         }
       } else {
-        // Handle the case where 'message' is missing or null
-        print('No data found in the API response');
+        // Handle the case where 'message' key is missing
+        print('No "message" key found in the API response');
       }
     } else {
       // Handle the case where the API request fails
@@ -355,7 +413,5 @@ class ImportFunctions{
       throw Exception('Failed to fetch opportunities from the API');
     }
   }
-
-
 
 }

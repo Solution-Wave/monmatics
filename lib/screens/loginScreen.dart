@@ -46,9 +46,9 @@ class _LoginScreenState extends State<LoginScreen> {
     String message = result['message'];
     if( result["result"] == true)
     {
-      updateUrls(selectedUrl ?? '');
-      Provider.of<UrlProvider>(context, listen: false)
-          .setSelectedUrl(selectedUrl ?? '');
+      // updateUrls(selectedUrl ?? '');
+      // Provider.of<UrlProvider>(context, listen: false)
+      //     .setSelectedUrl(loginUrl ?? '');
       emailController.clear();
       passwordController.clear();
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext)=>  App()));
@@ -84,8 +84,6 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    emailController.text = 'hassaanahmad4321@gmail.com';
-    passwordController .text = 'admin123';
   }
 
   @override
@@ -96,15 +94,15 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> saveSelectedUrl(String value) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      selectedUrl = value;
-      baseUrl = value;
-    });
-    await prefs.setString('selectedUrl', value);
-    updateUrls(baseUrl);
-  }
+  // Future<void> saveSelectedUrl(String value) async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   setState(() {
+  //     selectedUrl = value;
+  //     baseUrl = value;
+  //   });
+  //   await prefs.setString('selectedUrl', value);
+  //   updateUrls(baseUrl);
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -128,36 +126,36 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      CustomDropdownButtonFormField(
-                        value: selectedUrl,
-                        hintText: 'Select Your Link',
-                        labelText: 'Link',
-                        prefixIcon: const Icon(Icons.link),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedUrl = value;
-                            baseUrl = value ?? '';
-                            updateUrls(baseUrl);
-                            saveSelectedUrl(value!);
-                          });
-                        },
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please select a value';
-                          }
-                          return null;
-                        },
-                        items: <String>[
-                          "https://dev.monmatics.com/api",
-                          "https://monmatics.com/api"
-                        ].map((String value) {
-                          return DropdownMenuItem<String>(
-                            alignment: AlignmentDirectional.center,
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                      ),
+                      // CustomDropdownButtonFormField(
+                      //   value: selectedUrl,
+                      //   hintText: 'Select Your Link',
+                      //   labelText: 'Link',
+                      //   prefixIcon: const Icon(Icons.link),
+                      //   onChanged: (value) {
+                      //     setState(() {
+                      //       selectedUrl = value;
+                      //       baseUrl = value ?? '';
+                      //       updateUrls(baseUrl);
+                      //       saveSelectedUrl(value!);
+                      //     });
+                      //   },
+                      //   validator: (value) {
+                      //     if (value == null || value.isEmpty) {
+                      //       return 'Please select a value';
+                      //     }
+                      //     return null;
+                      //   },
+                      //   items: <String>[
+                      //     "https://dev.monmatics.com/api",
+                      //     "https://monmatics.com/api"
+                      //   ].map((String value) {
+                      //     return DropdownMenuItem<String>(
+                      //       alignment: AlignmentDirectional.center,
+                      //       value: value,
+                      //       child: Text(value),
+                      //     );
+                      //   }).toList(),
+                      // ),
                       const SizedBox(height: 15.0,),
                       CustomTextFormField(
                           nameController: emailController,
@@ -209,14 +207,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             FocusScope.of(context).unfocus();
                             if(_formKey.currentState!.validate())
                             {
-                              if(selectedUrl != null) {
-                                print(baseUrl);
-                                DoLogin();
-                              }
-                              else{
-                                print("Please Choose a Link");
-                                showSnackMessage(context, 'Please Choose a Link');
-                              }
+                              print(loginUrl);
+                              DoLogin();
                             }else{
                               showSnackMessage(context, 'Fields should not be left empty');
                             }

@@ -313,10 +313,8 @@ class _HomeState extends State<Home> {
                               });
                             },
                             items: <String>[
-                              "lead",
-                              "customer",
-                              "project",
-                              "",
+                              "Lead",
+                              "Customer",
                             ].map((String value) {
                               return DropdownMenuItem<String>(
                                 alignment: AlignmentDirectional.center,
@@ -331,7 +329,7 @@ class _HomeState extends State<Home> {
                               return null;
                             },
                           ),
-                          relatedTo == "lead"
+                          relatedTo == "Lead"
                               ? Column(
                             children: [
                               const SizedBox(height: 20.0,),
@@ -356,7 +354,7 @@ class _HomeState extends State<Home> {
                             ],
                           )
                               : Container(),
-                          relatedTo == "customer"
+                          relatedTo == "Customer"
                               ? Column(
                             children: [
                               const SizedBox(height: 20.0,),

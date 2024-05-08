@@ -91,7 +91,7 @@ class _opporScreenState extends State<opporScreen> {
                     );
                   }
                   else {
-                    return const Text('No Data Found');
+                    return const Center(child: Text('No Data Found'));
                   }
                 }
                 else

@@ -38,10 +38,11 @@ void main()async {
   //     enabled: !kReleaseMode,
   //     builder: (context) =>const MyApp()
   // ),
-    ChangeNotifierProvider(
-      create: (_) => UrlProvider(), // Provide the UrlProvider
-      child: MyApp(),
-    ),
+  //   ChangeNotifierProvider(
+  //     create: (_) => UrlProvider(), // Provide the UrlProvider
+  //     child: MyApp(),
+  //   ),
+    const MyApp()
   );
 }
 

@@ -102,7 +102,7 @@ class _leadsScreenState extends State<leadsScreen> {
                     );
                   }
                 else
-                  return Text('No Data Found');
+                  return Center(child: Text('No Data Found'));
               }
               else
                 {

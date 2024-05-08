@@ -16,41 +16,30 @@ class splashScreen extends StatefulWidget {
 
 class _splashScreenState extends State<splashScreen> {
 
-  String? selectedUrl;
-  String baseUrl = '';
-
-  Future<void> loadSelectedUrl() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      selectedUrl = prefs.getString('selectedUrl') ?? '';
-      baseUrl = selectedUrl ?? '';
-      updateUrls(baseUrl);
-    });
-  }
 
   void checkSession()async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var token = prefs.getString('token');
     if (token == null) {
-      Timer(const Duration(seconds: 2),()=>Navigator.pushReplacement(context,
+
+      Navigator.pushReplacement(context,
           MaterialPageRoute(builder:
               (context) =>
               LoginScreen()
           )
-      ));
+      );
     } else
-      {
-        await loadSelectedUrl();
-        Timer(const Duration(milliseconds: 2500),
-                ()=>Navigator.pushReplacement(context,
-                    MaterialPageRoute(builder:
-                        (context) =>
-                             App() //first screen
-                    )
-                )
-        );
-      }
+    {
+      Timer(const Duration(seconds: 2),
+              ()=>Navigator.pushReplacement(context,
+              MaterialPageRoute(builder:
+                  (context) =>
+                  App() //first screen
+              )
+          )
+      );
     }
+  }
 
   @override
   void initState() {
