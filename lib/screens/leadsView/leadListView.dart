@@ -68,6 +68,7 @@ class _leadsScreenState extends State<leadsScreen> {
     return SafeArea(child: Scaffold(
       appBar: AppBar(
         title: Text('Leads', style: headerTextStyle,),
+        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(

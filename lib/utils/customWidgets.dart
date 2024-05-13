@@ -98,6 +98,9 @@ class CustomDropdownButtonFormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get the theme from the context
+    final theme = Theme.of(context);
+
     // Create a copy of the items list and add an empty option at the beginning
     List<DropdownMenuItem<String>> modifiedItems = [
       const DropdownMenuItem<String>(
@@ -118,11 +121,18 @@ class CustomDropdownButtonFormField extends StatelessWidget {
         labelText: labelText,
         prefixIcon: prefixIcon,
         enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(width: 1),
+          borderSide: BorderSide(
+            width: 1,
+            color: theme.inputDecorationTheme.enabledBorder?.borderSide.color ??
+                Colors.grey,
+          ),
           borderRadius: BorderRadius.circular(20),
         ),
         border: OutlineInputBorder(
-          borderSide: const BorderSide(color: Colors.blue, width: 2),
+          borderSide: BorderSide(
+            width: 2,
+            color: theme.inputDecorationTheme.border?.borderSide.color ?? Colors.grey,
+          ),
           borderRadius: BorderRadius.circular(20),
         ),
       ),
@@ -134,9 +144,7 @@ class CustomDropdownButtonFormField extends StatelessWidget {
 }
 
 
-
 // AsyncDropdownButton
-
 class AsyncDropdownButton extends StatelessWidget {
   final Future<List<String>> futureItems;
   final String? selectedValue;
@@ -158,6 +166,9 @@ class AsyncDropdownButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get the theme from the context
+    final theme = Theme.of(context);
+
     return FutureBuilder<List<String>>(
       future: futureItems,
       builder: (context, snapshot) {
@@ -165,8 +176,33 @@ class AsyncDropdownButton extends StatelessWidget {
           // Return a loading indicator while waiting for the options to load
           return const CircularProgressIndicator();
         } else if (snapshot.hasError) {
-          // Return an error message if an error occurred while loading options
-          return const Text('Failed to load options');
+          // Return an empty dropdown when there is an error
+          return DropdownButtonFormField<String>(
+            value: '',
+            onChanged: onChanged,
+            items: [],
+            hint: Text(hintText),
+            decoration: InputDecoration(
+              labelText: labelText,
+              prefixIcon: prefixIcon,
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  width: 1,
+                  color: theme.inputDecorationTheme.enabledBorder?.borderSide.color ??
+                      Colors.grey,
+                ),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              border: OutlineInputBorder(
+                borderSide: BorderSide(
+                  width: 2,
+                  color: theme.inputDecorationTheme.border?.borderSide.color ?? Colors.grey,
+                ),
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            validator: validator,
+          );
         } else if (snapshot.hasData) {
           // Data is available, use it to populate the dropdown
           final List<String> options = snapshot.data ?? [];
@@ -195,11 +231,17 @@ class AsyncDropdownButton extends StatelessWidget {
               labelText: labelText,
               prefixIcon: prefixIcon,
               enabledBorder: OutlineInputBorder(
-                borderSide: const BorderSide(width: 1),
+                borderSide: BorderSide(
+                  width: 1,
+                  color: theme.inputDecorationTheme.enabledBorder?.borderSide.color ?? Colors.grey,
+                ),
                 borderRadius: BorderRadius.circular(20),
               ),
               border: OutlineInputBorder(
-                borderSide: const BorderSide(color: Colors.blue, width: 2),
+                borderSide: BorderSide(
+                  width: 2,
+                  color: theme.inputDecorationTheme.border?.borderSide.color ?? Colors.grey,
+                ),
                 borderRadius: BorderRadius.circular(20),
               ),
             ),
@@ -212,5 +254,6 @@ class AsyncDropdownButton extends StatelessWidget {
     );
   }
 }
+
 
 

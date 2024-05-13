@@ -185,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 showPassword = !showPassword;
                               });
                             },
-                            icon: showPassword ? const Icon(Icons.visibility) :  const Icon(Icons.visibility_off),
+                            icon: showPassword ? const Icon(Icons.visibility_off) :  const Icon(Icons.visibility),
                           ),
                           hintText: "Password",
                           labelText: "Password",

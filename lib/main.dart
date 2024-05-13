@@ -13,6 +13,7 @@ import 'hiveadapters/taskAdapter.dart';
 import 'hiveadapters/userAdapter.dart';
 import 'splashScreen.dart';
 import 'utils/colors.dart';
+import 'utils/theme_provider.dart';
 import 'utils/themes.dart';
 import 'utils/urlprovider.dart';
 
@@ -34,15 +35,10 @@ void main()async {
   Hive.registerAdapter(OpportunityAdapter());
   Hive.registerAdapter(DropdownOptionsAdapter());
   runApp(
-  //   DevicePreview(
-  //     enabled: !kReleaseMode,
-  //     builder: (context) =>const MyApp()
-  // ),
-  //   ChangeNotifierProvider(
-  //     create: (_) => UrlProvider(), // Provide the UrlProvider
-  //     child: MyApp(),
-  //   ),
-    const MyApp()
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: const MyApp(),
+    ),
   );
 }
 
@@ -68,6 +64,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    ThemeMode themeMode = Provider.of<ThemeProvider>(context).themeMode;
     return MaterialApp(
       key: appKey,
       // locale: DevicePreview.locale(context),
@@ -90,7 +87,7 @@ class _MyAppState extends State<MyApp> {
         ),
 
       ),
-      themeMode: _themeMode, // 2) ← ← ← use "state" field here //////////////
+      themeMode: themeMode,
       home: splashScreen(onRestart: restartApp),
     );
   }

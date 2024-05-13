@@ -79,9 +79,9 @@ class _AddContactState extends State<AddContact> {
   TextEditingController descriptionController = TextEditingController();
 
   bool loading = false;
-  String? selectedType;
-  String? relatedTo;
-  String? relatedId;
+  String selectedType  = "";
+  String relatedTo = "";
+  String relatedId = "";
   var uuid = const Uuid();
 
   ExportFunctions exportFunctions = ExportFunctions();
@@ -217,10 +217,10 @@ class _AddContactState extends State<AddContact> {
         firstnameController.clear();
         lastnameController.clear();
         titleController.clear();
-        selectedType = null;
-        relatedTo = null;
+        selectedType = "";
+        relatedTo = "";
         searchController.clear();
-        relatedId = null;
+        relatedId = "";
         assignController.clear();
         assignId = null;
         phoneController.clear();
@@ -267,7 +267,7 @@ class _AddContactState extends State<AddContact> {
                         onChanged: (value) {
                           print('Selected Type: $value');
                           setState(() {
-                            selectedType = value;
+                            selectedType = value!;
                           });
                         },
                         items: <String>[
@@ -346,7 +346,7 @@ class _AddContactState extends State<AddContact> {
                         onChanged: (value) {
                           print('Related To: $value');
                           setState(() {
-                            relatedTo = value;
+                            relatedTo = value!;
                           });
                         },
                         items: <String>[

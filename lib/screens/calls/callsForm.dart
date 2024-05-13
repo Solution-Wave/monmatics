@@ -35,15 +35,15 @@ class _AddCallsState extends State<AddCalls> {
   TextEditingController descriptionController = TextEditingController();
 
   bool loading = false;
-  String? selectedStatus;
-  String? relatedTo;
-  String? selectedCommunication;
-  String? assignId;
-  String? relatedId;
+  String selectedStatus = "";
+  String relatedTo = "";
+  String selectedCommunication = "";
+  String assignId = "";
+  String? relatedId = "";
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
   var uuid = const Uuid();
-  String? contactId;
+  String? contactId = "";
 
   ExportFunctions exportFunctions = ExportFunctions();
   OtherFunctions otherFunctions = OtherFunctions();
@@ -191,7 +191,7 @@ class _AddCallsState extends State<AddCalls> {
   Future<void> getSharedData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      assignId = prefs.getString('id');
+      assignId = prefs.getString('id')!;
     });
   }
 
@@ -212,18 +212,18 @@ class _AddCallsState extends State<AddCalls> {
       fetchNames();
 
       // Parsing the existing call start and end datetime
-      String existingStartDateTime = widget.existingCall!.startDate;
-      String existingEndDateTime = widget.existingCall!.endDate;
+      String existingStartDateTime = widget.existingCall!.startDate ?? "";
+      String existingEndDateTime = widget.existingCall!.endDate ?? "";
 
       // Split the date and time components for start and end
       List<String> startDateTimeParts = existingStartDateTime.split(' ');
       List<String> endDateTimeParts = existingEndDateTime.split(' ');
 
       // Assign the date and time to respective controllers
-      startDateController.text = startDateTimeParts[0];
-      startTimeController.text = startDateTimeParts[1];
-      endDateController.text = endDateTimeParts[0];
-      endTimeController.text = endDateTimeParts[1];
+      startDateController.text = startDateTimeParts.isNotEmpty ? startDateTimeParts[0] : widget.existingCall!.startDate;
+      startTimeController.text = startDateTimeParts.length > 1 ? startDateTimeParts[1] : widget.existingCall!.startTime;
+      endDateController.text = endDateTimeParts.isNotEmpty ? endDateTimeParts[0] : widget.existingCall!.endDate;
+      endTimeController.text = endDateTimeParts.length > 1 ? endDateTimeParts[1] : widget.existingCall!.endTime;
 
       // Assign other data
       contactId = widget.existingCall!.contactId;
@@ -248,8 +248,8 @@ class _AddCallsState extends State<AddCalls> {
         // Update existing call
         CallHive updatedCall = widget.existingCall!;
         updatedCall.subject = subjectController.text;
-        updatedCall.status = selectedStatus!;
-        updatedCall.relatedType = relatedTo!;
+        updatedCall.status = selectedStatus;
+        updatedCall.relatedType = relatedTo;
         updatedCall.relatedTo = searchController.text;
         updatedCall.relatedId = relatedId!;
         updatedCall.contactName = contactNameController.text;
@@ -258,9 +258,9 @@ class _AddCallsState extends State<AddCalls> {
         updatedCall.startTime = startTimeController.text;
         updatedCall.endDate = endDateController.text;
         updatedCall.endTime = endTimeController.text;
-        updatedCall.communicationType = selectedCommunication!;
+        updatedCall.communicationType = selectedCommunication;
         updatedCall.assignTo = assignController.text;
-        updatedCall.assignId = assignId!;
+        updatedCall.assignId = assignId;
         updatedCall.description = descriptionController.text;
 
         await callBox.put(updatedCall.key, updatedCall);
@@ -272,9 +272,9 @@ class _AddCallsState extends State<AddCalls> {
         CallHive newCall = CallHive()
           ..id = newCallId
           ..subject = subjectController.text
-          ..status = selectedStatus!
+          ..status = selectedStatus
           ..relatedTo = searchController.text
-          ..relatedType = relatedTo!
+          ..relatedType = relatedTo
           ..relatedId = relatedId!
           ..contactName = contactNameController.text
           ..contactId = contactId!
@@ -282,9 +282,9 @@ class _AddCallsState extends State<AddCalls> {
           ..startTime = startTimeController.text
           ..endDate = endDateController.text
           ..endTime = endTimeController.text
-          ..communicationType = selectedCommunication!
+          ..communicationType = selectedCommunication
           ..assignTo = assignController.text
-          ..assignId = assignId!
+          ..assignId = assignId
           ..description = descriptionController.text;
         await callBox.add(newCall);
         exportFunctions.postCallsToApi();
@@ -294,8 +294,8 @@ class _AddCallsState extends State<AddCalls> {
       // Reset form
       setState(() {
         subjectController.clear();
-        selectedStatus = null;
-        relatedTo = null;
+        selectedStatus =  "";
+        relatedTo = "";
         relatedName = "";
         assignName = "";
         contactName = '';
@@ -305,7 +305,7 @@ class _AddCallsState extends State<AddCalls> {
         startTimeController.clear();
         endDateController.clear();
         endTimeController.clear();
-        selectedCommunication = null;
+        selectedCommunication = "";
         assignController.clear();
         descriptionController.clear();
       });
@@ -357,7 +357,7 @@ class _AddCallsState extends State<AddCalls> {
                         onChanged: (value) {
                           print('Selected Status: $value');
                           setState(() {
-                            selectedStatus = value;
+                            selectedStatus = value!;
                           });
                         },
                         hintText: "Select Status",
@@ -379,7 +379,7 @@ class _AddCallsState extends State<AddCalls> {
                         onChanged: (value) {
                           print('Related To: $value');
                           setState(() {
-                            relatedTo = value;
+                            relatedTo = value!;
                           });
                         },
                         items: <String>[
@@ -572,7 +572,7 @@ class _AddCallsState extends State<AddCalls> {
                         onChanged: (value) {
                           print('Selected Communication Type: $value');
                           setState(() {
-                            selectedCommunication = value;
+                            selectedCommunication = value!;
                           });
                         },
                         hintText: "Select Communication Type",

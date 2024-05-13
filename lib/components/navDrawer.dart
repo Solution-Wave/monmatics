@@ -12,9 +12,9 @@ import '../models/noteItem.dart';
 import '../models/opportunityItem.dart';
 import '../models/taskItem.dart';
 import '../models/userItem.dart';
-import '../screens/calenderScreen.dart';
 import '../screens/calls/callsListView.dart';
 import '../screens/customer/customerListView.dart';
+import '../screens/drawer_calender.dart';
 import '../screens/leadsView/leadListView.dart';
 import '../screens/opportunitiesView/opportunitysListView.dart';
 import '../splashScreen.dart';
@@ -142,7 +142,7 @@ class _navigationdrawerState extends State<navigationdrawer> {
                     Navigator.pop(context);
                     Navigator.of(context, rootNavigator: true)
                         .push(MaterialPageRoute(builder: (context) =>
-                    const CustomTableCalendar())) ;
+                    const DrawerTableCalendar())) ;
 
                   },
                 ),
@@ -322,7 +322,7 @@ Widget DrawerHeader(BuildContext context, String name , String role) {
     color: Theme.of(context).brightness == Brightness.dark
         ? darkThemeDrawerHeaderColor
         : lightThemeDrawerHeaderColor,
-    height: MediaQuery.of(context).size.height * 0.15,
+    height: MediaQuery.of(context).size.height * 0.25,
     width: MediaQuery.of(context).size.width * 0.6,
     child: FittedBox(
       child: Padding(

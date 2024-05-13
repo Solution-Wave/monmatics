@@ -7,6 +7,7 @@ import '../../models/contactItem.dart';
 import '../../searchScreens/contactsSearch.dart';
 import '../../utils/colors.dart';
 import '../../utils/messages.dart';
+import '../../utils/themes.dart';
 import 'contactsForm.dart';
 
 List contactList = [];
@@ -144,81 +145,78 @@ class _ContactTileFormatState extends State<ContactTileFormat> {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(left: 20.0, right: 20.0, top: 05),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 5.0, bottom: 2.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "${widget.obj.fName} ${widget.obj.lName}" ?? "",
-                      style: TextStyle(
-                        fontSize: 15.0,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).brightness == Brightness.light
-                            ? socialIconColorLight
-                            : socialIconColorDark,
-                      ),
-                    ),
-                    Text(
-                      widget.obj.phone ?? '',
-                      style: const TextStyle(fontWeight: FontWeight.w300),
-                    ),
-                    Text(
-                      widget.obj.email ?? '',
-                      style: const TextStyle(fontWeight: FontWeight.w300),
-                    )
-                  ],
-                ),
-                Row(
-                  children: [
-                    IconButton(
-                      iconSize: 20.0,
-                      onPressed: () async {
-                        Uri phoneno = Uri.parse('tel:${widget.obj.phone}');
-                        if (widget.obj.phone == null || widget.obj.phone.isEmpty) {
-                          showSnackMessage(context, 'Phone number not provided');
-                        } else {
-                          try {
-                            await launchUrl(phoneno);
-                          } catch (_e) {
-                            print(_e);
-                          }
+      padding: const EdgeInsets.all(10.0),
+      child: Container(
+        // margin: const EdgeInsets.only(top: 10.0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12.0),
+          border: Border.all(color: primaryColor),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "${widget.obj.fName} ${widget.obj.lName}" ?? "",
+                      style: listViewTextStyle,
+                  ),
+                  Text(
+                    widget.obj.phone ?? '',
+                    style: const TextStyle(fontWeight: FontWeight.w300),
+                  ),
+                  Text(
+                    widget.obj.email ?? '',
+                    style: const TextStyle(fontWeight: FontWeight.w300),
+                  )
+                ],
+              ),
+              Row(
+                children: [
+                  IconButton(
+                    iconSize: 20.0,
+                    onPressed: () async {
+                      Uri phoneno = Uri.parse('tel:${widget.obj.phone}');
+                      if (widget.obj.phone == null || widget.obj.phone.isEmpty) {
+                        showSnackMessage(context, 'Phone number not provided');
+                      } else {
+                        try {
+                          await launchUrl(phoneno);
+                        } catch (_e) {
+                          print(_e);
                         }
-                      },
-                      icon: const Icon(Icons.phone),
-                    ),
-                    IconButton(
-                      iconSize: 20.0,
-                      onPressed: () async {
-                        String phoneNumber = widget.obj.phone ?? '';
-                        String message = "Hello, this is a test message.";
-                        String url = "https://wa.me/+92$phoneNumber/?text=${Uri.parse(message)}";
-                        if (await canLaunch(url)) {
-                          await launch(url);
-                        } else {
-                          throw 'Could not launch $url';
-                        }
-                      },
-                      icon: const Icon(Icons.phone_android_sharp),
-                    ),
-                    IconButton(
-                      iconSize: 20.0,
-                      color: Colors.blueAccent,
-                      onPressed: ()=> navigateToEditScreen(context, widget.obj),
-                      icon: const Icon(Icons.edit),
-                    ),
-                  ],
-                )
-              ],
-            ),
+                      }
+                    },
+                    icon: const Icon(Icons.phone),
+                  ),
+                  IconButton(
+                    iconSize: 20.0,
+                    onPressed: () async {
+                      String phoneNumber = widget.obj.phone ?? '';
+                      String message = "Hello, this is a test message.";
+                      String url = "https://wa.me/+92$phoneNumber/?text=${Uri.parse(message)}";
+                      if (await canLaunch(url)) {
+                        await launch(url);
+                      } else {
+                        throw 'Could not launch $url';
+                      }
+                    },
+                    icon: const Icon(Icons.phone_android_sharp),
+                  ),
+                  IconButton(
+                    iconSize: 20.0,
+                    color: Colors.blueAccent,
+                    onPressed: ()=> navigateToEditScreen(context, widget.obj),
+                    icon: const Icon(Icons.edit),
+                  ),
+                ],
+              )
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

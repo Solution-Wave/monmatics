@@ -57,6 +57,7 @@ class _opporScreenState extends State<opporScreen> {
     return SafeArea(child: Scaffold(
       appBar: AppBar(
         title: Text('Opportunity', style: headerTextStyle,),
+        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(

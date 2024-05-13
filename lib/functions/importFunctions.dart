@@ -328,9 +328,7 @@ class ImportFunctions{
       final responseData = jsonDecode(response.body);
 
       // Check if 'data' exists in the response and if it is a list
-      if (responseData != null && responseData.containsKey('data') && responseData['data'] is List) {
-        final List<dynamic> callsJson = responseData['data'];
-
+      final List<dynamic> callsJson = responseData;
         // Open the contacts Hive box
         final callsBox = await Hive.openBox<CallHive>('calls');
 
@@ -342,9 +340,6 @@ class ImportFunctions{
           final call = CallHive.fromJson(callJson);
           await callsBox.add(call);
         }
-      } else {
-        throw Exception('Expected key "data" in the response or the data is not a list');
-      }
     } else {
       // If the request fails, handle the error
       throw Exception('Failed to fetch Calls from the API');
@@ -413,5 +408,49 @@ class ImportFunctions{
       throw Exception('Failed to fetch opportunities from the API');
     }
   }
+
+  /*Future<void> fetchCallsFromApi() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+    String id = prefs.getString('id') ?? '';
+    String idQueryParam = id.isNotEmpty ? '&userId=$id' : '';
+    // Make an HTTP GET request to fetch contacts from the API
+    Map<String, dynamic>? databaseInfo = await getDatabaseInfo();
+    String databaseInfoQuery = '';
+    databaseInfo!.forEach((key, value) {
+      databaseInfoQuery += '&$key=$value';
+    });
+    String apiUrl = getCallsUrl;
+    String finalUrl = '$apiUrl?_token=$token$idQueryParam$databaseInfoQuery';
+    final response = await http.get(Uri.parse(finalUrl));
+    print(finalUrl);
+
+    if (response.statusCode == 200) {
+      // If the request is successful, parse the JSON response
+      final responseData = jsonDecode(response.body);
+
+      // Check if 'data' exists in the response and if it is a list
+      if (responseData != null && responseData.containsKey('data') && responseData['data'] is List) {
+        final List<dynamic> callsJson = responseData['data'];
+
+        // Open the contacts Hive box
+        final callsBox = await Hive.openBox<CallHive>('calls');
+
+        // Clear existing contacts before adding new ones
+        await callsBox.clear();
+
+        // Add each contact to the Hive box
+        for (final callJson in callsJson) {
+          final call = CallHive.fromJson(callJson);
+          await callsBox.add(call);
+        }
+      } else {
+        throw Exception('Expected key "data" in the response or the data is not a list');
+      }
+    } else {
+      // If the request fails, handle the error
+      throw Exception('Failed to fetch Calls from the API');
+    }
+  }*/
 
 }

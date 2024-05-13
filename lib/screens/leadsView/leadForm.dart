@@ -27,10 +27,10 @@ class _AddLeadState extends State<AddLead> {
   TextEditingController noteController = TextEditingController();
 
   bool loading = false;
-  String? selectedCategory;
-  String? selectedSource;
-  String? selectedStatus;
-  String? selectedType;
+  String selectedCategory  = "";
+  String selectedSource  = "";
+  String selectedStatus  = "";
+  String selectedType  = "";
   var uuid = const Uuid();
 
   ExportFunctions exportFunctions = ExportFunctions();
@@ -104,10 +104,10 @@ class _AddLeadState extends State<AddLead> {
         nameController.clear();
         emailController.clear();
         phoneController.clear();
-        selectedCategory = null;
-        selectedSource = null;
-        selectedStatus = null;
-        selectedType = null;
+        selectedCategory = "";
+        selectedSource = "";
+        selectedStatus = "";
+        selectedType = "";
         noteController.clear();
         addressController.clear();
       });
@@ -190,7 +190,7 @@ class _AddLeadState extends State<AddLead> {
                         onChanged: (value) {
                           print('Selected Category: $value');
                           setState(() {
-                            selectedCategory = value;
+                            selectedCategory = value!;
                           });
                         },
                         hintText: "Select a Category",
@@ -210,7 +210,7 @@ class _AddLeadState extends State<AddLead> {
                         onChanged: (value) {
                           print('Selected Lead Source: $value');
                           setState(() {
-                            selectedSource = value;
+                            selectedSource = value!;
                           });
                         },
                         hintText: "Select Lead Source",
@@ -230,7 +230,7 @@ class _AddLeadState extends State<AddLead> {
                         onChanged: (value) {
                           print('Selected Lead Status: $value');
                           setState(() {
-                            selectedStatus = value;
+                            selectedStatus = value!;
                           });
                         },
                         hintText: "Select Lead Status",
@@ -250,7 +250,7 @@ class _AddLeadState extends State<AddLead> {
                         onChanged: (value) {
                           print('Selected Lead Type: $value');
                           setState(() {
-                            selectedType = value;
+                            selectedType = value!;
                           });
                         },
                         hintText: "Select Lead Type",

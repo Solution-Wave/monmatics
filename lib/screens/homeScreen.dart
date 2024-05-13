@@ -34,14 +34,14 @@ class _HomeState extends State<Home> {
   String? firstName;
   String? lastName;
   String? role;
-  String? relatedTo;
-  String? status;
-  String? priority;
-  String? relatedId;
+  String relatedTo = "";
+  String status  = "";
+  String priority  = "";
+  String relatedId  = "";
   String relatedName = "";
-  String? assignId;
+  String assignId  = "";
   String assignName = "";
-  String? companyId;
+  String companyId  = "";
 
   TextEditingController subjectController = TextEditingController();
   TextEditingController searchController = TextEditingController();
@@ -94,7 +94,7 @@ class _HomeState extends State<Home> {
       firstName = prefs.getString('firstName');
       lastName = prefs.getString('lastName');
       role= prefs.getString('role');
-      assignId = prefs.getString('id');
+      assignId = prefs.getString('id')!;
     });
   }
 
@@ -174,17 +174,17 @@ class _HomeState extends State<Home> {
       TaskHive newTask = TaskHive()
           ..id = uid
           ..subject = subjectController.text
-          ..status = status!
-          ..type = relatedTo!
+          ..status = status
+          ..type = relatedTo
           ..relatedTo = searchController.text
-          ..relatedId = relatedId!
-          ..contact = assignId!
+          ..relatedId = relatedId
+          ..contact = assignId
           ..startDate = startDateController.text
           ..dueDate = dueDateController.text
-          ..priority = priority!
+          ..priority = priority
           ..assignTo = assignController.text
-          ..assignId = assignId!
-          ..companyId = companyId!
+          ..assignId = assignId
+          ..companyId = companyId
           ..description = descriptionController.text
         ..addedAt = DateTime.now();
       await tasks!.add(newTask);
@@ -205,11 +205,11 @@ class _HomeState extends State<Home> {
       assignController.clear();
       descriptionController.clear();
       searchController.clear();
-      relatedTo = null;
-      status = null;
-      priority = null;
-      relatedId = null;
-      assignId = null;
+      relatedTo = "";
+      status = "";
+      priority = "";
+      relatedId = "";
+      assignId = "";
       assignName = "";
       relatedName = "";
     });
@@ -309,7 +309,7 @@ class _HomeState extends State<Home> {
                             onChanged: (value) {
                               print('Related To: $value');
                               setState(() {
-                                relatedTo = value;
+                                relatedTo = value!;
                               });
                             },
                             items: <String>[
@@ -419,24 +419,28 @@ class _HomeState extends State<Home> {
                     ),
                   ),
                   actions: [
-                    TextButton(
+                    CustomButton(
                       onPressed: () {
-                        if (isEditMode) {
-                          updateNote(note);
-                        } else {
-                          addNote();
+                        if(formKey.currentState!.validate()){
+                          if (isEditMode) {
+                            updateNote(note);
+                          } else {
+                            addNote();
+                          }
                         }
                       },
+                      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
                       child: Text(isEditMode
                           ? 'Update'
                           : 'Add',
                       ),
                     ),
-                    TextButton(
-                      onPressed: () {
+                    CustomButton(
+                      onPressed: (){
                         clearFields();
                         Navigator.pop(context);
                       },
+                      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
                       child: const Text('Cancel'),
                     ),
                   ],
@@ -507,7 +511,7 @@ class _HomeState extends State<Home> {
                             onChanged: (value) {
                               print('Selected Status: $value');
                               setState(() {
-                                status = value;
+                                status = value!;
                               });
                             },
                             hintText: "Select Status",
@@ -529,7 +533,7 @@ class _HomeState extends State<Home> {
                             onChanged: (value) {
                               print('Related To: $value');
                               setState(() {
-                                relatedTo = value;
+                                relatedTo = value!;
                               });
                             },
                             items: <String>[
@@ -657,7 +661,7 @@ class _HomeState extends State<Home> {
                             onChanged: (value) {
                               print('Selected Priority: $value');
                               setState(() {
-                                priority = value;
+                                priority = value!;
                               });
                             },
                             hintText: "Select Priority",
@@ -710,24 +714,28 @@ class _HomeState extends State<Home> {
                     ),
                   ),
                   actions: [
-                    TextButton(
+                    CustomButton(
                       onPressed: () {
-                        if (isEditMode) {
-                          updateTask(task);
-                        } else {
-                          addTask();
+                        if(formKey.currentState!.validate()){
+                          if (isEditMode) {
+                            updateTask(task);
+                          } else {
+                            addTask();
+                          }
                         }
                       },
+                      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
                       child: Text(isEditMode
                           ? 'Update'
                           : 'Add',
                       ),
                     ),
-                    TextButton(
-                      onPressed: () {
+                    CustomButton(
+                      onPressed: (){
                         clearFields();
                         Navigator.pop(context);
                       },
+                      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
                       child: const Text('Cancel'),
                     ),
                   ],
@@ -903,17 +911,19 @@ class _HomeState extends State<Home> {
             ),
             child: _currIndex == 0
                 ? Icon(
-                    color: Theme.of(context).brightness == Brightness.light
-                        ? Colors.white
-                        : null,
+              color: Colors.white,
+                    // color: Theme.of(context).brightness == Brightness.light
+                    //     ? Colors.white
+                    //     : null,
                     Icons.add,
                     key: const ValueKey('icon0'),
                     size: MediaQuery.of(context).size.height * 0.05,
                   )
                 : Icon(
-                    color: Theme.of(context).brightness == Brightness.light
-                        ? Colors.white
-                        : null,
+              color: Colors.white,
+                    // color: Theme.of(context).brightness == Brightness.light
+                    //     ? Colors.white
+                    //     : null,
                     Icons.close,
                     key: const ValueKey('icon1'),
                     size: MediaQuery.of(context).size.height * 0.05,

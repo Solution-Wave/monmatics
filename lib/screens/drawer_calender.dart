@@ -20,14 +20,14 @@ import '../utils/themes.dart';
 import 'tasks/tasksViewScreen.dart';
 
 
-class CustomTableCalendar extends StatefulWidget {
-  const CustomTableCalendar({Key? key}) : super(key: key);
+class DrawerTableCalendar extends StatefulWidget {
+  const DrawerTableCalendar({Key? key}) : super(key: key);
 
   @override
-  _CustomTableCalendarState createState() => _CustomTableCalendarState();
+  _DrawerTableCalendarState createState() => _DrawerTableCalendarState();
 }
 
-class _CustomTableCalendarState extends State<CustomTableCalendar> {
+class _DrawerTableCalendarState extends State<DrawerTableCalendar> {
   final todaysDate = DateTime.now();
   var _focusedCalendarDate = DateTime.now();
   final _initialCalendarDate = DateTime(2000);
@@ -233,7 +233,6 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: navigationdrawer(),
       appBar: AppBar(
         title: Text('Calendar', style: headerTextStyle),
         centerTitle: true,
@@ -719,11 +718,11 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                       ),
                     ),
                     CustomButton(
-                        onPressed: (){
-                          clearFields();
-                          Navigator.pop(context);
-                        },
-                        padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+                      onPressed: (){
+                        clearFields();
+                        Navigator.pop(context);
+                      },
+                      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
                       child: const Text('Cancel'),
                     ),
                   ],

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../models/taskItem.dart';
+import '../../utils/colors.dart';
 import '../../utils/themes.dart';
 import 'taskexpandedview.dart';
 
@@ -30,7 +31,12 @@ class _TaskListTileState extends State<TaskListTile> {
             .push(MaterialPageRoute(
             builder: (context) => TaskExpandedView(widget.obj)));
       },
-      child: Card(
+      child: Container(
+        margin: const EdgeInsets.only(top: 10.0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12.0),
+          border: Border.all(color: primaryColor),
+        ),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
           child: Row(

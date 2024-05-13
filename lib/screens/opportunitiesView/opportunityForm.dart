@@ -36,15 +36,15 @@ class _AddOpportunityState extends State<AddOpportunity> {
   TextEditingController descriptionController = TextEditingController();
 
   // Initialize dropdown values
-  String? selectedCurrency;
-  String? selectedStage;
-  String? selectedSource;
-  String? selectedCampaign;
-  String? selectedType;
+  String selectedCurrency  = "";
+  String selectedStage  = "";
+  String selectedSource = "";
+  String selectedCampaign = "";
+  String selectedType = "";
 
   bool loading = false;
-  String? assignId;
-  String? leadId;
+  String assignId = "";
+  String leadId = "";
 
   // Initialize date
   DateTime date = DateTime.now();
@@ -261,13 +261,13 @@ class _AddOpportunityState extends State<AddOpportunity> {
     setState(() {
     nameController.clear();
     leadController.clear();
-    selectedCurrency = null;
+    selectedCurrency = "";
     amountController.clear();
     dateController.clear();
-    selectedType = null;
-    selectedStage = null;
-    selectedSource = null;
-    selectedCampaign = null;
+    selectedType = "";
+    selectedStage = "";
+    selectedSource = "";
+    selectedCampaign = "";
     nextStepController.clear();
     assignController.clear();
     descriptionController.clear();
@@ -320,7 +320,7 @@ class _AddOpportunityState extends State<AddOpportunity> {
                         prefixIcon: const Icon(RpgAwesome.magnet),
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Your Lead";
+                            return null;
                           }
                           else {
                             return null;
@@ -334,7 +334,7 @@ class _AddOpportunityState extends State<AddOpportunity> {
                         onChanged: (value) {
                           print('Selected Currency: $value');
                           setState(() {
-                            selectedCurrency = value;
+                            selectedCurrency = value!;
                           });
                         },
                         hintText: "Select Currency",
@@ -384,7 +384,7 @@ class _AddOpportunityState extends State<AddOpportunity> {
                         prefixIcon: const Icon(Icons.money),
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Your Amount";
+                            return null;
                           }
                           else {
                             return null;
@@ -402,7 +402,7 @@ class _AddOpportunityState extends State<AddOpportunity> {
                         prefixIcon: const Icon(Icons.calendar_month),
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Date";
+                            return null;
                           }
                           else {
                             return null;
@@ -417,7 +417,7 @@ class _AddOpportunityState extends State<AddOpportunity> {
                         onChanged: (value) {
                           print('Selected Opportunity Type: $value');
                           setState(() {
-                            selectedType = value;
+                            selectedType = value!;
                           });
                         },
                         hintText: "Select Opportunity Type",
@@ -437,7 +437,7 @@ class _AddOpportunityState extends State<AddOpportunity> {
                         onChanged: (value) {
                           print('Selected Sale Stage: $value');
                           setState(() {
-                            selectedStage = value;
+                            selectedStage = value!;
                           });
                         },
                         hintText: "Select Sale Stage",
@@ -457,7 +457,7 @@ class _AddOpportunityState extends State<AddOpportunity> {
                         onChanged: (value) {
                           print('Selected Source: $value');
                           setState(() {
-                            selectedSource = value;
+                            selectedSource = value!;
                           });
                         },
                         hintText: "Select Lead Source",
@@ -477,7 +477,7 @@ class _AddOpportunityState extends State<AddOpportunity> {
                         onChanged: (value) {
                           print('Selected Campaign: $value');
                           setState(() {
-                            selectedCampaign = value;
+                            selectedCampaign = value!;
                           });
                         },
                         hintText: "Select Campaign",
@@ -498,7 +498,7 @@ class _AddOpportunityState extends State<AddOpportunity> {
                         nameController: nextStepController,
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Next Step";
+                            return null;
                           }
                           else {
                             return null;
@@ -535,7 +535,7 @@ class _AddOpportunityState extends State<AddOpportunity> {
                         nameController: descriptionController,
                         validator: (value) {
                           if(value.isEmpty){
-                            return "Please Enter Description";
+                            return null;
                           }
                           else {
                             return null;
@@ -547,9 +547,6 @@ class _AddOpportunityState extends State<AddOpportunity> {
                       CustomButton(
                         onPressed: () {
                           if(_formKey.currentState!.validate()){
-                            if(selectedCurrency != null && selectedStage !=null
-                                && selectedSource !=null && selectedCampaign != null
-                                && selectedType != null){
                               print('Form is valid');
                               setState(() {
                                 loading = true;
@@ -558,13 +555,6 @@ class _AddOpportunityState extends State<AddOpportunity> {
                               setState(() {
                                 loading = false;
                               });
-                            } else{
-                              print('Select Dropdown Values');
-                              setState(() {
-                                loading = false;
-                              });
-                              showSnackMessage(context, "Please Choose all Values");
-                            }
                           }
                           else {
                             print('Form is invalid');

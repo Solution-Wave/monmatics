@@ -33,11 +33,11 @@ class _AddCustomerState extends State<AddCustomer> {
 
   bool loading = false;
   var uuid = const Uuid();
-  String? selectedCategory;
-  String? selectedAccount;
-  String? selectedLimit;
-  String? selectedStatus;
-  String? selectedType;
+  String selectedCategory ="";
+  String selectedAccount = "";
+  String selectedLimit = "";
+  String selectedStatus = "";
+  String selectedType =" ";
 
   ExportFunctions exportFunctions = ExportFunctions();
   OtherFunctions otherFunctions = OtherFunctions();
@@ -131,11 +131,11 @@ class _AddCustomerState extends State<AddCustomer> {
       marginController.clear();
       noteController.clear();
       addressController.clear();
-      selectedType = null;
-      selectedStatus = null;
-      selectedLimit = null;
-      selectedAccount = null;
-      selectedCategory = null;
+      selectedType = "";
+      selectedStatus = "";
+      selectedLimit = "";
+      selectedAccount = "";
+      selectedCategory = "";
       });
     } catch (e) {
       print("Error: $e");
@@ -217,7 +217,7 @@ class _AddCustomerState extends State<AddCustomer> {
                         onChanged: (value) {
                           print('Selected Category: $value');
                           setState(() {
-                            selectedCategory = value;
+                            selectedCategory = value!;
                           });
                         },
                         hintText: "Select Category",
@@ -239,7 +239,7 @@ class _AddCustomerState extends State<AddCustomer> {
                         onChanged: (value) {
                           print('Selected Main Account: $value');
                           setState(() {
-                            selectedAccount = value;
+                            selectedAccount = value!;
                           });
                         },
                         items: <String>[
@@ -285,7 +285,7 @@ class _AddCustomerState extends State<AddCustomer> {
                         onChanged: (value) {
                           print('Selected Credit Limit: $value');
                           setState(() {
-                            selectedLimit = value;
+                            selectedLimit = value!;
                           });
                         },
                         hintText: "Select Credit Limit",
@@ -337,7 +337,7 @@ class _AddCustomerState extends State<AddCustomer> {
                         onChanged: (value) {
                           print('Selected Status: $value');
                           setState(() {
-                            selectedStatus = value;
+                            selectedStatus = value!;
                           });
                         },
                         hintText: "Select Status",
@@ -357,7 +357,7 @@ class _AddCustomerState extends State<AddCustomer> {
                         onChanged: (value) {
                           print('Selected Type: $value');
                           setState(() {
-                            selectedType = value;
+                            selectedType = value!;
                           });
                         },
                         hintText: "Select Type",
