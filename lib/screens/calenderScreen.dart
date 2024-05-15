@@ -63,10 +63,10 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
     companyId = databaseInfo!['company_id'] ?? '';
   }
 
+
   @override
   void initState() {
     super.initState();
-
     // Initialize the focused calendar date to today's date
     _focusedCalendarDate = DateTime.now();
 
@@ -386,9 +386,9 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
     );
   }
 
-  String? relatedTo;
-  String? status;
-  String? priority;
+  String relatedTo ="";
+  String status = "";
+  String priority = "";
 
   TextEditingController subjectController = TextEditingController();
   TextEditingController searchController = TextEditingController();
@@ -499,7 +499,7 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                             onChanged: (value) {
                               print('Selected Status: $value');
                               setState(() {
-                                status = value;
+                                status = value!;
                               });
                             },
                             hintText: "Select Status",
@@ -521,7 +521,7 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                             onChanged: (value) {
                               print('Related To: $value');
                               setState(() {
-                                relatedTo = value;
+                                relatedTo = value!;
                               });
                             },
                             items: <String>[
@@ -649,7 +649,7 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
                             onChanged: (value) {
                               print('Selected Priority: $value');
                               setState(() {
-                                priority = value;
+                                priority = value!;
                               });
                             },
                             hintText: "Select Priority",
@@ -784,20 +784,21 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
       TaskHive newTask = TaskHive()
         ..id = uid
         ..subject = subjectController.text
-        ..status = status!
-        ..type = relatedTo!
+        ..status = status
+        ..type = relatedTo
         ..relatedTo = searchController.text
         ..relatedId = relatedId
         ..contact = assignId
         ..startDate = startDateController.text
         ..dueDate = dueDateController.text
-        ..priority = priority!
+        ..priority = priority
         ..assignTo = assignController.text
         ..assignId = assignId
-        ..companyId = companyId!
+        ..companyId = companyId
         ..description = descriptionController.text
         ..addedAt = DateTime.now();
       await tasks!.add(newTask);
+      Navigator.pop(context);
       showSnackMessage(context, "Task Added Successfully");
       clearFields();
     }
@@ -817,9 +818,9 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
       descriptionController.clear();
 
       // Reset variables
-      relatedTo = null;
-      status = null;
-      priority = null;
+      relatedTo = "";
+      status = "";
+      priority = "";
 
       // Reinitialize dates
       startDate = DateTime.now();
@@ -831,8 +832,6 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
     });
   }
 
-
-
   OtherFunctions otherFunctions = OtherFunctions();
 
   // Function to update an existing note
@@ -840,8 +839,8 @@ class _CustomTableCalendarState extends State<CustomTableCalendar> {
     print(task.id);
     otherFunctions.updateTaskInDatabase(task);
     task.subject = subjectController.text;
-    task.status = status!;
-    task.type = relatedTo!;
+    task.status = status;
+    task.type = relatedTo;
     task.contact = assignId;
     task.startDate = startDateController.text;
     task.dueDate = dueDateController.text;

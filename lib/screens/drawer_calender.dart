@@ -385,9 +385,9 @@ class _DrawerTableCalendarState extends State<DrawerTableCalendar> {
     );
   }
 
-  String? relatedTo;
-  String? status;
-  String? priority;
+  String relatedTo = "";
+  String status = "";
+  String priority = "";
 
   TextEditingController subjectController = TextEditingController();
   TextEditingController searchController = TextEditingController();
@@ -498,7 +498,7 @@ class _DrawerTableCalendarState extends State<DrawerTableCalendar> {
                             onChanged: (value) {
                               print('Selected Status: $value');
                               setState(() {
-                                status = value;
+                                status = value!;
                               });
                             },
                             hintText: "Select Status",
@@ -520,7 +520,7 @@ class _DrawerTableCalendarState extends State<DrawerTableCalendar> {
                             onChanged: (value) {
                               print('Related To: $value');
                               setState(() {
-                                relatedTo = value;
+                                relatedTo = value!;
                               });
                             },
                             items: <String>[
@@ -648,7 +648,7 @@ class _DrawerTableCalendarState extends State<DrawerTableCalendar> {
                             onChanged: (value) {
                               print('Selected Priority: $value');
                               setState(() {
-                                priority = value;
+                                priority = value!;
                               });
                             },
                             hintText: "Select Priority",
@@ -783,20 +783,21 @@ class _DrawerTableCalendarState extends State<DrawerTableCalendar> {
       TaskHive newTask = TaskHive()
         ..id = uid
         ..subject = subjectController.text
-        ..status = status!
-        ..type = relatedTo!
+        ..status = status
+        ..type = relatedTo
         ..relatedTo = searchController.text
         ..relatedId = relatedId
         ..contact = assignId
         ..startDate = startDateController.text
         ..dueDate = dueDateController.text
-        ..priority = priority!
+        ..priority = priority
         ..assignTo = assignController.text
         ..assignId = assignId
-        ..companyId = companyId!
+        ..companyId = companyId
         ..description = descriptionController.text
         ..addedAt = DateTime.now();
       await tasks!.add(newTask);
+      Navigator.pop(context);
       showSnackMessage(context, "Task Added Successfully");
       clearFields();
     }
@@ -816,9 +817,9 @@ class _DrawerTableCalendarState extends State<DrawerTableCalendar> {
       descriptionController.clear();
 
       // Reset variables
-      relatedTo = null;
-      status = null;
-      priority = null;
+      relatedTo = "";
+      status = "";
+      priority = "";
 
       // Reinitialize dates
       startDate = DateTime.now();
@@ -839,8 +840,8 @@ class _DrawerTableCalendarState extends State<DrawerTableCalendar> {
     print(task.id);
     otherFunctions.updateTaskInDatabase(task);
     task.subject = subjectController.text;
-    task.status = status!;
-    task.type = relatedTo!;
+    task.status = status;
+    task.type = relatedTo;
     task.contact = assignId;
     task.startDate = startDateController.text;
     task.dueDate = dueDateController.text;

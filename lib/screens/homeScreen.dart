@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -115,6 +118,9 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   showImportDialog();
+    // });
     formKey = GlobalKey<FormState>();
     getNotesFromBox();
     getTasksFromBox();
@@ -133,6 +139,9 @@ class _HomeState extends State<Home> {
     setState(() {});
   }
 
+  bool importLoading = false;
+  // bool _isChecked = false;
+
 
   void addNote() async {
     print(assignId);
@@ -146,11 +155,11 @@ class _HomeState extends State<Home> {
       NoteHive newNote = NoteHive()
         ..id = uid
         ..subject = subjectController.text
-        ..relatedTo = relatedTo!
+        ..relatedTo = relatedTo
         ..search = searchController.text
-        ..relatedId = relatedId!
+        ..relatedId = relatedId
         ..assignTo = assignController.text
-        ..assignId = assignId!
+        ..assignId = assignId
         ..description = descriptionController.text
       ..addedAt = DateTime.now();
 
@@ -220,10 +229,10 @@ class _HomeState extends State<Home> {
     print(note.id);
     otherFunctions.updateNoteInDatabase(note);
     note.subject = subjectController.text;
-    note.relatedTo = relatedTo!;
+    note.relatedTo = relatedTo;
     note.search = searchController.text;
-    note.relatedId = relatedId!;
-    note.assignId = assignId!;
+    note.relatedId = relatedId;
+    note.assignId = assignId;
     note.assignTo = assignController.text;
     note.description = descriptionController.text;
     note.addedAt = DateTime.now();
@@ -238,21 +247,26 @@ class _HomeState extends State<Home> {
     print(task.id);
     otherFunctions.updateTaskInDatabase(task);
     task.subject = subjectController.text;
-    task.status = status!;
-    task.type = relatedTo!;
-    task.contact = assignId!;
+    task.status = status;
+    task.type = relatedTo;
+    task.contact = assignId;
     task.startDate = startDateController.text;
     task.dueDate = dueDateController.text;
     task.relatedTo = searchController.text;
-    task.relatedId = relatedId!;
+    task.relatedId = relatedId;
     task.assignTo =assignController.text;
-    task.assignId = assignId!;
+    task.assignId = assignId;
     task.description = descriptionController.text;
     task.addedAt = DateTime.now();
     await tasks!.put(task.key, task);
     Navigator.pop(context);
     showSnackMessage(context, "Task Updated Successfully");
     clearFields();
+  }
+
+  Future<bool> isConnected() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    return connectivityResult != ConnectivityResult.none;
   }
 
   // Add Notes Form
@@ -747,6 +761,133 @@ class _HomeState extends State<Home> {
     );
   }
 
+  /*void showImportDialog() async {
+    if (_isChecked) {
+      return;
+    }
+    showDialog(
+        context: context,
+        builder: (context) => StatefulBuilder(
+          builder: (context, StateSetter setState){
+            return AlertDialog(
+              title: const Text("Import Data"),
+              titleTextStyle: TextStyle(
+                  fontSize: 22,
+                  // fontFamily: font_family,
+                  color: primaryColor,
+                  fontWeight: FontWeight.w500),
+              content: importLoading
+                  ? Container(
+                  height: MediaQuery.of(context).size.height * 0.09,
+                  alignment: Alignment.center,
+                  child: CircularProgressIndicator(color: primaryColor,))
+                  : Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Checkbox(
+                    value: _isChecked,
+                    onChanged: (bool? newValue) {
+                      setState(() {
+                        _isChecked = newValue!;
+                      });
+                    },
+                  ),
+                  const Text('Remember Me'),
+                ],
+              ),
+              contentTextStyle: TextStyle(
+                color: primaryColor,
+                fontSize: 16,),
+              actions: [
+                importLoading
+                    ? const Text("")
+                    : TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _isChecked = false;
+                    });
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 15, vertical: 4),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                        color: primaryColor,
+                        borderRadius: BorderRadius.circular(6)),
+                    width: MediaQuery.of(context).size.width * 0.25,
+                    child: Text(
+                      "Cancel",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: drawerTextCol,
+                          // fontFamily: font_family,
+                          fontSize: 16),
+                    ),
+                  ),
+                ),
+                importLoading
+                    ? const Text("")
+                    : TextButton(
+                  onPressed: () async {
+                    if (await isConnected()) {
+                      try {
+                        importFunctions.fetchUsersFromApi();
+                        importFunctions.fetchTasksFromApi();
+                        importFunctions.fetchContactsFromApi();
+                        importFunctions.fetchCustomersFromApi();
+                        importFunctions.fetchLeadsFromApi();
+                        importFunctions.fetchNotesFromApi();
+                        importFunctions.fetchCallsFromApi();
+                        importFunctions.fetchOpportunitiesFromApi();
+                        print('Data Fetched successfully.');
+                        showSnackMessage(
+                            context, "Data Downloaded Successfully.");
+                      } catch (e) {
+                        print('Error Fetching Data: $e');
+                        showSnackMessage(context, "Error Fetching Data.");
+                      }
+                    } else {
+                      showSnackMessage(
+                          context, "No Internet Connection. Please check your connection and try again.");
+                    }
+                    setState(() {
+                      importLoading = true;
+                    });
+                    Timer.periodic(const Duration(seconds: 2), (t) {
+                      t.cancel();
+                      Navigator.pop(context);
+                      setState(() {
+                        importLoading = false;
+                      });
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 15, vertical: 4),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                        color: primaryColor,
+                        borderRadius: BorderRadius.circular(6)),
+                    width: MediaQuery.of(context).size.width * 0.25,
+                    child: Text(
+                      "Import",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: drawerTextCol,
+                          // fontFamily: font_family,
+                          fontSize: 16),
+                    ),
+                  ),
+                )
+              ],
+            );
+          },
+        )
+    );
+  }*/
+
+
   Future<void> fetchRelatedNames(String? relatedId) async {
     print("Fetching name for relatedId: $relatedId");
     if (relatedId != null && relatedId.isNotEmpty) {
@@ -866,7 +1007,6 @@ class _HomeState extends State<Home> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Text("${firstName} ${lastName} ${role} ${assignId}"),
               SegmentedWidget(
                   onChanged: (val) {
                     setState(() {

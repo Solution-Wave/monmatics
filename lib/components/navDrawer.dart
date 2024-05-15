@@ -50,27 +50,27 @@ class _navigationdrawerState extends State<navigationdrawer> {
       await getSharedData();
     }
 
-   Future<void> showProgressDialog(BuildContext context, GlobalKey key) async {
-     return showDialog<void>(
-       context: context,
-       barrierDismissible: false,
-       builder: (BuildContext context) {
-         return SimpleDialog(
-           key: key,
-           children: const [
-             Column(
-               mainAxisSize: MainAxisSize.min,
-               children: [
-                 CircularProgressIndicator(),
-                 SizedBox(height: 16.0),
-                 Text('Please wait...'),
-               ],
-             ),
-           ]
-         );
-       },
-     );
-   }
+   // Future<void> showProgressDialog(BuildContext context, GlobalKey key) async {
+   //   return showDialog<void>(
+   //     context: context,
+   //     barrierDismissible: false,
+   //     builder: (BuildContext context) {
+   //       return SimpleDialog(
+   //         key: key,
+   //         children: const [
+   //           Column(
+   //             mainAxisSize: MainAxisSize.min,
+   //             children: [
+   //               CircularProgressIndicator(),
+   //               SizedBox(height: 16.0),
+   //               Text('Please wait...'),
+   //             ],
+   //           ),
+   //         ]
+   //       );
+   //     },
+   //   );
+   // }
 
    @override
   void initState() {
@@ -157,12 +157,6 @@ class _navigationdrawerState extends State<navigationdrawer> {
                     const CustomerScreen())) ;
                   },
                 ),
-                // ListTile(
-                //   visualDensity: VisualDensity(vertical: drawerTileHeight),
-                //   leading: Icon(Icons.event_note_rounded, color: drawerTextCol,),
-                //   title: Text('Notes',style: TextStyle(color: drawerTextCol),),
-                //   onTap: () {},
-                // ),
                 ListTile(
                   visualDensity: VisualDensity(vertical: drawerTileHeight),
                   leading: Icon(Icons.phone, color: drawerTextCol,),
@@ -267,13 +261,6 @@ class _navigationdrawerState extends State<navigationdrawer> {
                       showSnackMessage(
                           context, "No Internet Connection. Please check your connection and try again.");
                     }
-                    // Navigator.pop(context);
-                    // StorageController cont = StorageController();
-                    //   showProgressDialog(context,_keyLoader);
-                    //   await cont.GetAllData();
-                    //   print('data loaded');
-                    // Navigator.of(_keyLoader.currentContext!,
-                    // rootNavigator: true).pop();
                   },
                 ),
                 ListTile(

@@ -33,11 +33,11 @@ class _AddCustomerState extends State<AddCustomer> {
 
   bool loading = false;
   var uuid = const Uuid();
-  String selectedCategory ="";
+  String selectedCategory = "";
   String selectedAccount = "";
   String selectedLimit = "";
   String selectedStatus = "";
-  String selectedType =" ";
+  String selectedType = "";
 
   ExportFunctions exportFunctions = ExportFunctions();
   OtherFunctions otherFunctions = OtherFunctions();
@@ -82,14 +82,14 @@ class _AddCustomerState extends State<AddCustomer> {
         updateCustomer.name = nameController.text;
         updateCustomer.email = emailController.text;
         updateCustomer.phone = phoneController.text;
-        updateCustomer.category = selectedCategory!;
-        updateCustomer.account = selectedAccount!;
+        updateCustomer.category = selectedCategory;
+        updateCustomer.account = selectedAccount;
         updateCustomer.accountCode = codeController.text;
-        updateCustomer.limit = selectedLimit!;
+        updateCustomer.limit = selectedLimit;
         updateCustomer.amount = amountController.text;
         updateCustomer.taxNumber = taxController.text;
-        updateCustomer.status = selectedStatus!;
-        updateCustomer.type = selectedType!;
+        updateCustomer.status = selectedStatus;
+        updateCustomer.type = selectedType;
         updateCustomer.margin = marginController.text;
         updateCustomer.note = noteController.text;
         updateCustomer.address = addressController.text;
